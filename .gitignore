@@ -1,0 +1,112 @@
+############################################
+# Unreal Engine
+############################################
+
+# Build results
+/Binaries/
+/Build/
+/DerivedDataCache/
+/Intermediate/
+/Saved/
+
+# Engine-specific
+/.vs/
+/.vscode/
+*.sln
+*.suo
+*.opensdf
+*.sdf
+*.VC.db
+*.VC.opendb
+
+# Unreal build artifacts
+*.pdb
+*.idb
+*.ilk
+*.obj
+*.iobj
+*.ipdb
+*.exp
+*.lib
+*.dll
+*.exe
+*.app
+*.dylib
+*.so
+
+# Unreal Pak files
+*.pak
+*.utoc
+*.ucas
+
+# Crash reports
+crashinfo--*
+*.dmp
+
+# Shader caches
+*.ushaderbytecode
+*.shadercache
+
+# Logs
+*.log
+
+############################################
+# Unreal Generated Project Files
+############################################
+
+# Visual Studio
+.vs/
+*.VC.db
+*.VC.opendb
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+############################################
+# Unreal Engine Plugins
+############################################
+
+# Plugin intermediate & binaries
+Plugins/**/Binaries/
+Plugins/**/Intermediate/
+Plugins/**/DerivedDataCache/
+
+############################################
+# Unreal Engine User Settings
+############################################
+
+# User-specific config (개인 설정)
+Saved/Config/WindowsEditor/
+Saved/Config/LinuxEditor/
+Saved/Config/MacEditor/
+
+############################################
+# OS / Editor Junk
+############################################
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# Linux
+*~
+
+############################################
+# Packaging / Distribution
+############################################
+
+# Staged builds
+StagedBuilds/
+
+############################################
+# Optional (주의해서 사용)
+############################################
+
+# 만약 엔진 소스를 직접 빌드하는 경우에만 사용
+# Engine/Intermediate/
+# Engine/Binaries/
