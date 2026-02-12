@@ -23,8 +23,8 @@ APlayerCharacter::APlayerCharacter()
 	
 	CameraArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraArm"));
 	CameraArmComp->SetupAttachment(RootComponent);
-	CameraArmComp->SetRelativeLocation(FVector(0, 70, 90));
-	CameraArmComp->TargetArmLength = 400;
+	CameraArmComp->SetRelativeLocation(FVector(0, 125, 60));
+	CameraArmComp->TargetArmLength = 250;
 	CameraArmComp->bUsePawnControlRotation = true;
 	
 	PlayerCameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("PlayerCamera"));
@@ -54,6 +54,8 @@ void APlayerCharacter::BeginPlay()
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
+	PlayerMove();
 
 }
 
@@ -67,6 +69,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	{
 		PlayerInput->BindAction(IA_Turn, ETriggerEvent::Triggered, this, &APlayerCharacter::Turn);
 		PlayerInput->BindAction(IA_LookUp, ETriggerEvent::Triggered, this, &APlayerCharacter::LookUp);
+		PlayerInput->BindAction(IA_Move, ETriggerEvent::Triggered, this, &APlayerCharacter::Move);
+		PlayerInput->BindAction(IA_Jump, ETriggerEvent::Triggered, this, &APlayerCharacter::InputJump);
 	}
 }
 
@@ -80,4 +84,23 @@ void APlayerCharacter::LookUp(const FInputActionValue& InputValue)
 {
 	float value = InputValue.Get<float>();
 	AddControllerPitchInput(value);
+}
+
+void APlayerCharacter::Move(const FInputActionValue& InputValue)
+{
+	FVector2D value = InputValue.Get<FVector2D>();
+	WalkDirection.X = value.X;
+	WalkDirection.Y = value.Y;
+}
+
+void APlayerCharacter::InputJump(const FInputActionValue& InputValue)
+{
+	Jump();
+}
+
+void APlayerCharacter::PlayerMove()
+{
+	WalkDirection = FTransform(GetControlRotation()).TransformVector(WalkDirection);
+	AddMovementInput(WalkDirection);
+	WalkDirection = FVector::ZeroVector;
 }

@@ -39,9 +39,23 @@ public:
 	class UInputAction* IA_LookUp;
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	class UInputAction* IA_Turn;
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	class UInputAction* IA_Move;
+	UPROPERTY(EditAnywhere, Category=PlayerSetting)
+	float WalkSpeed = 600;
+	FVector WalkDirection;
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	class UInputAction* IA_Jump;
 	
 	// Horizontal Rotation Input
 	void Turn(const struct FInputActionValue& inputValue);
 	// Vertical Rotation Input
 	void LookUp(const struct FInputActionValue& inputValue);
+	
+	void Move(const struct FInputActionValue& inputValue);
+	
+	void InputJump(const struct FInputActionValue& inputValue);
+	
+	void PlayerMove();
+	
 };
