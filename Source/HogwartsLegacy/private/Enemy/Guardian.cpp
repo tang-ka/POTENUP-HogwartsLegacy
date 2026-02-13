@@ -12,7 +12,7 @@ AGuardian::AGuardian()
 
 	// 1. 스켈레탈메시 데이터 로드
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> 
-	tempMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple'"));
+	tempMesh(TEXT(""));
 	if (tempMesh.Succeeded())
 	{
 		GetMesh()->SetSkeletalMesh(tempMesh.Object);
