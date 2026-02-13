@@ -8,6 +8,9 @@
 #include <EnhancedInputComponent.h>
 #include <InputActionValue.h>
 
+#include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
+
 // Sets default values
 APlayerCharacter::APlayerCharacter()
 {
@@ -70,7 +73,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		PlayerInput->BindAction(IA_Turn, ETriggerEvent::Triggered, this, &APlayerCharacter::Turn);
 		PlayerInput->BindAction(IA_LookUp, ETriggerEvent::Triggered, this, &APlayerCharacter::LookUp);
 		PlayerInput->BindAction(IA_Move, ETriggerEvent::Triggered, this, &APlayerCharacter::Move);
-		PlayerInput->BindAction(IA_Jump, ETriggerEvent::Triggered, this, &APlayerCharacter::InputJump);
+		PlayerInput->BindAction(IA_Run, ETriggerEvent::Started, this, &APlayerCharacter::Run);
+		PlayerInput->BindAction(IA_Jump, ETriggerEvent::Started, this, &APlayerCharacter::InputJump);
 	}
 }
 
@@ -88,9 +92,17 @@ void APlayerCharacter::LookUp(const FInputActionValue& InputValue)
 
 void APlayerCharacter::Move(const FInputActionValue& InputValue)
 {
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	FVector2D value = InputValue.Get<FVector2D>();
 	WalkDirection.X = value.X;
 	WalkDirection.Y = value.Y;
+}
+
+void APlayerCharacter::Run(const FInputActionValue& InputValue)
+{
+	static bool bRun = false;
+	bRun = !bRun;
+	WalkSpeed = bRun ? 500 : 300;
 }
 
 void APlayerCharacter::InputJump(const FInputActionValue& InputValue)

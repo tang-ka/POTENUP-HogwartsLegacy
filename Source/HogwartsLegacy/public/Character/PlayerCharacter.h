@@ -42,8 +42,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	class UInputAction* IA_Move;
 	UPROPERTY(EditAnywhere, Category=PlayerSetting)
-	float WalkSpeed = 600;
+	float WalkSpeed = 300;
 	FVector WalkDirection;
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	class UInputAction* IA_Run;
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	class UInputAction* IA_Jump;
 	
@@ -53,6 +55,8 @@ public:
 	void LookUp(const struct FInputActionValue& inputValue);
 	
 	void Move(const struct FInputActionValue& inputValue);
+	// Switch between Walk Mode and Run Mode
+	void Run(const struct FInputActionValue& inputValue);
 	
 	void InputJump(const struct FInputActionValue& inputValue);
 	
