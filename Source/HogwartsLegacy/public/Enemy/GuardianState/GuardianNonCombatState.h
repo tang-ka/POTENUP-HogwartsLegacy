@@ -1,0 +1,36 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Enemy/GuardianState/GuardianStateBase.h"
+#include "GuardianNonCombatState.generated.h"
+
+/**
+ * 
+ */
+UCLASS()
+class HOGWARTSLEGACY_API UGuardianSleepState : public UGuardianStateBase
+{
+	GENERATED_BODY()
+	
+public:
+	virtual void OnEnter() override;
+	virtual void OnExit() override;
+	virtual void TickState(float DeltaTime) override;
+	
+	virtual FName GetStateName() const override { return TEXT("Sleep"); }
+};
+
+UCLASS()
+class HOGWARTSLEGACY_API UGuardianIdleState : public UGuardianStateBase
+{
+	GENERATED_BODY()
+	
+public:
+	virtual void OnEnter() override;
+	virtual void OnExit() override;
+	virtual void TickState(float DeltaTime) override;
+	
+	virtual FName GetStateName() const override { return TEXT("Idle"); }
+};

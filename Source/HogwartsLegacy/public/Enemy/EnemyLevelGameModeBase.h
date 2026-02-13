@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "EnemeyLevelGameModeBase.generated.h"
+#include "EnemyLevelGameModeBase.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class HOGWARTSLEGACY_API AEnemeyLevelGameModeBase : public AGameModeBase
+class HOGWARTSLEGACY_API AEnemyLevelGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 	
 public:
-	AEnemeyLevelGameModeBase();
+	AEnemyLevelGameModeBase();
 };

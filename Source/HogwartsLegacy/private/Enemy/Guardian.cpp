@@ -3,6 +3,7 @@
 #include "Enemy/Guardian.h"
 
 #include "HogwartsLegacy.h"
+#include "Enemy/EnemyFSMComponent.h"
 
 // Sets default values
 AGuardian::AGuardian()
@@ -12,13 +13,15 @@ AGuardian::AGuardian()
 
 	// 1. 스켈레탈메시 데이터 로드
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> 
-	tempMesh(TEXT(""));
+	tempMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/SSH/ThirdPerson_Characters/Mannequins/Meshes/SKM_Quinn_Simple.SKM_Quinn_Simple'"));
 	if (tempMesh.Succeeded())
 	{
 		GetMesh()->SetSkeletalMesh(tempMesh.Object);
 		GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -88), FRotator(0, -90, 0));
 		PRINT_LOG(TEXT("My Log : %s"), TEXT("Enemy"));
 	}
+	
+	FSMComponent = CreateDefaultSubobject<UEnemyFSMComponent>(TEXT("FSMComponent"));
 }
 
 void AGuardian::BeginPlay()

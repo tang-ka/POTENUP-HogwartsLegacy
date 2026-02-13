@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "Guardian.generated.h"
 
+class UEnemyFSMComponent;
+
 UCLASS()
 class HOGWARTSLEGACY_API AGuardian : public ACharacter
 {
@@ -24,5 +26,9 @@ public:
 public:
 	int HP;
 	int MaxHP;
-
+	
+private:
+	UPROPERTY(EditAnywhere, Category="FSMComponent")
+	TObjectPtr<UEnemyFSMComponent> FSMComponent;
+	
 };

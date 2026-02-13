@@ -8,6 +8,16 @@
 
 class UGuardianStateBase;
 
+UENUM()
+enum class EEnemyState : uint8
+{
+	Sleep, Idle,
+	Strafe,
+	ChargeAttack, BashAttack,
+	Stumble,
+	Damaged, Stun, Dead
+};
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class HOGWARTSLEGACY_API UEnemyFSMComponent : public UActorComponent
 {
@@ -19,46 +29,42 @@ public:
 public:	
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-protected:
-	void ChangeState(UGuardianStateBase* NewState);
 	
 public:
 #pragma region Getters
-	int32 GetHP() const { return HP; }
-	int32 GetMaxHP() const { return MaxHP; }
+	FORCEINLINE int32 GetHP() const { return HP; }
+	FORCEINLINE int32 GetMaxHP() const { return MaxHP; }
 	
-	UGuardianStateBase* GetCurState() const { return CurState; }
-	
-	UGuardianStateBase* GetSleepState() const { return SleepState; }
-	UGuardianStateBase* GetIdleState() const { return IdleState; }
-	
-	UGuardianStateBase* GetStrafeState() const { return StrafeState; }
-	
-	UGuardianStateBase* GetChargeAttackState() const { return ChargeAttackState; }
-	UGuardianStateBase* GetBashAttackState() const { return BashAttackState; }
-	
-	UGuardianStateBase* GetStumbleState() const { return StumbleState; }
-	
-	UGuardianStateBase* GetDamagedState() const { return DamagedState; }
-	UGuardianStateBase* GetStunState() const { return StunState; }
-	UGuardianStateBase* GetDeadState() const { return DeadState; }
+	UGuardianStateBase* GetStateByType(EEnemyState StateType) const;
 #pragma endregion 
+
+	UFUNCTION(BlueprintCallable)
+	void ChangeState(EEnemyState NewStateType);
 	
+protected:
+	UFUNCTION()
+	void Init();
+	
+	UFUNCTION()
+	void InitStates();
+
 private:
-	UPROPERTY(EditAnywhere, Category="GuadrdianFSM|Stats")
+	UPROPERTY(EditAnywhere, Category="GuardianFSM|Stats")
 	int32 MaxHP{100};
 
-	UPROPERTY(EditAnywhere, Category="GuadrdianFSM|Stats")
+	UPROPERTY(EditAnywhere, Category="GuardianFSM|Stats")
 	int32 HP{MaxHP};
-	
-	UPROPERTY(EditAnywhere, Category="GuadrianFSM|State")
-	FName CurStateName{};
-	
+
 	UPROPERTY(Transient)
 	TObjectPtr<UGuardianStateBase> CurState;
 	
+	UPROPERTY(Transient, VisibleAnywhere, Category="GuardianFSM|State")
+	EEnemyState CurStateType;
+	
 #pragma region State Instance 
+	UPROPERTY(Transient)
+	TMap<EEnemyState, TObjectPtr<UGuardianStateBase>> StateMap;
+	
 	// Non Combat
 	UPROPERTY(Transient) TObjectPtr<UGuardianStateBase> SleepState;
 	UPROPERTY(Transient) TObjectPtr<UGuardianStateBase> IdleState;
