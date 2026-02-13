@@ -110,3 +110,4 @@ StagedBuilds/
 # 만약 엔진 소스를 직접 빌드하는 경우에만 사용
 # Engine/Intermediate/
 # Engine/Binaries/
+*.user
