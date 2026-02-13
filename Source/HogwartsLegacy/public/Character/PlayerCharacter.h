@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Components/SphereComponent.h"
 #include "PlayerCharacter.generated.h"
 
 UCLASS()
@@ -46,17 +47,24 @@ public:
 	class UInputAction* IA_Run;
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	class UInputAction* IA_Jump;
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	class UInputAction* IA_Attack;
+	
+	UPROPERTY(EditDefaultsOnly,Category=Spell)
+	TSubclassOf <class ABasicAttack> BasicAttacks;
 	
 	// Horizontal Rotation Input
-	void Turn(const struct FInputActionValue& inputValue);
+	void Turn(const struct FInputActionValue& InputValue);
 	// Vertical Rotation Input
-	void LookUp(const struct FInputActionValue& inputValue);
+	void LookUp(const struct FInputActionValue& InputValue);
 	
-	void Move(const struct FInputActionValue& inputValue);
+	void Move(const struct FInputActionValue& InputValue);
 	// Switch between Walk Mode and Run Mode
-	void Run(const struct FInputActionValue& inputValue);
+	void Run(const struct FInputActionValue& InputValue);
 	
-	void InputJump(const struct FInputActionValue& inputValue);
+	void InputJump(const struct FInputActionValue& InputValue);
+
+	void SpellBasicAttack(const struct FInputActionValue& InputValue);
 	
 	void PlayerMove();
 	

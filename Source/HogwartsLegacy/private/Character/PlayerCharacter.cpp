@@ -2,6 +2,7 @@
 
 
 #include "Character/PlayerCharacter.h"
+#include <Character/BasicAttack.h>
 #include <GameFramework/SpringArmComponent.h>
 #include <Camera/CameraComponent.h>
 #include <EnhancedInputSubsystems.h>
@@ -73,6 +74,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		PlayerInput->BindAction(IA_Move, ETriggerEvent::Triggered, this, &APlayerCharacter::Move);
 		PlayerInput->BindAction(IA_Run, ETriggerEvent::Started, this, &APlayerCharacter::Run);
 		PlayerInput->BindAction(IA_Jump, ETriggerEvent::Started, this, &APlayerCharacter::InputJump);
+
+		PlayerInput->BindAction(IA_Attack, ETriggerEvent::Started, this, &APlayerCharacter::SpellBasicAttack);
 	}
 }
 
@@ -113,4 +116,10 @@ void APlayerCharacter::PlayerMove()
 	WalkDirection = FTransform(GetControlRotation()).TransformVector(WalkDirection);
 	AddMovementInput(WalkDirection);
 	WalkDirection = FVector::ZeroVector;
+}
+
+void APlayerCharacter::SpellBasicAttack(const FInputActionValue& InputValue)
+{
+	FTransform SpellPosition = GetActorTransform();
+	GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, SpellPosition);
 }
