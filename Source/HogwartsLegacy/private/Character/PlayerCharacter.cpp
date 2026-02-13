@@ -7,9 +7,7 @@
 #include <EnhancedInputSubsystems.h>
 #include <EnhancedInputComponent.h>
 #include <InputActionValue.h>
-
-#include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/ProjectileMovementComponent.h"
+#include <GameFramework/CharacterMovementComponent.h>
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()

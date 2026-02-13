@@ -2,7 +2,6 @@
 
 
 #include "Character/BasicAttack.h"
-#include "Components/SphereComponent.h"
 
 // Sets default values
 ABasicAttack::ABasicAttack()

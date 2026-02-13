@@ -24,21 +24,19 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	
-public:
 	UPROPERTY(VisibleAnywhere, Category=Camera)
 	class USpringArmComponent* CameraArmComp;
 	UPROPERTY(VisibleAnywhere, Category=Camera)
 	class UCameraComponent* PlayerCameraComp;
 	
-public:
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	class UInputMappingContext* IMC_Default;
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	class UInputAction* IA_LookUp;
 	UPROPERTY(EditDefaultsOnly, Category="Input")
-	class UInputAction* IA_Turn;
+	UInputAction* IA_Turn;
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	class UInputAction* IA_Move;
 	UPROPERTY(EditAnywhere, Category=PlayerSetting)

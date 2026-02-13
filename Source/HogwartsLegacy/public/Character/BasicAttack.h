@@ -22,12 +22,5 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	
-	UPROPERTY(VisibleAnywhere, Category=Movement)
-	class UProjectileMovementComponent* ProjectileMovementComp;
-	UPROPERTY(VisibleAnywhere, Category=Collision)
-	class USphereComponent* CollisionComp;
-	UPROPERTY(VisibleAnywhere, Category=Niagara)
-	class UParticleSystemComponent* NiagaraComp;
 
 };
