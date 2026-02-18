@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
-#include "GameFramework/ProjectileMovementComponent.h"
 #include "NiagaraSystem.h"
 #include "NiagaraComponent.h"
 #include "BasicAttack.generated.h"
@@ -26,15 +25,14 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	UPROPERTY(VisibleAnywhere, Category=Movement)
-	class UProjectileMovementComponent* MovementComp;
+	
 	UPROPERTY(VisibleAnywhere, Category=Collision)
 	class USphereComponent* CollisionComp;
 	UPROPERTY(VisibleAnywhere, Category=Niagara)
 	class UNiagaraSystem* NiagaraSys;
 	UPROPERTY(VisibleAnywhere, Category=Niagara)
 	class UNiagaraComponent* NiagaraComp;
+	float Speed = 3000;
 
 
 };

@@ -2,13 +2,13 @@
 
 
 #include "Character/PlayerCharacter.h"
-#include <Character/BasicAttack.h>
+#include "Character/BasicAttack.h"
 #include <GameFramework/SpringArmComponent.h>
+#include <GameFramework/CharacterMovementComponent.h>
 #include <Camera/CameraComponent.h>
 #include <EnhancedInputSubsystems.h>
 #include <EnhancedInputComponent.h>
 #include <InputActionValue.h>
-#include <GameFramework/CharacterMovementComponent.h>
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -120,6 +120,5 @@ void APlayerCharacter::PlayerMove()
 
 void APlayerCharacter::SpellBasicAttack(const FInputActionValue& InputValue)
 {
-	FTransform SpellPosition = GetActorTransform();
-	GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, SpellPosition);
+	GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetActorLocation(), GetActorRotation());
 }
