@@ -5,6 +5,12 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Components/SphereComponent.h"
+#include <GameFramework/SpringArmComponent.h>
+#include <GameFramework/CharacterMovementComponent.h>
+#include <Camera/CameraComponent.h>
+#include <EnhancedInputSubsystems.h>
+#include <EnhancedInputComponent.h>
+#include <InputActionValue.h>
 #include "PlayerCharacter.generated.h"
 
 UCLASS()

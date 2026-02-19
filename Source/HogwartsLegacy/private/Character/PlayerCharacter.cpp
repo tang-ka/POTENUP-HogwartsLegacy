@@ -3,12 +3,9 @@
 
 #include "Character/PlayerCharacter.h"
 #include "Character/BasicAttack.h"
-#include <GameFramework/SpringArmComponent.h>
-#include <GameFramework/CharacterMovementComponent.h>
-#include <Camera/CameraComponent.h>
-#include <EnhancedInputSubsystems.h>
-#include <EnhancedInputComponent.h>
-#include <InputActionValue.h>
+#include "Enemy/Guardian.h"
+#include "Kismet/GameplayStatics.h"
+
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -120,5 +117,18 @@ void APlayerCharacter::PlayerMove()
 
 void APlayerCharacter::SpellBasicAttack(const FInputActionValue& InputValue)
 {
-	GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetActorLocation(), GetActorRotation());
+	
+	if (auto* target = UGameplayStatics::GetActorOfClass(GetWorld(), AGuardian::StaticClass()))
+	{
+		FVector dir = target->GetActorLocation() - GetActorLocation();
+		dir.Normalize();
+		ABasicAttack* obj = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetActorLocation(), dir.Rotation());
+		obj->SetTarget(target);
+	}
+	else
+	{
+		ABasicAttack* obj = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetActorLocation(), GetActorRotation());
+		obj->NoTarget();
+	}
+	
 }

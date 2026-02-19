@@ -25,14 +25,49 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	
+	void SetTarget(class AActor* Actor);
+	void NoTarget();
+
 	UPROPERTY(VisibleAnywhere, Category=Collision)
 	class USphereComponent* CollisionComp;
 	UPROPERTY(VisibleAnywhere, Category=Niagara)
 	class UNiagaraSystem* NiagaraSys;
 	UPROPERTY(VisibleAnywhere, Category=Niagara)
 	class UNiagaraComponent* NiagaraComp;
-	float Speed = 3000;
-
-
+	FVector TargetLocation;
+	FVector MidPoint;
+	FVector CurvedPoint;
+	const float Speed = 500;
+	const float Distance = 2000;
+	const float MinCurve = 0.2;
+	const float MaxCurve = 0.4;
+	const float MinRadius = 150;
+	const float MaxRadius = 300;
+	const float MinAngle = 0;
+	const float MaxAngle = 180;
+	bool AfterBeginPlay = false;
+	float SetTimer = 0;
+	
+	void MidPointCalculation(
+		FVector InTargetLocation,
+		float InMinCurve,
+		float InMaxCurve,
+		FVector& MidPoint
+		);
+	
+	void CurveControlPoint(
+		FVector InMidPoint,
+		FVector InTargetLocation,
+		float InMinRadius,
+		float InMaxRadius,
+		float InMinAngle,
+		float InMaxAngle, 
+		FVector& CurvedPoint
+		);
+	
+	void Move(
+		FVector InTargetLocation,
+		FVector InCurvedPoint,
+		float InSpeed
+		);
 };
