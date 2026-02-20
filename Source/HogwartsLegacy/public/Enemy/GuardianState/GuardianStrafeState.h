@@ -15,9 +15,18 @@ class HOGWARTSLEGACY_API UGuardianStrafeState : public UGuardianStateBase
 	GENERATED_BODY()
 	
 public:
+	virtual FName GetStateName() const override { return TEXT("Strafe"); }
+	
 	virtual void OnEnter() override;
 	virtual void OnExit() override;
 	virtual void TickState(float DeltaTime) override;
 	
-	virtual FName GetStateName() const override { return TEXT("Strafe"); }
+private:
+	void ComputeDirectionToTarget();
+	void LookAtTarget(float DeltaTime) const;
+	void MoveToTarget(float DeltaTime) const;
+	
+private:
+	float StrafeSpeed{50.f};
+	FVector DirectionToTarget{};
 };

@@ -15,11 +15,11 @@ class HOGWARTSLEGACY_API UGuardianSleepState : public UGuardianStateBase
 	GENERATED_BODY()
 	
 public:
+	virtual FName GetStateName() const override { return TEXT("Sleep"); }
+	
 	virtual void OnEnter() override;
 	virtual void OnExit() override;
 	virtual void TickState(float DeltaTime) override;
-	
-	virtual FName GetStateName() const override { return TEXT("Sleep"); }
 };
 
 UCLASS()
@@ -28,9 +28,20 @@ class HOGWARTSLEGACY_API UGuardianIdleState : public UGuardianStateBase
 	GENERATED_BODY()
 	
 public:
+	virtual FName GetStateName() const override { return TEXT("Idle"); }
+	
 	virtual void OnEnter() override;
 	virtual void OnExit() override;
 	virtual void TickState(float DeltaTime) override;
 	
-	virtual FName GetStateName() const override { return TEXT("Idle"); }
+protected:
+	virtual void Reset() override;
+	
+private:
+	void LookAtTarget(float DeltaTime) const;
+	void DecideTarget() const;
+
+private:
+	float IdleTime{0.f};
+	float IdleDuration{2.f};
 };

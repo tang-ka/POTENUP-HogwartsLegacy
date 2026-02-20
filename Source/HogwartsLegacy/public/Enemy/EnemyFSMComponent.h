@@ -35,8 +35,18 @@ public:
 	FORCEINLINE int32 GetHP() const { return HP; }
 	FORCEINLINE int32 GetMaxHP() const { return MaxHP; }
 	
+	UFUNCTION(BlueprintCallable)
+	EEnemyState GetCurrentStateType() const { return CurStateType; }
 	UGuardianStateBase* GetStateByType(EEnemyState StateType) const;
+	TMap<FName, TObjectPtr<AActor>>* GetTargetMap() { return &TargetMap; }
+	AActor* GetCurrentTarget() const { return CurrentTarget; }
 #pragma endregion 
+	
+	UFUNCTION(BlueprintCallable)
+	void AddTarget(FName TargetKey, AActor* TargetActor);
+	
+	UFUNCTION(BlueprintCallable)
+	void SetCurrentTarget(FName TargetKey);
 
 	UFUNCTION(BlueprintCallable)
 	void ChangeState(EEnemyState NewStateType);
@@ -54,6 +64,12 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="GuardianFSM|Stats")
 	int32 HP{MaxHP};
+	
+	UPROPERTY(VisibleAnyWhere, Category="GuardianFSM|Target")
+	TMap<FName, TObjectPtr<AActor>> TargetMap;
+	
+	UPROPERTY(VisibleAnywhere, Category="GuardianFSM|Target")
+	TObjectPtr<AActor> CurrentTarget;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UGuardianStateBase> CurState;

@@ -15,9 +15,11 @@ class HOGWARTSLEGACY_API UGuardianStumbleState : public UGuardianStateBase
 	GENERATED_BODY()
 	
 public:
+	virtual FName GetStateName() const override { return TEXT("Stumble"); }
+	
 	virtual void OnEnter() override;
 	virtual void OnExit() override;
 	virtual void TickState(float DeltaTime) override;
 	
-	virtual FName GetStateName() const override { return TEXT("Stumble"); }
-};
+}; 
+ 

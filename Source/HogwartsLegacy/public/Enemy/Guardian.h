@@ -24,11 +24,22 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
 public:
+	void SetMaterialColor(FLinearColor Color);
+	void ResetMaterialColor();
+
+	UEnemyFSMComponent* GetFSMComponent() const { return FSMComponent; }
+	AActor* GetTargetActor() const { return TargetActor; }
+	
+public:
 	int HP;
 	int MaxHP;
 	
 private:
 	UPROPERTY(EditAnywhere, Category="FSMComponent")
 	TObjectPtr<UEnemyFSMComponent> FSMComponent;
+
+	UPROPERTY(EditAnywhere, Category="Target")
+	TObjectPtr<AActor> TargetActor;
 	
+	FLinearColor DefaultColor;
 };

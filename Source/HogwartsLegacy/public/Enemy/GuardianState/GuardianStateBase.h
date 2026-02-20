@@ -18,21 +18,25 @@ class HOGWARTSLEGACY_API UGuardianStateBase : public UObject
 public:
 	virtual FName GetStateName() const { return TEXT("StateBase"); }
 	
-	virtual void OnEnter() {}
+	virtual void OnEnter();
 	virtual void OnExit() {}
 	virtual void TickState(float DeltaTime) {}
 	// virtual void HandleEvent()
 	
-	void Init(UEnemyFSMComponent* InOwner) { OwnerFSM = InOwner;}
+	void InitOwner(UEnemyFSMComponent* InFSMComp);
+
+protected:
+	// Override this to reset any state-specific variables when entering the state
+	virtual void Reset() {};
 	
 protected:
-	UFUNCTION()
-	AActor* GetOwnActor() const;
-	
-	UFUNCTION()
-	virtual UWorld* GetWorld() const override;
-	
+	AActor* GetOwnerActor() const { return OwnerActor; }
+	UEnemyFSMComponent* GetOwnerFSM() const { return OwnerFSM; }
+
 private:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UEnemyFSMComponent> OwnerFSM;
+	
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<AActor> OwnerActor;
 };

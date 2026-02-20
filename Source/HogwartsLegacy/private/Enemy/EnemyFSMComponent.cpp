@@ -4,6 +4,7 @@
 #include "Enemy/EnemyFSMComponent.h"
 
 #include "HogwartsLegacy.h"
+#include "Enemy/Guardian.h"
 #include "Enemy/GuardianState/GuardianBashAttackState.h"
 #include "Enemy/GuardianState/GuardianChargeAttackState.h"
 #include "Enemy/GuardianState/GuardianDamagedState.h"
@@ -13,11 +14,10 @@
 #include "Enemy/GuardianState/GuardianStrafeState.h"
 #include "Enemy/GuardianState/GuardianStumbleState.h"
 #include "Enemy/GuardianState/GuardianStunState.h"
+#include "Kismet/GameplayStatics.h"
 
 UEnemyFSMComponent::UEnemyFSMComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
@@ -28,6 +28,11 @@ void UEnemyFSMComponent::BeginPlay()
 	InitStates();
 	
 	Init();
+	
+	// For Testing: Add Player as a target
+	ACharacter* Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	AddTarget(FName("Player"), Player);
+	SetCurrentTarget(FName("Player"));
 }
 
 void UEnemyFSMComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -35,12 +40,26 @@ void UEnemyFSMComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	CurState->TickState(DeltaTime);
-	// ...
 }
 
 UGuardianStateBase* UEnemyFSMComponent::GetStateByType(EEnemyState StateType) const
 {
 	return StateMap.Contains(StateType) ? StateMap[StateType] : nullptr;
+}
+
+void UEnemyFSMComponent::AddTarget(FName TargetKey, AActor* TargetActor)
+{
+	if (!TargetActor)
+	{
+		PRINT_LOG(TEXT("Target Actor is NULL"));
+	}
+	
+	TargetMap.Add(TargetKey, TargetActor);
+}
+
+void UEnemyFSMComponent::SetCurrentTarget(FName TargetKey)
+{
+	CurrentTarget = TargetMap.Contains(TargetKey) ? TargetMap[TargetKey] : nullptr;
 }
 
 void UEnemyFSMComponent::Init()
@@ -130,6 +149,12 @@ void UEnemyFSMComponent::InitStates()
 	StateMap.Add(EEnemyState::Damaged, DamagedState);
 	StateMap.Add(EEnemyState::Stun, StunState);
 	StateMap.Add(EEnemyState::Dead, DeadState);
+	
+	AActor* Target = Cast<AGuardian>(GetOwner())->GetTargetActor();
+	for (auto& StatePair : StateMap)
+	{
+		StatePair.Value->InitOwner(this);
+	}
 	
 	PRINT_LOG(TEXT("Initialized %d states."), StateMap.Num());
 }

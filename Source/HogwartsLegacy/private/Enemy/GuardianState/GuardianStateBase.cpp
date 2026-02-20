@@ -4,17 +4,13 @@
 #include "Enemy/GuardianState/GuardianStateBase.h"
 #include "Enemy/EnemyFSMComponent.h"
 
-AActor* UGuardianStateBase::GetOwnActor() const
+void UGuardianStateBase::OnEnter()
 {
-	return OwnerFSM ? OwnerFSM->GetOwner() : nullptr;
+	Reset();
 }
 
-UWorld* UGuardianStateBase::GetWorld() const
+void UGuardianStateBase::InitOwner(UEnemyFSMComponent* InFSMComp)
 {
-	if (OwnerFSM)
-	{
-		return OwnerFSM->GetWorld();
-	}
-	
-	return nullptr;
+	OwnerFSM = InFSMComp;
+	OwnerActor = InFSMComp ? InFSMComp->GetOwner() : nullptr;
 }

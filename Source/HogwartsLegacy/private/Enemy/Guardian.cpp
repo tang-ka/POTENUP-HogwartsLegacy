@@ -4,6 +4,7 @@
 
 #include "HogwartsLegacy.h"
 #include "Enemy/EnemyFSMComponent.h"
+#include "Rendering/RenderCommandPipes.h"
 
 // Sets default values
 AGuardian::AGuardian()
@@ -28,6 +29,7 @@ void AGuardian::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	DefaultColor = GetMesh()->CreateAndSetMaterialInstanceDynamic(0)->K2_GetVectorParameterValue("Paint Tint");
 }
 
 void AGuardian::Tick(float DeltaTime)
@@ -40,5 +42,18 @@ void AGuardian::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+void AGuardian::SetMaterialColor(FLinearColor Color)
+{
+	USkeletalMeshComponent* MeshComp = GetMesh();
+	UMaterialInstanceDynamic* MID = MeshComp->CreateAndSetMaterialInstanceDynamic(0);
+	
+	MID->SetVectorParameterValue("Paint Tint", Color);
+}
+
+void AGuardian::ResetMaterialColor()
+{
+	SetMaterialColor(DefaultColor);
 }
 
