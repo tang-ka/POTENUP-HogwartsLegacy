@@ -57,25 +57,32 @@ public:
 	UInputAction* IA_Attack;
 	bool bCanAttack = true;
 	UPROPERTY(EditDefaultsOnly, Category="Input")
-	UInputAction* IA_Skill;
+	UInputAction* IA_SkillSlot1;
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UInputAction* IA_SkillSlot2;
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UInputAction* IA_SkillSlot3;
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UInputAction* IA_SkillSlotQ;
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UInputAction* IA_SkillSlotR;
 	
 	UPROPERTY(EditDefaultsOnly,Category=Spell)
 	TSubclassOf <class ABasicAttack> BasicAttacks;
 	
-	// Horizontal Rotation Input
+
 	void Turn(const FInputActionValue& InputValue);
-	// Vertical Rotation Input
 	void LookUp(const FInputActionValue& InputValue);
-	
 	void Move(const FInputActionValue& InputValue);
-	// Switch between Walk Mode and Run Mode
 	void Run(const FInputActionValue& InputValue);
-	
 	void InputJump(const FInputActionValue& InputValue);
 
 	void SpellBasicAttack(const FInputActionValue& InputValue);
-	
-	void SpellSkill(const FInputActionValue& InputValue);
+	void SpellSkillSlot1(const FInputActionValue& InputValue);
+	void SpellSkillSlot2(const FInputActionValue& InputValue);
+	void SpellSkillSlot3(const FInputActionValue& InputValue);
+	void SpellSkillSlotQ(const FInputActionValue& InputValue);
+	void SpellSkillSlotR(const FInputActionValue& InputValue);
 	
 	void PlayerMove();
 	

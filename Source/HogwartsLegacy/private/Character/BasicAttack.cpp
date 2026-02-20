@@ -48,6 +48,7 @@ void ABasicAttack::Tick(float DeltaTime)
 	if (AfterBeginPlay)
 	{
 		Move(TargetLocation, CurvedPoint, Speed);
+		
 		if (GetActorLocation() == TargetLocation)
 		{
 			SetTimer += DeltaTime;

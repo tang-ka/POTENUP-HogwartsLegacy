@@ -76,7 +76,11 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		PlayerInput->BindAction(IA_Jump, ETriggerEvent::Started, this, &APlayerCharacter::InputJump);
 
 		PlayerInput->BindAction(IA_Attack, ETriggerEvent::Started, this, &APlayerCharacter::SpellBasicAttack);
-		PlayerInput->BindAction(IA_Skill, ETriggerEvent::Started, this, &APlayerCharacter::SpellSkill);
+		PlayerInput->BindAction(IA_SkillSlot1, ETriggerEvent::Started, this, &APlayerCharacter::SpellSkillSlot1);
+		PlayerInput->BindAction(IA_SkillSlot2, ETriggerEvent::Started, this, &APlayerCharacter::SpellSkillSlot2);
+		PlayerInput->BindAction(IA_SkillSlot3, ETriggerEvent::Started, this, &APlayerCharacter::SpellSkillSlot3);
+		PlayerInput->BindAction(IA_SkillSlotQ, ETriggerEvent::Started, this, &APlayerCharacter::SpellSkillSlotQ);
+		PlayerInput->BindAction(IA_SkillSlotR, ETriggerEvent::Started, this, &APlayerCharacter::SpellSkillSlotR);
 	}
 }
 
@@ -134,7 +138,27 @@ void APlayerCharacter::SpellBasicAttack(const FInputActionValue& InputValue)
 	bCanAttack = false;
 }
 
-void APlayerCharacter::SpellSkill(const FInputActionValue& InputValue)
+void APlayerCharacter::SpellSkillSlot1(const FInputActionValue& InputValue)
 {
-	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill"));
+	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill 1"));
+}
+
+void APlayerCharacter::SpellSkillSlot2(const FInputActionValue& InputValue)
+{
+	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill 2"));
+}
+
+void APlayerCharacter::SpellSkillSlot3(const FInputActionValue& InputValue)
+{
+	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill 3"));
+}
+
+void APlayerCharacter::SpellSkillSlotQ(const FInputActionValue& InputValue)
+{
+	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill Q"));
+}
+
+void APlayerCharacter::SpellSkillSlotR(const FInputActionValue& InputValue)
+{
+	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill R"));
 }

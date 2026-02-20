@@ -25,7 +25,7 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	void SetTarget(class AActor* Actor);
+	void SetTarget(AActor* Actor);
 	void NoTarget();
 
 	UPROPERTY(VisibleAnywhere, Category=Collision)
