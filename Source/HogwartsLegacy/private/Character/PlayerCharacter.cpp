@@ -2,11 +2,10 @@
 
 
 #include "Character/PlayerCharacter.h"
-#include <GameFramework/SpringArmComponent.h>
-#include <Camera/CameraComponent.h>
-#include <EnhancedInputSubsystems.h>
-#include <EnhancedInputComponent.h>
-#include <InputActionValue.h>
+#include "Character/BasicAttack.h"
+#include "Enemy/Guardian.h"
+#include "Kismet/GameplayStatics.h"
+
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -20,6 +19,7 @@ APlayerCharacter::APlayerCharacter()
 		GetMesh()->SetSkeletalMesh(TempMesh.Object);
 		GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -90), FRotator(0, -90, 0));
 	}
+
 	
 	CameraArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraArm"));
 	CameraArmComp->SetupAttachment(RootComponent);
@@ -32,6 +32,7 @@ APlayerCharacter::APlayerCharacter()
 	PlayerCameraComp->bUsePawnControlRotation = false;
 	
 	bUseControllerRotationYaw = true;
+	
 }
 
 // Called when the game starts or when spawned
@@ -39,13 +40,14 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	auto pc = Cast<APlayerController>(Controller);
+	APlayerController* pc = Cast<APlayerController>(Controller);
+	// auto* pc = GetWorld()->GetFirstPlayerController();
 	if (pc)
 	{
-		auto subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(pc->GetLocalPlayer());
+		UEnhancedInputLocalPlayerSubsystem* subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(pc->GetLocalPlayer());
 		if (subsystem)
 		{
-			subsystem->AddMappingContext(IMC_Default, 0);
+			subsystem->AddMappingContext(IMC_Player, 0);
 		}
 	}
 }
@@ -64,13 +66,17 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	
-	auto PlayerInput = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
+	UEnhancedInputComponent* PlayerInput = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 	if (PlayerInput)
 	{
 		PlayerInput->BindAction(IA_Turn, ETriggerEvent::Triggered, this, &APlayerCharacter::Turn);
 		PlayerInput->BindAction(IA_LookUp, ETriggerEvent::Triggered, this, &APlayerCharacter::LookUp);
 		PlayerInput->BindAction(IA_Move, ETriggerEvent::Triggered, this, &APlayerCharacter::Move);
-		PlayerInput->BindAction(IA_Jump, ETriggerEvent::Triggered, this, &APlayerCharacter::InputJump);
+		PlayerInput->BindAction(IA_Run, ETriggerEvent::Started, this, &APlayerCharacter::Run);
+		PlayerInput->BindAction(IA_Jump, ETriggerEvent::Started, this, &APlayerCharacter::InputJump);
+
+		PlayerInput->BindAction(IA_Attack, ETriggerEvent::Started, this, &APlayerCharacter::SpellBasicAttack);
+		PlayerInput->BindAction(IA_Skill, ETriggerEvent::Started, this, &APlayerCharacter::SpellSkill);
 	}
 }
 
@@ -88,9 +94,17 @@ void APlayerCharacter::LookUp(const FInputActionValue& InputValue)
 
 void APlayerCharacter::Move(const FInputActionValue& InputValue)
 {
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	FVector2D value = InputValue.Get<FVector2D>();
 	WalkDirection.X = value.X;
 	WalkDirection.Y = value.Y;
+}
+
+void APlayerCharacter::Run(const FInputActionValue& InputValue)
+{
+	static bool bRun = false;
+	bRun = !bRun;
+	WalkSpeed = bRun ? 500 : 300;
 }
 
 void APlayerCharacter::InputJump(const FInputActionValue& InputValue)
@@ -103,4 +117,27 @@ void APlayerCharacter::PlayerMove()
 	WalkDirection = FTransform(GetControlRotation()).TransformVector(WalkDirection);
 	AddMovementInput(WalkDirection);
 	WalkDirection = FVector::ZeroVector;
+	
+}
+
+void APlayerCharacter::SpellBasicAttack(const FInputActionValue& InputValue)
+{
+	if (AActor* target = UGameplayStatics::GetActorOfClass(GetWorld(), AGuardian::StaticClass()))
+	{
+		FVector dir = target->GetActorLocation() - GetActorLocation();
+		dir.Normalize();
+		ABasicAttack* atk = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetActorLocation(), dir.Rotation());
+		atk->SetTarget(target);
+	}
+	else
+	{
+		ABasicAttack* atk = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetActorLocation(), GetActorRotation());
+		atk->NoTarget();
+	}
+	bCanAttack = false;
+}
+
+void APlayerCharacter::SpellSkill(const FInputActionValue& InputValue)
+{
+	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill"));
 }
