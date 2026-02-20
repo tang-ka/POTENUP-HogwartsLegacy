@@ -19,6 +19,7 @@ APlayerCharacter::APlayerCharacter()
 		GetMesh()->SetSkeletalMesh(TempMesh.Object);
 		GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -90), FRotator(0, -90, 0));
 	}
+
 	
 	CameraArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraArm"));
 	CameraArmComp->SetupAttachment(RootComponent);
@@ -31,6 +32,7 @@ APlayerCharacter::APlayerCharacter()
 	PlayerCameraComp->bUsePawnControlRotation = false;
 	
 	bUseControllerRotationYaw = true;
+	
 }
 
 // Called when the game starts or when spawned
@@ -38,13 +40,14 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	auto pc = Cast<APlayerController>(Controller);
+	APlayerController* pc = Cast<APlayerController>(Controller);
+	// auto* pc = GetWorld()->GetFirstPlayerController();
 	if (pc)
 	{
-		auto subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(pc->GetLocalPlayer());
+		UEnhancedInputLocalPlayerSubsystem* subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(pc->GetLocalPlayer());
 		if (subsystem)
 		{
-			subsystem->AddMappingContext(IMC_Default, 0);
+			subsystem->AddMappingContext(IMC_Player, 0);
 		}
 	}
 }
@@ -63,7 +66,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	
-	auto PlayerInput = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
+	UEnhancedInputComponent* PlayerInput = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
 	if (PlayerInput)
 	{
 		PlayerInput->BindAction(IA_Turn, ETriggerEvent::Triggered, this, &APlayerCharacter::Turn);
@@ -73,6 +76,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		PlayerInput->BindAction(IA_Jump, ETriggerEvent::Started, this, &APlayerCharacter::InputJump);
 
 		PlayerInput->BindAction(IA_Attack, ETriggerEvent::Started, this, &APlayerCharacter::SpellBasicAttack);
+		PlayerInput->BindAction(IA_Skill, ETriggerEvent::Started, this, &APlayerCharacter::SpellSkill);
 	}
 }
 
@@ -113,22 +117,27 @@ void APlayerCharacter::PlayerMove()
 	WalkDirection = FTransform(GetControlRotation()).TransformVector(WalkDirection);
 	AddMovementInput(WalkDirection);
 	WalkDirection = FVector::ZeroVector;
+	
 }
 
 void APlayerCharacter::SpellBasicAttack(const FInputActionValue& InputValue)
 {
-	
-	if (auto* target = UGameplayStatics::GetActorOfClass(GetWorld(), AGuardian::StaticClass()))
+	if (AActor* target = UGameplayStatics::GetActorOfClass(GetWorld(), AGuardian::StaticClass()))
 	{
 		FVector dir = target->GetActorLocation() - GetActorLocation();
 		dir.Normalize();
-		ABasicAttack* obj = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetActorLocation(), dir.Rotation());
-		obj->SetTarget(target);
+		ABasicAttack* atk = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetActorLocation(), dir.Rotation());
+		atk->SetTarget(target);
 	}
 	else
 	{
-		ABasicAttack* obj = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetActorLocation(), GetActorRotation());
-		obj->NoTarget();
+		ABasicAttack* atk = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetActorLocation(), GetActorRotation());
+		atk->NoTarget();
 	}
-	
+	bCanAttack = false;
+}
+
+void APlayerCharacter::SpellSkill(const FInputActionValue& InputValue)
+{
+	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill"));
 }

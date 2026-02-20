@@ -34,10 +34,20 @@ public:
 	class UNiagaraSystem* NiagaraSys;
 	UPROPERTY(VisibleAnywhere, Category=Niagara)
 	class UNiagaraComponent* NiagaraComp;
+	UFUNCTION()
+	void OnComponentBeginOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep, 
+		const FHitResult& SweepResult
+		);
+	
 	FVector TargetLocation;
 	FVector MidPoint;
 	FVector CurvedPoint;
-	const float Speed = 500;
+	const float Speed = 2000;
 	const float Distance = 2000;
 	const float MinCurve = 0.2;
 	const float MaxCurve = 0.4;

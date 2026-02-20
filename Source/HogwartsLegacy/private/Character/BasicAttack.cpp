@@ -2,9 +2,11 @@
 
 
 #include "Character/BasicAttack.h"
+#include "Character/PlayerCharacter.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ABasicAttack::ABasicAttack()
@@ -22,9 +24,10 @@ ABasicAttack::ABasicAttack()
 	RootComponent = NiagaraComp;
 	
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComp"));
-	CollisionComp->SetCollisionProfileName(TEXT("BlockAll"));
+	CollisionComp->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 	CollisionComp->SetSphereRadius(8);
-	
+	CollisionComp->SetNotifyRigidBodyCollision(true);
+	CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &ABasicAttack::OnComponentBeginOverlap);
 }
 
 // Called when the game starts or when spawned
@@ -45,7 +48,6 @@ void ABasicAttack::Tick(float DeltaTime)
 	if (AfterBeginPlay)
 	{
 		Move(TargetLocation, CurvedPoint, Speed);
-		// CollisionComp->OnComponentHit.AddDynamic(); for Delegate
 		if (GetActorLocation() == TargetLocation)
 		{
 			SetTimer += DeltaTime;
@@ -57,14 +59,24 @@ void ABasicAttack::Tick(float DeltaTime)
 	}
 }
 
-void ABasicAttack::SetTarget(class AActor* obj)
+void ABasicAttack::SetTarget(AActor* atk)
 {
-	TargetLocation = obj->GetActorLocation();
+	TargetLocation = atk->GetActorLocation();
 }
 
 void ABasicAttack::NoTarget()
 {
 	TargetLocation = GetActorLocation() + GetActorForwardVector() * Distance;
+}
+
+void ABasicAttack::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor != UGameplayStatics::GetActorOfClass(GetWorld(), APlayerCharacter::StaticClass()))
+	{
+		GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("OnHit"));
+		Destroy();
+	}
 }
 
 
@@ -87,9 +99,8 @@ void ABasicAttack::CurveControlPoint(FVector InMidPoint, FVector InTargetLocatio
 
 void ABasicAttack::Move(FVector InTargetLocation, FVector InCurvedPoint, float InSpeed)
 {
-	//GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Green, TEXT("Move"));
 	float Time = GetWorld()->GetTimeSeconds();
 	InCurvedPoint = UKismetMathLibrary::VInterpTo_Constant(InCurvedPoint, InTargetLocation, Time, InSpeed);
-	FVector NewPosition = UKismetMathLibrary::VInterpTo_Constant(GetActorLocation(), InCurvedPoint, Time, InSpeed);
-	SetActorLocation(NewPosition);
+	SetActorLocation(UKismetMathLibrary::VInterpTo_Constant(GetActorLocation(), InCurvedPoint, Time, InSpeed));
 }
+

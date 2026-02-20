@@ -34,43 +34,48 @@ public:
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	
 	UPROPERTY(VisibleAnywhere, Category=Camera)
-	class USpringArmComponent* CameraArmComp;
+	USpringArmComponent* CameraArmComp;
 	UPROPERTY(VisibleAnywhere, Category=Camera)
-	class UCameraComponent* PlayerCameraComp;
+	UCameraComponent* PlayerCameraComp;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Input")
-	class UInputMappingContext* IMC_Default;
+	UInputMappingContext* IMC_Player;
 	UPROPERTY(EditDefaultsOnly, Category="Input")
-	class UInputAction* IA_LookUp;
+	UInputAction* IA_LookUp;
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	UInputAction* IA_Turn;
 	UPROPERTY(EditDefaultsOnly, Category="Input")
-	class UInputAction* IA_Move;
+	UInputAction* IA_Move;
 	UPROPERTY(EditAnywhere, Category=PlayerSetting)
 	float WalkSpeed = 300;
 	FVector WalkDirection;
 	UPROPERTY(EditDefaultsOnly, Category="Input")
-	class UInputAction* IA_Run;
+	UInputAction* IA_Run;
 	UPROPERTY(EditDefaultsOnly, Category="Input")
-	class UInputAction* IA_Jump;
+	UInputAction* IA_Jump;
 	UPROPERTY(EditDefaultsOnly, Category="Input")
-	class UInputAction* IA_Attack;
+	UInputAction* IA_Attack;
+	bool bCanAttack = true;
+	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UInputAction* IA_Skill;
 	
 	UPROPERTY(EditDefaultsOnly,Category=Spell)
 	TSubclassOf <class ABasicAttack> BasicAttacks;
 	
 	// Horizontal Rotation Input
-	void Turn(const struct FInputActionValue& InputValue);
+	void Turn(const FInputActionValue& InputValue);
 	// Vertical Rotation Input
-	void LookUp(const struct FInputActionValue& InputValue);
+	void LookUp(const FInputActionValue& InputValue);
 	
-	void Move(const struct FInputActionValue& InputValue);
+	void Move(const FInputActionValue& InputValue);
 	// Switch between Walk Mode and Run Mode
-	void Run(const struct FInputActionValue& InputValue);
+	void Run(const FInputActionValue& InputValue);
 	
-	void InputJump(const struct FInputActionValue& InputValue);
+	void InputJump(const FInputActionValue& InputValue);
 
-	void SpellBasicAttack(const struct FInputActionValue& InputValue);
+	void SpellBasicAttack(const FInputActionValue& InputValue);
+	
+	void SpellSkill(const FInputActionValue& InputValue);
 	
 	void PlayerMove();
 	
