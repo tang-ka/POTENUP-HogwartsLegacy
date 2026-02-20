@@ -15,6 +15,7 @@ public class HogwartsLegacy : ModuleRules
 			"Engine", 
 			"InputCore", 
 			"EnhancedInput",
+			"Niagara",
 			"AIModule"
 		});
 
