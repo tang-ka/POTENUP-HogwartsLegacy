@@ -18,7 +18,7 @@ void UGuardianSleepState::TickState(float DeltaTime)
 {
 	Super::TickState(DeltaTime);
 
-	UE_LOG(LogTemp, Warning, TEXT("Guardian is sleeping."));
+	// UE_LOG(LogTemp, Warning, TEXT("Guardian is sleeping."));
 }
 
 // ----------------------------------------------
@@ -53,7 +53,7 @@ void UGuardianIdleState::TickState(float DeltaTime)
 		GetOwnerFSM()->ChangeState(EEnemyState::Strafe);
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Guardian is idling."));
+	// UE_LOG(LogTemp, Warning, TEXT("Guardian is idling."));
 }
 
 void UGuardianIdleState::Reset()

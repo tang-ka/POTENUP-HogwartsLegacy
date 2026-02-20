@@ -40,14 +40,14 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	APlayerController* pc = Cast<APlayerController>(Controller);
-	// auto* pc = GetWorld()->GetFirstPlayerController();
-	if (pc)
+	APlayerController* PC = Cast<APlayerController>(Controller);
+	// auto* PC = GetWorld()->GetFirstPlayerController();
+	if (PC)
 	{
-		UEnhancedInputLocalPlayerSubsystem* subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(pc->GetLocalPlayer());
-		if (subsystem)
+		UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer());
+		if (Subsystem)
 		{
-			subsystem->AddMappingContext(IMC_Player, 0);
+			Subsystem->AddMappingContext(IMC_Player, 0);
 		}
 	}
 }
@@ -82,22 +82,19 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void APlayerCharacter::Turn(const FInputActionValue& InputValue)
 {
-	float value = InputValue.Get<float>();
-	AddControllerYawInput(value);
+	AddControllerYawInput(InputValue.Get<float>());
 }
 
 void APlayerCharacter::LookUp(const FInputActionValue& InputValue)
 {
-	float value = InputValue.Get<float>();
-	AddControllerPitchInput(value);
+	AddControllerPitchInput(InputValue.Get<float>());
 }
 
 void APlayerCharacter::Move(const FInputActionValue& InputValue)
 {
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
-	FVector2D value = InputValue.Get<FVector2D>();
-	WalkDirection.X = value.X;
-	WalkDirection.Y = value.Y;
+	WalkDirection.X = InputValue.Get<FVector2D>().X;
+	WalkDirection.Y = InputValue.Get<FVector2D>().Y;
 }
 
 void APlayerCharacter::Run(const FInputActionValue& InputValue)
