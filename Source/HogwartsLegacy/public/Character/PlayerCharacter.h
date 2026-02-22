@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "Components/SphereComponent.h"
 #include <GameFramework/SpringArmComponent.h>
 #include <GameFramework/CharacterMovementComponent.h>
 #include <Camera/CameraComponent.h>
@@ -55,7 +54,6 @@ public:
 	UInputAction* IA_Jump;
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	UInputAction* IA_Attack;
-	bool bCanAttack = true;
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	UInputAction* IA_SkillSlot1;
 	UPROPERTY(EditDefaultsOnly, Category="Input")
@@ -66,11 +64,13 @@ public:
 	UInputAction* IA_SkillSlotQ;
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	UInputAction* IA_SkillSlotR;
+	bool bCanAttack = true;
 	
 	UPROPERTY(EditDefaultsOnly,Category=Spell)
 	TSubclassOf <class ABasicAttack> BasicAttacks;
+	UPROPERTY(EditDefaultsOnly,Category=Spell)
+	TSubclassOf <class AProtego> Protegos;
 	
-
 	void Turn(const FInputActionValue& InputValue);
 	void LookUp(const FInputActionValue& InputValue);
 	void Move(const FInputActionValue& InputValue);

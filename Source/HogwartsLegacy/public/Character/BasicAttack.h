@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
-#include "NiagaraSystem.h"
 #include "NiagaraComponent.h"
 #include "BasicAttack.generated.h"
 
@@ -31,8 +30,6 @@ public:
 	UPROPERTY(VisibleAnywhere, Category=Collision)
 	class USphereComponent* CollisionComp;
 	UPROPERTY(VisibleAnywhere, Category=Niagara)
-	class UNiagaraSystem* NiagaraSys;
-	UPROPERTY(VisibleAnywhere, Category=Niagara)
 	class UNiagaraComponent* NiagaraComp;
 	UFUNCTION()
 	void OnComponentBeginOverlap(
@@ -55,8 +52,8 @@ public:
 	const float MaxRadius = 300;
 	const float MinAngle = 0;
 	const float MaxAngle = 180;
-	bool AfterBeginPlay = false;
-	float SetTimer = 0;
+	bool bAfterBeginPlay = false;
+	float Duration = 0;
 	
 	void MidPointCalculation(
 		FVector InTargetLocation,

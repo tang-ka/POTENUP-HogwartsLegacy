@@ -3,6 +3,7 @@
 
 #include "Character/PlayerCharacter.h"
 #include "Character/BasicAttack.h"
+#include "Character/Protego.h"
 #include "Enemy/Guardian.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -153,9 +154,10 @@ void APlayerCharacter::SpellSkillSlot3(const FInputActionValue& InputValue)
 	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill 3"));
 }
 
-void APlayerCharacter::SpellSkillSlotQ(const FInputActionValue& InputValue)
+void APlayerCharacter::SpellSkillSlotQ(const FInputActionValue& InputValue) // Protego
 {
-	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill Q"));
+	AProtego* prt = GetWorld()->SpawnActor<AProtego>(Protegos, GetActorLocation(), GetActorRotation());
+
 }
 
 void APlayerCharacter::SpellSkillSlotR(const FInputActionValue& InputValue)

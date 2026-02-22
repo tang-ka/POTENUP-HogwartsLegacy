@@ -14,10 +14,10 @@ ABasicAttack::ABasicAttack()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	ConstructorHelpers::FObjectFinder<UNiagaraSystem> NE(TEXT("NiagaraSystem'/Game/KHJ/FX/NS_ArrowTrail_Magic_2.NS_ArrowTrail_Magic_2'"));
+	ConstructorHelpers::FObjectFinder<UNiagaraComponent> NE(TEXT("NiagaraSystem'/Game/KHJ/FX/NS_ArrowTrail_Magic_2.NS_ArrowTrail_Magic_2'"));
 	if (NE.Succeeded())
 	{
-		NiagaraSys = NE.Object;
+		NiagaraComp->SetNiagaraVariableObject("NiagaraSystem", NE.Object);
 	}
 	
 	NiagaraComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraSystem"));
@@ -37,7 +37,7 @@ void ABasicAttack::BeginPlay()
 	
 	MidPointCalculation(TargetLocation, MinCurve, MaxCurve, MidPoint);
 	CurveControlPoint(MidPoint, TargetLocation, MinRadius, MaxRadius, MinAngle, MaxAngle, CurvedPoint);
-	AfterBeginPlay = true;
+	bAfterBeginPlay = true;
 }
 
 // Called every frame
@@ -45,14 +45,14 @@ void ABasicAttack::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	if (AfterBeginPlay)
+	if (bAfterBeginPlay)
 	{
 		Move(TargetLocation, CurvedPoint, Speed);
 		
 		if (GetActorLocation() == TargetLocation)
 		{
-			SetTimer += DeltaTime;
-			if (SetTimer > 1)
+			Duration += DeltaTime;
+			if (Duration > 1)
 			{
 				Destroy();
 			}
