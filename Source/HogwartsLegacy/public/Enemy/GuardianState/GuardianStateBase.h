@@ -6,6 +6,7 @@
 #include "UObject/Object.h"
 #include "GuardianStateBase.generated.h"
 
+class AGuardian;
 class UEnemyFSMComponent;
 /**
  * 
@@ -30,7 +31,7 @@ protected:
 	virtual void Reset() {};
 	
 protected:
-	AActor* GetOwnerActor() const { return OwnerActor; }
+	AGuardian* GetOwnerGuardian() const { return OwnerGuardian; }
 	UEnemyFSMComponent* GetOwnerFSM() const { return OwnerFSM; }
 
 private:
@@ -38,5 +39,5 @@ private:
 	TObjectPtr<UEnemyFSMComponent> OwnerFSM;
 	
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<AActor> OwnerActor;
+	TObjectPtr<AGuardian> OwnerGuardian;
 };

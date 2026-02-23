@@ -27,6 +27,8 @@ private:
 	void MoveToTarget(float DeltaTime) const;
 	
 private:
+	
 	float StrafeSpeed{50.f};
 	FVector DirectionToTarget{};
+	float ReachDistance{100};
 };

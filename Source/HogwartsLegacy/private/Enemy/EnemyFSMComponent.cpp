@@ -3,6 +3,7 @@
 
 #include "Enemy/EnemyFSMComponent.h"
 
+#include "AIController.h"
 #include "HogwartsLegacy.h"
 #include "Enemy/Guardian.h"
 #include "Enemy/GuardianState/GuardianBashAttackState.h"
@@ -25,6 +26,9 @@ void UEnemyFSMComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	Me = Cast<AGuardian>(GetOwner());
+	AIController = Cast<AAIController>(Me->GetController());
+	
 	InitStates();
 	
 	Init();
@@ -150,7 +154,7 @@ void UEnemyFSMComponent::InitStates()
 	StateMap.Add(EEnemyState::Stun, StunState);
 	StateMap.Add(EEnemyState::Dead, DeadState);
 	
-	AActor* Target = Cast<AGuardian>(GetOwner())->GetTargetActor();
+	AActor* Target = Me->GetTargetActor();
 	for (auto& StatePair : StateMap)
 	{
 		StatePair.Value->InitOwner(this);

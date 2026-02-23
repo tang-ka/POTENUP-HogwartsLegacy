@@ -3,6 +3,7 @@
 
 #include "Enemy/GuardianState/GuardianStateBase.h"
 #include "Enemy/EnemyFSMComponent.h"
+#include "Enemy/Guardian.h"
 
 void UGuardianStateBase::OnEnter()
 {
@@ -12,5 +13,5 @@ void UGuardianStateBase::OnEnter()
 void UGuardianStateBase::InitOwner(UEnemyFSMComponent* InFSMComp)
 {
 	OwnerFSM = InFSMComp;
-	OwnerActor = InFSMComp ? InFSMComp->GetOwner() : nullptr;
+	OwnerGuardian = Cast<AGuardian>(InFSMComp->GetOwner());
 }

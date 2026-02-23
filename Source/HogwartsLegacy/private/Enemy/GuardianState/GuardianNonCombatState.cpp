@@ -30,15 +30,13 @@ void UGuardianIdleState::OnEnter()
 	
 	DecideTarget();
 	
-	AGuardian* OwnerGuardian = Cast<AGuardian>(GetOwnerActor());
-	OwnerGuardian->SetMaterialColor(FLinearColor::Yellow);
+	GetOwnerGuardian()->SetMaterialColor(FLinearColor::Yellow);
 }
 
 void UGuardianIdleState::OnExit()
 {
 	Super::OnExit();
-	AGuardian* OwnerGuardian = Cast<AGuardian>(GetOwnerActor());
-	OwnerGuardian->ResetMaterialColor();
+	GetOwnerGuardian()->ResetMaterialColor();
 }
 
 void UGuardianIdleState::TickState(float DeltaTime)
@@ -65,8 +63,8 @@ void UGuardianIdleState::Reset()
 
 void UGuardianIdleState::LookAtTarget(float DeltaTime) const
 {
-	FRotator TargetRotation = (GetOwnerFSM()->GetCurrentTarget()->GetActorLocation() - GetOwnerActor()->GetActorLocation()).Rotation();
-	GetOwnerActor()->SetActorRotation(FMath::RInterpTo(GetOwnerActor()->GetActorRotation(), TargetRotation, DeltaTime, 2.f));
+	FRotator TargetRotation = (GetOwnerFSM()->GetCurrentTarget()->GetActorLocation() - GetOwnerGuardian()->GetActorLocation()).Rotation();
+	GetOwnerGuardian()->SetActorRotation(FMath::RInterpTo(GetOwnerGuardian()->GetActorRotation(), TargetRotation, DeltaTime, 2.f));
 }
 
 void UGuardianIdleState::DecideTarget() const
@@ -78,7 +76,7 @@ void UGuardianIdleState::DecideTarget() const
 	if (TargetMap->Num() > 1)
 	{
 		float ClosestDistance = TNumericLimits<float>::Max();
-		FVector MyLocation = GetOwnerActor()->GetActorLocation();
+		FVector MyLocation = GetOwnerGuardian()->GetActorLocation();
 		for (TPair<FName, TObjectPtr<AActor>> Actor : *TargetMap)
 		{
 			if (TargetKey.GetStringLength() == 0)
