@@ -59,7 +59,10 @@ void APlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	
 	PlayerMove();
-
+	
+	//bCanAttack = atk && atk->IsValidLowLevel() ? false : true;
+	//bCanProtego = atk && prt->IsValidLowLevel() ? false : true;
+	
 }
 
 // Called to bind functionality to input
@@ -124,26 +127,28 @@ void APlayerCharacter::PlayerMove()
 
 void APlayerCharacter::SpellBasicAttack(const FInputActionValue& InputValue)
 {
-	if (AActor* target = UGameplayStatics::GetActorOfClass(GetWorld(), AGuardian::StaticClass()))
+	if (!IsValid(atk))
 	{
-		FVector dir = target->GetActorLocation() - GetActorLocation();
-		dir.Normalize();
-		ABasicAttack* atk = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetActorLocation(), dir.Rotation());
-		atk->SetTarget(target);
+		if (AActor* target = UGameplayStatics::GetActorOfClass(GetWorld(), AGuardian::StaticClass()))
+		{
+			FVector dir = target->GetActorLocation() - GetActorLocation();
+			dir.Normalize();
+			atk = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetActorLocation(), dir.Rotation());
+			atk->SetTarget(target);
+		}
+		else
+		{
+			atk = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetActorLocation(), GetActorRotation());
+			atk->NoTarget();
+		}
 	}
-	else
-	{
-		ABasicAttack* atk = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetActorLocation(), GetActorRotation());
-		atk->NoTarget();
-	}
-	bCanAttack = false;
 }
 
 void APlayerCharacter::SpellSkillSlot1(const FInputActionValue& InputValue)
 {
 	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill 1"));
 }
-
+	
 void APlayerCharacter::SpellSkillSlot2(const FInputActionValue& InputValue)
 {
 	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill 2"));
@@ -156,8 +161,10 @@ void APlayerCharacter::SpellSkillSlot3(const FInputActionValue& InputValue)
 
 void APlayerCharacter::SpellSkillSlotQ(const FInputActionValue& InputValue) // Protego
 {
-	AProtego* prt = GetWorld()->SpawnActor<AProtego>(Protegos, GetActorLocation(), GetActorRotation());
-
+	if (!IsValid(prt))
+	{
+		prt = GetWorld()->SpawnActor<AProtego>(Protegos, GetActorLocation(), GetActorRotation());
+	}
 }
 
 void APlayerCharacter::SpellSkillSlotR(const FInputActionValue& InputValue)

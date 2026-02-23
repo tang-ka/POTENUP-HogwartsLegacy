@@ -28,9 +28,9 @@ public:
 	void NoTarget();
 
 	UPROPERTY(VisibleAnywhere, Category=Collision)
-	class USphereComponent* CollisionComp;
+	USphereComponent* CollisionComp;
 	UPROPERTY(VisibleAnywhere, Category=Niagara)
-	class UNiagaraComponent* NiagaraComp;
+	UNiagaraComponent* NiagaraComp;
 	UFUNCTION()
 	void OnComponentBeginOverlap(
 		UPrimitiveComponent* OverlappedComponent,
@@ -55,6 +55,7 @@ public:
 	bool bAfterBeginPlay = false;
 	float Duration = 0;
 	
+	UFUNCTION()
 	void MidPointCalculation(
 		FVector InTargetLocation,
 		float InMinCurve,
@@ -62,6 +63,7 @@ public:
 		FVector& MidPoint
 		);
 	
+	UFUNCTION()
 	void CurveControlPoint(
 		FVector InMidPoint,
 		FVector InTargetLocation,
@@ -72,6 +74,7 @@ public:
 		FVector& CurvedPoint
 		);
 	
+	UFUNCTION()
 	void Move(
 		FVector InTargetLocation,
 		FVector InCurvedPoint,

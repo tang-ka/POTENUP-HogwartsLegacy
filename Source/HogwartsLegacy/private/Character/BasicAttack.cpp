@@ -17,8 +17,8 @@ ABasicAttack::ABasicAttack()
 	ConstructorHelpers::FObjectFinder<UNiagaraComponent> NE(TEXT("NiagaraSystem'/Game/KHJ/FX/NS_ArrowTrail_Magic_2.NS_ArrowTrail_Magic_2'"));
 	if (NE.Succeeded())
 	{
-		NiagaraComp->SetNiagaraVariableObject("NiagaraSystem", NE.Object);
-	}
+		NiagaraComp = NE.Object;
+	}	
 	
 	NiagaraComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraSystem"));
 	RootComponent = NiagaraComp;
@@ -52,7 +52,7 @@ void ABasicAttack::Tick(float DeltaTime)
 		if (GetActorLocation() == TargetLocation)
 		{
 			Duration += DeltaTime;
-			if (Duration > 1)
+			if (Duration > 0.8)
 			{
 				Destroy();
 			}

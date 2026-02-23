@@ -65,11 +65,16 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	UInputAction* IA_SkillSlotR;
 	bool bCanAttack = true;
+	bool bCanProtego = true;
 	
 	UPROPERTY(EditDefaultsOnly,Category=Spell)
 	TSubclassOf <class ABasicAttack> BasicAttacks;
+	UPROPERTY()
+	ABasicAttack* atk;
 	UPROPERTY(EditDefaultsOnly,Category=Spell)
 	TSubclassOf <class AProtego> Protegos;
+	UPROPERTY()
+	AProtego* prt;
 	
 	void Turn(const FInputActionValue& InputValue);
 	void LookUp(const FInputActionValue& InputValue);

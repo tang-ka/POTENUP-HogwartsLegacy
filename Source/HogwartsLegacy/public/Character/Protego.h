@@ -25,7 +25,8 @@ public:
 	
 	UPROPERTY(VisibleAnywhere, Category=Mesh)
 	UStaticMeshComponent* SphereMesh;
-
+	
 	float Duration = 0;
+	AActor* player;
 
 };
