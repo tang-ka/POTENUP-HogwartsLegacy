@@ -31,16 +31,26 @@ public:
 	USphereComponent* CollisionComp;
 	UPROPERTY(VisibleAnywhere, Category=Niagara)
 	UNiagaraComponent* NiagaraComp;
+	UPROPERTY(VisibleAnywhere, Category=physics)
+	float PhysicsForce = 300;
 	UFUNCTION()
-	void OnComponentBeginOverlap(
+	void OnHit(
+		UPrimitiveComponent* HitComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		FVector NormalImpulse,
+		const FHitResult& Hit
+		);
+	UFUNCTION()
+	void OnOverlap(
 		UPrimitiveComponent* OverlappedComponent,
 		AActor* OtherActor,
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex,
-		bool bFromSweep, 
+		bool bFromSweep,
 		const FHitResult& SweepResult
 		);
-	
+
 	FVector TargetLocation;
 	FVector MidPoint;
 	FVector CurvedPoint;
