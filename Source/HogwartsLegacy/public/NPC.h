@@ -12,7 +12,8 @@ enum class ENPCState : uint8
 {
     Idle    UMETA(DisplayName = "Idle"),
     Follow  UMETA(DisplayName = "Follow"),
-    Combat  UMETA(DisplayName = "Combat")
+    Combat  UMETA(DisplayName = "Combat"),
+    Damaged  UMETA(DisplayName = "Damaged"),
 };
 
 UCLASS()
