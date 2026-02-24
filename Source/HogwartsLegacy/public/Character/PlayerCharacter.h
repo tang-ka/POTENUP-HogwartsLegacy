@@ -89,6 +89,10 @@ public:
 	void SpellSkillSlotQ(const FInputActionValue& InputValue);
 	void SpellSkillSlotR(const FInputActionValue& InputValue);
 	
+	UFUNCTION()
 	void PlayerMove();
+	
+	UFUNCTION()
+	void AimCapture();
 	
 };

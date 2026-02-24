@@ -61,6 +61,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	
 	PlayerMove();
+	AimCapture();
 	
 }
 
@@ -122,6 +123,44 @@ void APlayerCharacter::PlayerMove()
 	AddMovementInput(WalkDirection);
 	WalkDirection = FVector::ZeroVector;
 	
+}
+
+void APlayerCharacter::AimCapture()
+{
+	FVector _Location;
+	FRotator _Rotation;
+	FHitResult _HitOut;
+	
+	GetController()->GetPlayerViewPoint(_Location, _Rotation);
+	FVector _Start = _Location;
+	int ViewDistance = 2000;
+	float SphereRadius = 200;
+	FVector _End = _Rotation.Vector() * ViewDistance;
+	FCollisionQueryParams _TraceParams;
+	// bool bCaptured = GetWorld()->SweepSingleByChannel(
+	// 	_HitOut,
+	// 	_Start,
+	// 	_End,
+	// 	FQuat::Identity,
+	// 	ECC_GameTraceChannel1,
+	// 	FCollisionShape::MakeSphere(SphereRadius),
+	// 	_TraceParams
+	// 	);
+	bool bCaptured = GetWorld()->LineTraceSingleByChannel(
+		_HitOut,
+		_Start,
+		_End,
+		ECC_GameTraceChannel1,
+		_TraceParams
+		);
+	_TraceParams.AddIgnoredActor(this);
+
+	AActor* obj = _HitOut.GetActor();
+	if (IsValid(obj))
+	{
+		GEngine->AddOnScreenDebugMessage(3, 1.0f, FColor::Green, obj->GetName());
+	}
+	// DrawDebugLine(GetWorld(), _Start, _End, FColor::Green, false, 2.0f);
 }
 
 void APlayerCharacter::SpellBasicAttack(const FInputActionValue& InputValue)
