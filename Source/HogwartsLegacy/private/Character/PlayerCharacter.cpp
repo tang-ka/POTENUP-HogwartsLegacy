@@ -15,6 +15,18 @@ APlayerCharacter::APlayerCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	
+	ConstructorHelpers::FObjectFinder<UMaterial> TempMat(TEXT("M_Outline'/Game/KHJ/Materials/M_Outline.M_Outline'"));
+	if (TempMat.Succeeded())
+	{
+		OutlineMat = TempMat.Object;
+	}
+	
+	ConstructorHelpers::FObjectFinder<UMaterial> TempMat2(TEXT("M_ShineEffect'/Game/KHJ/Materials/M_ShineEffect.M_ShineEffect'"));
+	if (TempMat2.Succeeded())
+	{
+		ShineMat = TempMat2.Object;
+	}
+	
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> TempMesh(TEXT("SkeletalMesh'/Game/KHJ/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple'"));
 	if (TempMesh.Succeeded())
 	{
@@ -137,6 +149,7 @@ void APlayerCharacter::AimCapture()
 	float SphereRadius = 200;
 	FVector _End = _Rotation.Vector() * ViewDistance;
 	FCollisionQueryParams _TraceParams;
+	_TraceParams.AddIgnoredActor(this);
 	// bool bCaptured = GetWorld()->SweepSingleByChannel(
 	// 	_HitOut,
 	// 	_Start,
@@ -153,15 +166,25 @@ void APlayerCharacter::AimCapture()
 		ECC_GameTraceChannel1,
 		_TraceParams
 		);
-	_TraceParams.AddIgnoredActor(this);
-
+	
 	AActor* obj = _HitOut.GetActor();
+	// AActor* prevobj;
+	
 	if (IsValid(obj))
 	{
 		GEngine->AddOnScreenDebugMessage(3, 1.0f, FColor::Green, obj->GetName());
+		if (obj->GetName().Contains(TEXT("Guardian")))
+		{
+			obj->FindComponentByClass<USkeletalMeshComponent>()->SetOverlayMaterial(OutlineMat);
+		}
+		else
+		{
+			// obj->FindComponentByClass<UMeshComponent>()->SetOverlayMaterial(ShineMat);
+		}
 	}
 	// DrawDebugLine(GetWorld(), _Start, _End, FColor::Green, false, 2.0f);
 }
+
 
 void APlayerCharacter::SpellBasicAttack(const FInputActionValue& InputValue)
 {

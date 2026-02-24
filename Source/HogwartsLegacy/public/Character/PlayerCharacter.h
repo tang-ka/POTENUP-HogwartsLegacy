@@ -95,4 +95,9 @@ public:
 	UFUNCTION()
 	void AimCapture();
 	
+	UPROPERTY()
+	TObjectPtr <UMaterialInterface> OutlineMat;
+	UPROPERTY()
+	TObjectPtr <UMaterialInterface> ShineMat;
+	
 };

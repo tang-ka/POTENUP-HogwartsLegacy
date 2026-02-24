@@ -32,7 +32,7 @@ public:
 	USphereComponent* CollisionComp;
 	UPROPERTY(VisibleAnywhere, Category=Niagara)
 	UNiagaraComponent* NiagaraComp;
-	UPROPERTY(VisibleAnywhere, Category=physics)
+	UPROPERTY(VisibleAnywhere, Category=Physics)
 	float PhysicsForce = 300;
 	UFUNCTION()
 	void OnHit(

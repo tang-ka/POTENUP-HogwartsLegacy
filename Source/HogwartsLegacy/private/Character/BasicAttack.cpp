@@ -50,8 +50,8 @@ void ABasicAttack::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FVector loc = UKismetMathLibrary::VInterpTo_Constant(GetActorLocation(), TargetLocation, DeltaTime, Speed);
-	SetActorLocation(loc, true);
+	
+	SetActorLocation(UKismetMathLibrary::VInterpTo_Constant(GetActorLocation(), TargetLocation, DeltaTime, Speed), true);
 		
 	if (GetActorLocation() == TargetLocation)
 	{

@@ -28,7 +28,6 @@ AProtego::AProtego()
 	{
 		SphereMesh->SetMaterial(0, TempMat.Object);
 	}
-
 }
 
 // Called when the game starts or when spawned
@@ -37,7 +36,7 @@ void AProtego::BeginPlay()
 	Super::BeginPlay();
 	
 	//player = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerCharacter::StaticClass());
-	player = GetWorld()->GetFirstPlayerController()->GetPawn();
+	Player = GetWorld()->GetFirstPlayerController()->GetPawn();
 	
 }
 
@@ -56,7 +55,7 @@ void AProtego::Tick(float DeltaTime)
 		Destroy();
 	}
 	
-	SetActorLocation(player->GetActorLocation());
+	SetActorLocation(Player->GetActorLocation());
 
 }
 
