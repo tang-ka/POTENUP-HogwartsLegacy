@@ -62,9 +62,6 @@ void APlayerCharacter::Tick(float DeltaTime)
 	
 	PlayerMove();
 	
-	//bCanAttack = atk && atk->IsValidLowLevel() ? false : true;
-	//bCanProtego = atk && prt->IsValidLowLevel() ? false : true;
-	
 }
 
 // Called to bind functionality to input
@@ -133,8 +130,16 @@ void APlayerCharacter::SpellBasicAttack(const FInputActionValue& InputValue)
 	{
 		if (AActor* target = UGameplayStatics::GetActorOfClass(GetWorld(), AGuardian::StaticClass()))
 		{
-			FVector dir = target->GetActorLocation() - GetActorLocation();
+			FVector dir = target->GetActorLocation() - this->GetActorLocation();
 			dir.Normalize();
+			if (BasicAttackComboCounter == 2) // is third attack?
+			{
+				GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("ThirdAttack"));
+				BasicAttackComboCounter = 0;
+			} else
+			{
+				BasicAttackComboCounter++;
+			}
 			atk = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetActorLocation(), dir.Rotation());
 			atk->SetTarget(target);
 		}
