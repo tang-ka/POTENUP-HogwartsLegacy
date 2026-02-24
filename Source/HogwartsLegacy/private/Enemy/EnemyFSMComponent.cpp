@@ -117,6 +117,21 @@ void UEnemyFSMComponent::ChangeState(EEnemyState NewStateType)
 	bIsChanging = false;
 }
 
+void UEnemyFSMComponent::FinishAttack(bool bSuccess)
+{
+	if (bSuccess)
+	{
+		// For simplicity, we just go back to Strafe after an attack
+		ChangeState(EEnemyState::Idle);
+	}
+	else
+	{
+		// If the attack failed (e.g. missed), we can decide what to do here
+		// For now, let's just go back to Idle
+		ChangeState(EEnemyState::Stumble);
+	}
+}
+
 void UEnemyFSMComponent::InitStates()
 {
 	if (!StateMap.IsEmpty())

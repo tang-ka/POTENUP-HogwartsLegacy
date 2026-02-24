@@ -4,12 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Interface/Damageable.h"
 #include "Guardian.generated.h"
 
 class UEnemyFSMComponent;
 
 UCLASS()
-class HOGWARTSLEGACY_API AGuardian : public ACharacter
+class HOGWARTSLEGACY_API AGuardian : public ACharacter, public IDamageable
 {
 	GENERATED_BODY()
 
@@ -20,8 +21,14 @@ public:
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaTime) override;
-
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	
+public:
+#pragma region IDamageable
+	virtual bool ReceiveDamage_Implementation(FDamageInfo DamageInfo) override;
+	virtual float GetHP_Implementation() const override;
+	virtual bool IsDead_Implementation() const override;
+#pragma endregion
 	
 public:
 	void SetMaterialColor(FLinearColor Color);

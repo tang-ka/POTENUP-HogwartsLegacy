@@ -52,7 +52,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ChangeState(EEnemyState NewStateType);
 	
-	
+	UFUNCTION(BlueprintCallable)
+	void FinishAttack(bool bSuccess);
+
 protected:
 	UFUNCTION()
 	void Init();
