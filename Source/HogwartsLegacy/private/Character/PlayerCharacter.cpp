@@ -4,6 +4,7 @@
 #include "Character/PlayerCharacter.h"
 #include "Character/BasicAttack.h"
 #include "Character/Protego.h"
+#include "Components/CapsuleComponent.h"
 #include "Enemy/Guardian.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -21,7 +22,8 @@ APlayerCharacter::APlayerCharacter()
 		GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -90), FRotator(0, -90, 0));
 	}
 
-	
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("PlayerCharacter"));
+	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
 	CameraArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraArm"));
 	CameraArmComp->SetupAttachment(RootComponent);
 	CameraArmComp->SetRelativeLocation(FVector(0, 125, 60));
@@ -59,9 +61,6 @@ void APlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	
 	PlayerMove();
-	
-	//bCanAttack = atk && atk->IsValidLowLevel() ? false : true;
-	//bCanProtego = atk && prt->IsValidLowLevel() ? false : true;
 	
 }
 
@@ -131,8 +130,16 @@ void APlayerCharacter::SpellBasicAttack(const FInputActionValue& InputValue)
 	{
 		if (AActor* target = UGameplayStatics::GetActorOfClass(GetWorld(), AGuardian::StaticClass()))
 		{
-			FVector dir = target->GetActorLocation() - GetActorLocation();
+			FVector dir = target->GetActorLocation() - this->GetActorLocation();
 			dir.Normalize();
+			if (BasicAttackComboCounter == 2) // is third attack?
+			{
+				GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("ThirdAttack"));
+				BasicAttackComboCounter = 0;
+			} else
+			{
+				BasicAttackComboCounter++;
+			}
 			atk = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetActorLocation(), dir.Rotation());
 			atk->SetTarget(target);
 		}
@@ -164,6 +171,8 @@ void APlayerCharacter::SpellSkillSlotQ(const FInputActionValue& InputValue) // P
 	if (!IsValid(prt))
 	{
 		prt = GetWorld()->SpawnActor<AProtego>(Protegos, GetActorLocation(), GetActorRotation());
+		// 타임 스토푸
+		// GetWorld()->GetWorldSettings()->SetTimeDilation(0.5f);
 	}
 }
 

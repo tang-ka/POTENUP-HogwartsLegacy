@@ -27,6 +27,6 @@ public:
 	UStaticMeshComponent* SphereMesh;
 	
 	float Duration = 0;
-	AActor* player;
+	APawn* player;
 
 };

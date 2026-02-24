@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
+#include "NiagaraSystem.h"
 #include "NiagaraComponent.h"
 #include "BasicAttack.generated.h"
 
@@ -31,53 +32,64 @@ public:
 	USphereComponent* CollisionComp;
 	UPROPERTY(VisibleAnywhere, Category=Niagara)
 	UNiagaraComponent* NiagaraComp;
+	UPROPERTY(VisibleAnywhere, Category=physics)
+	float PhysicsForce = 300;
 	UFUNCTION()
-	void OnComponentBeginOverlap(
+	void OnHit(
+		UPrimitiveComponent* HitComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		FVector NormalImpulse,
+		const FHitResult& Hit
+		);
+	UFUNCTION()
+	void OnOverlap(
 		UPrimitiveComponent* OverlappedComponent,
 		AActor* OtherActor,
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex,
-		bool bFromSweep, 
+		bool bFromSweep,
 		const FHitResult& SweepResult
 		);
-	
+
 	FVector TargetLocation;
-	FVector MidPoint;
-	FVector CurvedPoint;
 	const float Speed = 2000;
 	const float Distance = 2000;
-	const float MinCurve = 0.2;
-	const float MaxCurve = 0.4;
-	const float MinRadius = 150;
-	const float MaxRadius = 300;
-	const float MinAngle = 0;
-	const float MaxAngle = 180;
-	bool bAfterBeginPlay = false;
 	float Duration = 0;
 	
-	UFUNCTION()
-	void MidPointCalculation(
-		FVector InTargetLocation,
-		float InMinCurve,
-		float InMaxCurve,
-		FVector& MidPoint
-		);
+	// FVector MidPoint;
+	// FVector CurvedPoint;
+	// const float MinCurve = 0.2;
+	// const float MaxCurve = 0.4;
+	// const float MinRadius = 150;
+	// const float MaxRadius = 300;
+	// const float MinAngle = 0;
+	// const float MaxAngle = 180;
+	// bool bAfterBeginPlay = false;
 	
-	UFUNCTION()
-	void CurveControlPoint(
-		FVector InMidPoint,
-		FVector InTargetLocation,
-		float InMinRadius,
-		float InMaxRadius,
-		float InMinAngle,
-		float InMaxAngle, 
-		FVector& CurvedPoint
-		);
-	
-	UFUNCTION()
-	void Move(
-		FVector InTargetLocation,
-		FVector InCurvedPoint,
-		float InSpeed
-		);
+	// UFUNCTION()
+	// void MidPointCalculation(
+	// 	FVector InTargetLocation,
+	// 	float InMinCurve,
+	// 	float InMaxCurve,
+	// 	FVector& MidPoint
+	// 	);
+	//
+	// UFUNCTION()
+	// void CurveControlPoint(
+	// 	FVector InMidPoint,
+	// 	FVector InTargetLocation,
+	// 	float InMinRadius,
+	// 	float InMaxRadius,
+	// 	float InMinAngle,
+	// 	float InMaxAngle, 
+	// 	FVector& CurvedPoint
+	// 	);
+	//
+	// UFUNCTION()
+	// void Move(
+	// 	FVector InTargetLocation,
+	// 	FVector InCurvedPoint,
+	// 	float InSpeed
+	// 	);
 };

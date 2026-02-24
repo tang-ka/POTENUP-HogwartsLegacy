@@ -64,8 +64,6 @@ public:
 	UInputAction* IA_SkillSlotQ;
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	UInputAction* IA_SkillSlotR;
-	bool bCanAttack = true;
-	bool bCanProtego = true;
 	
 	UPROPERTY(EditDefaultsOnly,Category=Spell)
 	TSubclassOf <class ABasicAttack> BasicAttacks;
@@ -75,6 +73,8 @@ public:
 	TSubclassOf <class AProtego> Protegos;
 	UPROPERTY()
 	AProtego* prt;
+	UPROPERTY()
+	int BasicAttackComboCounter = 0;
 	
 	void Turn(const FInputActionValue& InputValue);
 	void LookUp(const FInputActionValue& InputValue);

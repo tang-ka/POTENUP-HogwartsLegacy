@@ -2,8 +2,7 @@
 
 
 #include "Character/Protego.h"
-#include "Character/PlayerCharacter.h"
-#include "Kismet/GameplayStatics.h"
+
 
 // Sets default values
 AProtego::AProtego()
@@ -12,10 +11,11 @@ AProtego::AProtego()
 	PrimaryActorTick.bCanEverTick = true;
 
 	SphereMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BodyMesh"));
-	SphereMesh->SetRelativeScale3D(FVector(2));
+	//SphereMesh->SetRelativeScale3D(FVector(3));
 	RootComponent = SphereMesh;
 	
 	SetActorEnableCollision(false);
+	
 
 	ConstructorHelpers::FObjectFinder<UStaticMesh> TempMesh(TEXT("/Script/Engine.StaticMesh'/Engine/BasicShapes/Sphere.Sphere'"));
 	if (TempMesh.Succeeded())
@@ -36,7 +36,8 @@ void AProtego::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	player = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerCharacter::StaticClass());
+	//player = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerCharacter::StaticClass());
+	player = GetWorld()->GetFirstPlayerController()->GetPawn();
 	
 }
 
@@ -46,9 +47,9 @@ void AProtego::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	Duration += DeltaTime;
-	if (Duration < 0.5)
+	if (Duration < 0.2)
 	{
-		SetActorRelativeScale3D(FVector(2+Duration*1.25));
+		SetActorRelativeScale3D(FVector(2+Duration*2));
 	}
 	if (Duration > 2)
 	{
