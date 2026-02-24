@@ -20,6 +20,8 @@ enum class EEnemyState : uint8
 	Damaged, Stun, Dead
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEnemyDead);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnEnemyDamaged, float, DamageAmount, float, RemainingHP);
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class HOGWARTSLEGACY_API UEnemyFSMComponent : public UActorComponent
 {
@@ -52,15 +54,29 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ChangeState(EEnemyState NewStateType);
 	
+#pragma region Request State Change
 	UFUNCTION(BlueprintCallable)
 	void FinishAttack(bool bSuccess);
+	
+	UFUNCTION(BLueprintCallable)
+	void OnDead();
+	
+	UFUNCTION(BlueprintCallable)
+	void OnDamaged(float DamageAmount, float RemainingHP);
+#pragma endregion
 
+	bool IsDead() const { return CurStateType == EEnemyState::Dead; }
+	
 protected:
 	UFUNCTION()
 	void Init();
 	
 	UFUNCTION()
 	void InitStates();
+	
+public:
+	FOnEnemyDead OnEnemyDead;
+	FOnEnemyDamaged OnEnemyDamaged;
 	
 private:
 	UPROPERTY()

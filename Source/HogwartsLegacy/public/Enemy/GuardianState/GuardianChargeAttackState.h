@@ -17,6 +17,7 @@ class HOGWARTSLEGACY_API UGuardianChargeAttackState : public UGuardianStateBase
 public:
 	virtual FName GetStateName() const override { return TEXT("ChargeAttack"); }
 	
+	virtual void Reset() override;
 	virtual void OnEnter() override;
 	virtual void OnExit() override;
 	virtual void TickState(float DeltaTime) override;
@@ -25,7 +26,8 @@ private:
 	UPROPERTY()
 	TObjectPtr<AActor> Target;
 	
-	float CurTime{0};	
+	float CurTime{0};
+	
 	float ChargingTime{1.5f};
 	float ChargeStrength{5000.f};
 	float AttackRange{200.f};

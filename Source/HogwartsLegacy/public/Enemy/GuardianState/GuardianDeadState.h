@@ -15,9 +15,9 @@ class HOGWARTSLEGACY_API UGuardianDeadState : public UGuardianStateBase
 	GENERATED_BODY()
 	
 public:
+	virtual FName GetStateName() const override { return TEXT("Dead"); }
+	
 	virtual void OnEnter() override;
 	virtual void OnExit() override;
 	virtual void TickState(float DeltaTime) override;
-	
-	virtual FName GetStateName() const override { return TEXT("Dead"); }
 };

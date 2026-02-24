@@ -11,10 +11,10 @@ struct FDamageInfo
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadOnly, Category="Damage")
+	UPROPERTY(BlueprintReadWrite, Category="Damage")
 	TObjectPtr<AActor> DamageCauser{};
 
-	UPROPERTY(BlueprintReadOnly, Category="Damage")
+	UPROPERTY(BlueprintReadWrite, Category="Damage")
 	float DamageAmount{};
 };
 

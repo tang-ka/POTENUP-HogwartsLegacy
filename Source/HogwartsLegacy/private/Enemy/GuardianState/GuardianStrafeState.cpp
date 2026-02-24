@@ -12,7 +12,8 @@ void UGuardianStrafeState::OnEnter()
 {
 	Super::OnEnter();
 	
-	GetOwnerGuardian()->SetMaterialColor(FLinearColor::Red);
+	// 머터리얼의 색을 오렌지로 변경 하고 싶다.
+	GetOwnerGuardian()->SetMaterialColor(FLinearColor{1, 0.5f, 0});
 	
 	GetOwnerGuardian()->GetCharacterMovement()->MaxWalkSpeed = StrafeSpeed;
 	GetOwnerFSM()->GetAIController()->MoveToActor(GetOwnerFSM()->GetCurrentTarget(), ReachDistance);

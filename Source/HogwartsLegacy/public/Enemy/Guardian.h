@@ -31,15 +31,21 @@ public:
 #pragma endregion
 	
 public:
+#pragma region Test
 	void SetMaterialColor(FLinearColor Color);
 	void ResetMaterialColor();
-
+#pragma endregion
+	
+	float GetCurrentHP() const { return HP; }
 	UEnemyFSMComponent* GetFSMComponent() const { return FSMComponent; }
 	AActor* GetTargetActor() const { return TargetActor; }
 	
-public:
-	int HP;
-	int MaxHP;
+private:
+	void InitHP();
+	
+private:
+	int HP{};
+	int MaxHP{100};
 	
 private:
 	UPROPERTY(EditAnywhere, Category="FSMComponent")
