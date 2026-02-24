@@ -16,7 +16,8 @@ public class HogwartsLegacy : ModuleRules
 			"InputCore", 
 			"EnhancedInput",
 			"Niagara",
-			"AIModule"
+			"AIModule",
+			"NavigationSystem"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]

@@ -3,6 +3,7 @@
 
 #include "Enemy/EnemyFSMComponent.h"
 
+#include "AIController.h"
 #include "HogwartsLegacy.h"
 #include "Enemy/Guardian.h"
 #include "Enemy/GuardianState/GuardianBashAttackState.h"
@@ -25,6 +26,9 @@ void UEnemyFSMComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	Me = Cast<AGuardian>(GetOwner());
+	AIController = Cast<AAIController>(Me->GetController());
+	
 	InitStates();
 	
 	Init();
@@ -113,6 +117,21 @@ void UEnemyFSMComponent::ChangeState(EEnemyState NewStateType)
 	bIsChanging = false;
 }
 
+void UEnemyFSMComponent::FinishAttack(bool bSuccess)
+{
+	if (bSuccess)
+	{
+		// For simplicity, we just go back to Strafe after an attack
+		ChangeState(EEnemyState::Idle);
+	}
+	else
+	{
+		// If the attack failed (e.g. missed), we can decide what to do here
+		// For now, let's just go back to Idle
+		ChangeState(EEnemyState::Stumble);
+	}
+}
+
 void UEnemyFSMComponent::InitStates()
 {
 	if (!StateMap.IsEmpty())
@@ -150,7 +169,7 @@ void UEnemyFSMComponent::InitStates()
 	StateMap.Add(EEnemyState::Stun, StunState);
 	StateMap.Add(EEnemyState::Dead, DeadState);
 	
-	AActor* Target = Cast<AGuardian>(GetOwner())->GetTargetActor();
+	AActor* Target = Me->GetTargetActor();
 	for (auto& StatePair : StateMap)
 	{
 		StatePair.Value->InitOwner(this);

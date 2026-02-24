@@ -44,6 +44,28 @@ void AGuardian::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
+bool AGuardian::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
+{	
+	return IDamageable::ReceiveDamage_Implementation(DamageInfo);
+	
+	// HP -= DamageInfo.DamageAmount;
+	// if (HP <= 0)
+	// {
+	// 	HP = 0;
+	// 	GetFSMComponent()->ChangeState(EEnemyState::Dead);
+	// }
+}
+
+float AGuardian::GetHP_Implementation() const
+{
+	return IDamageable::GetHP_Implementation();
+}
+
+bool AGuardian::IsDead_Implementation() const
+{
+	return IDamageable::IsDead_Implementation();
+}
+
 void AGuardian::SetMaterialColor(FLinearColor Color)
 {
 	USkeletalMeshComponent* MeshComp = GetMesh();

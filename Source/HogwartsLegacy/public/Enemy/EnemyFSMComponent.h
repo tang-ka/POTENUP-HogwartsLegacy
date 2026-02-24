@@ -6,6 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "EnemyFSMComponent.generated.h"
 
+class AGuardian;
+class AAIController;
 class UGuardianStateBase;
 
 UENUM()
@@ -32,8 +34,7 @@ public:
 	
 public:
 #pragma region Getters
-	FORCEINLINE int32 GetHP() const { return HP; }
-	FORCEINLINE int32 GetMaxHP() const { return MaxHP; }
+	AAIController* GetAIController() const { return AIController; }
 	
 	UFUNCTION(BlueprintCallable)
 	EEnemyState GetCurrentStateType() const { return CurStateType; }
@@ -51,19 +52,22 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ChangeState(EEnemyState NewStateType);
 	
+	UFUNCTION(BlueprintCallable)
+	void FinishAttack(bool bSuccess);
+
 protected:
 	UFUNCTION()
 	void Init();
 	
 	UFUNCTION()
 	void InitStates();
-
+	
 private:
-	UPROPERTY(EditAnywhere, Category="GuardianFSM|Stats")
-	int32 MaxHP{100};
-
-	UPROPERTY(EditAnywhere, Category="GuardianFSM|Stats")
-	int32 HP{MaxHP};
+	UPROPERTY()
+	TObjectPtr<AGuardian> Me;
+	
+	UPROPERTY()
+	TObjectPtr<AAIController> AIController;
 	
 	UPROPERTY(VisibleAnyWhere, Category="GuardianFSM|Target")
 	TMap<FName, TObjectPtr<AActor>> TargetMap;
