@@ -2,8 +2,10 @@
 
 
 #include "Character/PlayerCharacter.h"
+#include <GameFramework/CharacterMovementComponent.h>
 #include "Character/BasicAttack.h"
 #include "Character/Protego.h"
+#include "Character/Stupefy.h"
 #include "Components/CapsuleComponent.h"
 #include "Enemy/Guardian.h"
 #include "Kismet/GameplayStatics.h"
@@ -65,6 +67,27 @@ void APlayerCharacter::BeginPlay()
 			Subsystem->AddMappingContext(IMC_Player, 0);
 		}
 	}
+	
+	if (IA_SkillSlotQ)
+	{
+		bool bFoundTrigger = false;
+		for (UInputTrigger* Trigger : IA_SkillSlotQ->Triggers)
+		{
+			if (UInputTriggerHold* HoldTrigger = Cast<UInputTriggerHold>(Trigger))
+			{
+				HoldTrigger->HoldTimeThreshold = 2.0f;
+				bFoundTrigger = true;
+				break;
+			}
+		}
+
+		if (!bFoundTrigger)
+		{
+			UInputTriggerHold* NewHoldTrigger = NewObject<UInputTriggerHold>(IA_SkillSlotQ);
+			NewHoldTrigger->HoldTimeThreshold = 2.0f;
+			IA_SkillSlotQ->Triggers.Add(NewHoldTrigger);
+		}
+	}
 }
 
 // Called every frame
@@ -73,7 +96,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	
 	PlayerMove();
-	AimCapture(AimTarget);
+	AimCapture();
 	
 }
 
@@ -96,6 +119,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		PlayerInput->BindAction(IA_SkillSlot2, ETriggerEvent::Started, this, &APlayerCharacter::SpellSkillSlot2);
 		PlayerInput->BindAction(IA_SkillSlot3, ETriggerEvent::Started, this, &APlayerCharacter::SpellSkillSlot3);
 		PlayerInput->BindAction(IA_SkillSlotQ, ETriggerEvent::Started, this, &APlayerCharacter::SpellSkillSlotQ);
+		PlayerInput->BindAction(IA_SkillSlotQ, ETriggerEvent::Triggered, this, &APlayerCharacter::SpellStupefy);
 		PlayerInput->BindAction(IA_SkillSlotR, ETriggerEvent::Started, this, &APlayerCharacter::SpellSkillSlotR);
 	}
 }
@@ -134,39 +158,38 @@ void APlayerCharacter::PlayerMove()
 	WalkDirection = FTransform(GetControlRotation()).TransformVector(WalkDirection);
 	AddMovementInput(WalkDirection);
 	WalkDirection = FVector::ZeroVector;
-	
 }
 
-void APlayerCharacter::AimCapture(AActor* Target)
+void APlayerCharacter::AimCapture()
 {
-	FVector _Start;
-	FRotator _Rotation;
-	FHitResult _HitOut;
-	FCollisionQueryParams _Params;
+	FVector Start;
+	FRotator Rot;
+	FHitResult HitOut;
+	FCollisionQueryParams Params;
 	
-	GetController()->GetPlayerViewPoint(_Start, _Rotation);
-	FVector _End = _Rotation.Vector() * ViewDistance;
+	GetController()->GetPlayerViewPoint(Start, Rot);
+	FVector End = Rot.Vector() * ViewDistance;
 	
 	UGameplayStatics::GetAllActorsWithTag(GetWorld(), TEXT("Level"), ActorToIgnore);
-	_Params.AddIgnoredActors(ActorToIgnore);
-	_Params.AddIgnoredActor(this);
+	Params.AddIgnoredActors(ActorToIgnore);
+	Params.AddIgnoredActor(this);
 	
 	GetWorld()->SweepSingleByProfile(
-		_HitOut,
-		_Start,
-		_End,
+		HitOut,
+		Start,
+		End,
 		FQuat::Identity,
 		"PlayerTrace",
 		FCollisionShape::MakeSphere(ViewSphereRadius),
-		_Params);
-
+		Params);
 	
-	AActor* Obj = _HitOut.GetActor();
+	AActor* Obj = HitOut.GetActor();
 	
 	if (Obj != LastCachedObj)
 	{
 		if (IsValid(LastCachedObj))
 		{
+			AimedTarget = nullptr;
 			if (LastCachedObj->GetActorNameOrLabel().Contains(TEXT("Guardian")))
 			{
 				LastCachedObj->FindComponentByClass<USkeletalMeshComponent>()->SetOverlayMaterial(nullptr);
@@ -179,10 +202,11 @@ void APlayerCharacter::AimCapture(AActor* Target)
 		if (IsValid(Obj))
 		{
 			GEngine->AddOnScreenDebugMessage(3, 1.0f, FColor::Green, Obj->GetName());
-			AimTarget = Obj;
+			AimedTarget = nullptr;
 			if (Obj->GetActorNameOrLabel().Contains(TEXT("Guardian")))
 			{
 				Obj->FindComponentByClass<USkeletalMeshComponent>()->SetOverlayMaterial(OutlineMat);
+				AimedTarget = Obj;
 			}
 			if (Obj->ActorHasTag(FName("Item")))
 			{
@@ -198,17 +222,17 @@ void APlayerCharacter::SpellBasicAttack(const FInputActionValue& InputValue)
 {
 	if (!IsValid(atk))
 	{
-		if (AimTarget && AimTarget->GetActorNameOrLabel().Contains(TEXT("Guardian")))
+		if (AimedTarget && AimedTarget->GetActorNameOrLabel().Contains(TEXT("Guardian")))
 		{
-			FVector dir = AimTarget->GetActorLocation() - this->GetActorLocation();
+			FVector dir = AimedTarget->GetActorLocation() - this->GetActorLocation();
 			dir.Normalize();
 			BasicAttackComboCount++;
-			if (BasicAttackComboCount == 2) // is third attack?
+			if (BasicAttackComboCount == 2)
 			{
 				BasicAttackComboCount = 0;
 			}
 			atk = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetActorLocation(), dir.Rotation());
-			atk->SetTarget(AimTarget);
+			atk->SetTarget(this, AimedTarget, BasicAttackComboCount);
 		}
 		else
 		{
@@ -243,8 +267,46 @@ void APlayerCharacter::SpellSkillSlotQ(const FInputActionValue& InputValue) // P
 	}
 }
 
+void APlayerCharacter::SpellStupefy(const FInputActionValue& InputValue)
+{
+	if (AimedTarget && AimedTarget->GetActorNameOrLabel().Contains(TEXT("Guardian")))
+	{
+		FVector dir = AimedTarget->GetActorLocation() - this->GetActorLocation();
+		dir.Normalize();
+		stp = GetWorld()->SpawnActor<AStupefy>(Stupefies, GetActorLocation(), dir.Rotation());
+		stp->SetTarget(AimedTarget);
+	}
+	else
+	{
+		stp = GetWorld()->SpawnActor<AStupefy>(Stupefies, GetActorLocation(), GetActorRotation());
+		stp->NoTarget();
+	}
+}
+
 void APlayerCharacter::SpellSkillSlotR(const FInputActionValue& InputValue)
 {
 	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill R"));
 }
 
+bool APlayerCharacter::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
+{
+	int NewHP = GetCurrentHP() - DamageInfo.DamageAmount;
+	if (NewHP <= 0)
+	{
+		SetCurrentHP(0);
+	} else
+	{
+		SetCurrentHP(NewHP);
+	}
+	return true;
+}
+
+float APlayerCharacter::GetHP_Implementation() const
+{
+	return GetCurrentHP();
+}
+
+bool APlayerCharacter::IsDead_Implementation() const
+{
+	return GetCurrentHP() <= 0;
+}

@@ -4,6 +4,8 @@
 #include "Character/BasicAttack.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+#include <Interface/DamageableHelpers.h>
 
 
 // Sets default values
@@ -58,23 +60,15 @@ void ABasicAttack::BeginPlay()
 void ABasicAttack::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 	
 	SetActorLocation(UKismetMathLibrary::VInterpTo_Constant(GetActorLocation(), TargetLocation, DeltaTime, Speed), true);
-		
-	if (GetActorLocation() == TargetLocation)
-	{
-		Duration += DeltaTime;
-		if (Duration > 0.75)
-		{
-			Destroy();
-		}
-	}
 }
 
-void ABasicAttack::SetTarget(AActor* atk)
+void ABasicAttack::SetTarget(AActor* causer, AActor* target, int count)
 {
-	TargetLocation = atk->GetActorLocation();
+	Target = target;
+	TargetLocation = target->GetActorLocation();
+	ComboCount = count;
 }
 
 void ABasicAttack::NoTarget()
@@ -86,6 +80,12 @@ void ABasicAttack::NoTarget()
 void ABasicAttack::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (!DamageableHelpers::IsDead(Target))
+	{
+		int damage = ComboCount == 2 ? GetBasicDamage() : GetThirdDamage();
+		DamageableHelpers::ApplyDamage(Target, Causer, damage);
+	}
+	
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ExplosionComp, SweepResult.TraceStart);
 	Destroy();
 }

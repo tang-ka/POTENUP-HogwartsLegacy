@@ -5,15 +5,15 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include <GameFramework/SpringArmComponent.h>
-#include <GameFramework/CharacterMovementComponent.h>
 #include <Camera/CameraComponent.h>
 #include <EnhancedInputSubsystems.h>
 #include <EnhancedInputComponent.h>
 #include <InputActionValue.h>
+#include <Interface/Damageable.h>
 #include "PlayerCharacter.generated.h"
 
 UCLASS()
-class HOGWARTSLEGACY_API APlayerCharacter : public ACharacter
+class HOGWARTSLEGACY_API APlayerCharacter : public ACharacter, public IDamageable
 {
 	GENERATED_BODY()
 
@@ -32,11 +32,14 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	
+#pragma region Components
 	UPROPERTY(VisibleAnywhere, Category=Camera)
 	USpringArmComponent* CameraArmComp;
 	UPROPERTY(VisibleAnywhere, Category=Camera)
 	UCameraComponent* PlayerCameraComp;
+#pragma endregion
 	
+#pragma region Inputs
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	UInputMappingContext* IMC_Player;
 	UPROPERTY(EditDefaultsOnly, Category="Input")
@@ -45,9 +48,6 @@ public:
 	UInputAction* IA_Turn;
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	UInputAction* IA_Move;
-	UPROPERTY(EditAnywhere, Category=PlayerSetting)
-	float WalkSpeed = 300;
-	FVector WalkDirection;
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	UInputAction* IA_Run;
 	UPROPERTY(EditDefaultsOnly, Category="Input")
@@ -64,33 +64,42 @@ public:
 	UInputAction* IA_SkillSlotQ;
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	UInputAction* IA_SkillSlotR;
+#pragma endregion
+	
+#pragma region Properties
+	UPROPERTY()
+	FVector WalkDirection;
 	
 	UPROPERTY(EditDefaultsOnly,Category=Spell)
 	TSubclassOf <class ABasicAttack> BasicAttacks;
 	UPROPERTY()
 	ABasicAttack* atk;
+	
 	UPROPERTY(EditDefaultsOnly,Category=Spell)
 	TSubclassOf <class AProtego> Protegos;
 	UPROPERTY()
 	AProtego* prt;
+	
+	UPROPERTY(EditDefaultsOnly,Category=Spell)
+	TSubclassOf <class AStupefy> Stupefies;
+	UPROPERTY()
+	AStupefy* stp;
+	
 	UPROPERTY()
 	int BasicAttackComboCount = 0;
-	
 	UPROPERTY()
 	TArray<AActor*> ActorToIgnore;
 	UPROPERTY()
-	AActor* AimTarget;
+	TObjectPtr <AActor> AimedTarget;
 	UPROPERTY()
-	int ViewDistance = 2000;
-	UPROPERTY()
-	float ViewSphereRadius = 125;
-	UPROPERTY()
-	AActor* LastCachedObj;
+	TObjectPtr <AActor> LastCachedObj;
 	UPROPERTY()
 	TObjectPtr <UMaterialInterface> OutlineMat;
 	UPROPERTY()
 	TObjectPtr <UMaterialInterface> ShineMat;
+#pragma endregion
 	
+#pragma region Functions
 	void Turn(const FInputActionValue& InputValue);
 	void LookUp(const FInputActionValue& InputValue);
 	void Move(const FInputActionValue& InputValue);
@@ -102,13 +111,42 @@ public:
 	void SpellSkillSlot2(const FInputActionValue& InputValue);
 	void SpellSkillSlot3(const FInputActionValue& InputValue);
 	void SpellSkillSlotQ(const FInputActionValue& InputValue);
+	void SpellStupefy(const FInputActionValue& InputValue);
 	void SpellSkillSlotR(const FInputActionValue& InputValue);
 	
 	UFUNCTION()
 	void PlayerMove();
-
 	UFUNCTION()
-	void AimCapture(AActor* Target);
+	void AimCapture();
+	UFUNCTION()
+	int GetCurrentHP() const { return this->HP; }
+	UFUNCTION()
+	void SetCurrentHP(int NewHP) { this->HP = NewHP; }
+	UFUNCTION()
+	int GetMaxHP() const { return this->MaxHP; }
+#pragma endregion
 	
-	
+#pragma region IDamageable
+	UFUNCTION()
+	virtual bool ReceiveDamage_Implementation(FDamageInfo DamageInfo) override;
+	UFUNCTION()
+	virtual float GetHP_Implementation() const override;
+	UFUNCTION()
+	virtual bool IsDead_Implementation() const override;
+#pragma endregion
+
+#pragma region Privates
+private:
+	UPROPERTY()
+	int HP = 100;
+	UPROPERTY()
+	int MaxHP = 100;
+	UPROPERTY()
+	float WalkSpeed = 300;
+	UPROPERTY()
+	int ViewDistance = 2000;
+	UPROPERTY()
+	float ViewSphereRadius = 125;
+#pragma endregion
+
 };

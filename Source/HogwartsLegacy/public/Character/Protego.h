@@ -26,7 +26,10 @@ public:
 	UPROPERTY(VisibleAnywhere, Category=Mesh)
 	UStaticMeshComponent* SphereMesh;
 	
+	UPROPERTY()
 	float Duration = 0;
+	
+	UPROPERTY()
 	APawn* Player;
 
 };

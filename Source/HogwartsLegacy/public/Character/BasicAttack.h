@@ -6,11 +6,11 @@
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
 #include "NiagaraSystem.h"
-#include "NiagaraComponent.h"
+#include <Interface/Damageable.h>
 #include "BasicAttack.generated.h"
 
 UCLASS()
-class HOGWARTSLEGACY_API ABasicAttack : public AActor
+class HOGWARTSLEGACY_API ABasicAttack : public AActor, public IDamageable
 {
 	GENERATED_BODY()
 	
@@ -25,7 +25,16 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	void SetTarget(AActor* Actor);
+	
+	UPROPERTY()
+	AActor* Target;
+	UPROPERTY()
+	int ComboCount = 0;
+	UPROPERTY()
+	TObjectPtr <AActor> Causer;
+	UFUNCTION()
+	void SetTarget(AActor* InCauser, AActor* InTarget, int count);
+	UFUNCTION()
 	void NoTarget();
 
 	UPROPERTY(VisibleAnywhere, Category=Collision)
@@ -54,10 +63,24 @@ public:
 		const FHitResult& SweepResult
 		);
 
+	UPROPERTY()
 	FVector TargetLocation;
-	const float Speed = 2000;
-	const float Distance = 2000;
-	float Duration = 0;
+	UPROPERTY()
+	float Speed = 2000;
+	UPROPERTY()
+	float Distance = 2000;
+
+	UFUNCTION()
+	float GetBasicDamage() const { return BaseDamage; }
+	UFUNCTION()
+	float GetThirdDamage() const { return ThirdDamage; }
+	
+private:
+	
+	UPROPERTY()
+	float BaseDamage = 3;
+	UPROPERTY()
+	float ThirdDamage = 23;
 	
 	 // FVector MidPoint;
 	 // FVector CurvedPoint;
