@@ -132,6 +132,22 @@ void UEnemyFSMComponent::FinishAttack(bool bSuccess)
 	}
 }
 
+void UEnemyFSMComponent::OnDead()
+{
+	ChangeState(EEnemyState::Dead);
+	
+	// Broadcast the death event
+	OnEnemyDead.Broadcast();
+}
+
+void UEnemyFSMComponent::OnDamaged(float DamageAmount, float RemainingHP)
+{
+	ChangeState(EEnemyState::Damaged);
+	
+	// Broadcast the damaged event
+	OnEnemyDamaged.Broadcast(DamageAmount, RemainingHP);
+}
+
 void UEnemyFSMComponent::InitStates()
 {
 	if (!StateMap.IsEmpty())

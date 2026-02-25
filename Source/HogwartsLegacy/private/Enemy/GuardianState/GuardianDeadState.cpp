@@ -3,6 +3,8 @@
 
 #include "Enemy/GuardianState/GuardianDeadState.h"
 
+#include "Enemy/Guardian.h"
+
 void UGuardianDeadState::OnEnter()
 {
 	Super::OnEnter();
@@ -16,4 +18,9 @@ void UGuardianDeadState::OnExit()
 void UGuardianDeadState::TickState(float DeltaTime)
 {
 	Super::TickState(DeltaTime);
+	
+	// 제자리에서 회전하고 싶다.
+	FRotator NewRotation = GetOwnerGuardian()->GetActorRotation();
+	NewRotation.Yaw += DeltaTime * 720.0f; // 회전 속도 조정
+	GetOwnerGuardian()->SetActorRotation(NewRotation);
 }

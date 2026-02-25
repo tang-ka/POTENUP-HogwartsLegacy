@@ -8,11 +8,18 @@
 #include "Enemy/Guardian.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
+void UGuardianChargeAttackState::Reset()
+{
+	Super::Reset();
+	
+	CurTime = 0;
+	bCanCharging = false;
+}
+
 void UGuardianChargeAttackState::OnEnter()
 {
 	Super::OnEnter();
 	
-	CurTime = 0;
 	Target = GetOwnerFSM()->GetCurrentTarget();
 }
 

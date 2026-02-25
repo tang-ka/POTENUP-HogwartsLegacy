@@ -30,6 +30,8 @@ void AGuardian::BeginPlay()
 	Super::BeginPlay();
 	
 	DefaultColor = GetMesh()->CreateAndSetMaterialInstanceDynamic(0)->K2_GetVectorParameterValue("Paint Tint");
+	
+	InitHP();
 }
 
 void AGuardian::Tick(float DeltaTime)
@@ -46,24 +48,28 @@ void AGuardian::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 bool AGuardian::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
 {	
-	return IDamageable::ReceiveDamage_Implementation(DamageInfo);
+	HP -= DamageInfo.DamageAmount;
+	if (HP <= 0)
+	{
+		HP = 0;
+		FSMComponent->OnDead();
+	}
+	else
+	{
+		FSMComponent->OnDamaged(DamageInfo.DamageAmount, HP);;
+	}
 	
-	// HP -= DamageInfo.DamageAmount;
-	// if (HP <= 0)
-	// {
-	// 	HP = 0;
-	// 	GetFSMComponent()->ChangeState(EEnemyState::Dead);
-	// }
+	return true;
 }
 
 float AGuardian::GetHP_Implementation() const
 {
-	return IDamageable::GetHP_Implementation();
+	return GetCurrentHP();
 }
 
 bool AGuardian::IsDead_Implementation() const
 {
-	return IDamageable::IsDead_Implementation();
+	return FSMComponent->IsDead();
 }
 
 void AGuardian::SetMaterialColor(FLinearColor Color)
@@ -77,5 +83,10 @@ void AGuardian::SetMaterialColor(FLinearColor Color)
 void AGuardian::ResetMaterialColor()
 {
 	SetMaterialColor(DefaultColor);
+}
+
+void AGuardian::InitHP()
+{
+	HP = MaxHP;
 }
 
