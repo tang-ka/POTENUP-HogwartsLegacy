@@ -17,9 +17,15 @@ class HOGWARTSLEGACY_API UGuardianStumbleState : public UGuardianStateBase
 public:
 	virtual FName GetStateName() const override { return TEXT("Stumble"); }
 	
+	virtual void Reset() override;
 	virtual void OnEnter() override;
 	virtual void OnExit() override;
 	virtual void TickState(float DeltaTime) override;
 	
+private:
+	float StumbleDuration{2.0f};
+	float CurTime{0.f};
+	
+	float StumbleStrength{800.f};
 }; 
  

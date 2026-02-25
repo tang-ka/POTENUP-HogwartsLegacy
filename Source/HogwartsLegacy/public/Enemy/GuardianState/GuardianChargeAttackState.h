@@ -30,12 +30,11 @@ private:
 	UPROPERTY()
 	TObjectPtr<AActor> Target;
 	
-	float CurTime{0};
-	
 	float ChargingTime{1.5f};
 	float ChargeStrength{5000.f};
 	float AttackRange{150.f};
 	
+	float CurTime{0};
 	bool bIsDashing{false};
 	bool bIsReachedTarget{false};
 };

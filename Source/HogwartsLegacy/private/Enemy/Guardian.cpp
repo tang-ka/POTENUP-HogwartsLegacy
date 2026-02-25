@@ -4,6 +4,7 @@
 
 #include "AIController.h"
 #include "HogwartsLegacy.h"
+#include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "Enemy/EnemyFSMComponent.h"
@@ -110,9 +111,37 @@ void AGuardian::OnChargeAttackHitBoxOverlap(UPrimitiveComponent* OverlappedCompo
                                             int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	bool bIsDamageApplied = DamageableHelpers::ApplyDamage(OtherActor, this, 20);
-	
+
 	SetActiveChargeAttackHitBox(false);
-	FSMComponent->FinishAttack(bIsDamageApplied);
+	// FSMComponent->FinishAttack(bIsDamageApplied);
+	FSMComponent->FinishAttack(false);
+}
+
+void AGuardian::ExecuteStumble(float StumbleStrength)
+{
+	auto* Target = GetFSMComponent()->GetCurrentTarget();
+	FVector Direction = GetActorLocation() - Target->GetActorLocation();
+	Direction.Z = 0.0f;
+	Direction.Normalize();
+	
+	FVector LaunchVelocity = Direction * StumbleStrength;
+	GetCharacterMovement()->BrakingFriction = 0.0f;
+	GetCharacterMovement()->Launch(LaunchVelocity);
+}
+
+void AGuardian::ExecuteBashAttack()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Guardian executes bash attack!"));
+}
+
+void AGuardian::OnBashAttackHitBoxOverlap(UPrimitiveComponent* OverlappedComponent,
+                                          AActor* OtherActor, UPrimitiveComponent* OtherComp,
+                                          int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	bool bIsDamageApplied = DamageableHelpers::ApplyDamage(OtherActor, this, 20);
+
+	SetActiveChargeAttackHitBox(false);
+	FSMComponent->FinishAttack(true); // Bash 공격은 항상 성공으로 간주 (Stumble 상태로 가지 않음)
 }
 
 void AGuardian::SetCharacterMaxWalkSpeed(float InMaxWalkSpeed) const

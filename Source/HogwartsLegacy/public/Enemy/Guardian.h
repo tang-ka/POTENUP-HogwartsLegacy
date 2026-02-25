@@ -8,6 +8,7 @@
 #include "Interface/Damageable.h"
 #include "Guardian.generated.h"
 
+class UBoxComponent;
 class USphereComponent;
 class UEnemyFSMComponent;
 
@@ -36,7 +37,21 @@ public:
 	                                 AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	                                 int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 #pragma endregion
-
+	
+#pragma region Stumble
+	void ExecuteStumble(float StumbleStrength);
+#pragma endregion
+	
+#pragma region Bash Attack
+	void ExecuteBashAttack();
+	
+	UFUNCTION()
+	void OnBashAttackHitBoxOverlap(UPrimitiveComponent* OverlappedComponent,
+	                               AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	                               int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+#pragma endregion
+	
+	
 
 #pragma region Movement
 	UFUNCTION(BlueprintCallable)
@@ -82,9 +97,9 @@ private:
 	int32 MaxHP{150};
 
 private:
-	UPROPERTY(VisibleAnywhere, Category="FSMComponent")
+	UPROPERTY(EditAnywhere, Category="FSMComponent")
 	TObjectPtr<UEnemyFSMComponent> FSMComponent;
-
+	
 	// UPROPERTY(EditAnywhere, Category="FSMComponent")
 	// TObjectPtr<UEnemyFSMComponent> ForCopyFSMComponent;
 

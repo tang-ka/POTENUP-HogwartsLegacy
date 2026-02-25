@@ -15,6 +15,7 @@ void UGuardianChargeAttackState::Reset()
 	
 	CurTime = 0;
 	bIsDashing = false;
+	bIsReachedTarget = false;
 }
 
 void UGuardianChargeAttackState::OnEnter()
@@ -56,7 +57,7 @@ void UGuardianChargeAttackState::TickState(float DeltaTime)
 	}
 	else
 	{
-		PRINT_LOG(TEXT("Charge Attack Reached Target"));
+		// PRINT_LOG(TEXT("Charge Attack Reached Target"));
 	}
 }
 

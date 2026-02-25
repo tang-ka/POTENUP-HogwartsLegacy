@@ -15,9 +15,14 @@ class HOGWARTSLEGACY_API UGuardianStunState : public UGuardianStateBase
 	GENERATED_BODY()
 	
 public:
+	virtual void Reset() override;
 	virtual void OnEnter() override;
 	virtual void OnExit() override;
 	virtual void TickState(float DeltaTime) override;
 	
 	virtual FName GetStateName() const override { return TEXT("Stun"); }
+	
+private:
+	float StunDuration{2.0f};
+	float CurTime{0.f};
 };
