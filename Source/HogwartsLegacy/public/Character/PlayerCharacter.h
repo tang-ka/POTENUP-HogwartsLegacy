@@ -70,17 +70,17 @@ public:
 	UPROPERTY()
 	FVector WalkDirection;
 	
-	UPROPERTY(EditDefaultsOnly,Category=Spell)
+	UPROPERTY(EditDefaultsOnly, Category=Spell)
 	TSubclassOf <class ABasicAttack> BasicAttacks;
 	UPROPERTY()
 	ABasicAttack* atk;
 	
-	UPROPERTY(EditDefaultsOnly,Category=Spell)
+	UPROPERTY(EditDefaultsOnly, Category=Spell)
 	TSubclassOf <class AProtego> Protegos;
 	UPROPERTY()
 	AProtego* prt;
 	
-	UPROPERTY(EditDefaultsOnly,Category=Spell)
+	UPROPERTY(EditDefaultsOnly, Category=Spell)
 	TSubclassOf <class AStupefy> Stupefies;
 	UPROPERTY()
 	AStupefy* stp;
@@ -127,11 +127,8 @@ public:
 #pragma endregion
 	
 #pragma region IDamageable
-	UFUNCTION()
 	virtual bool ReceiveDamage_Implementation(FDamageInfo DamageInfo) override;
-	UFUNCTION()
 	virtual float GetHP_Implementation() const override;
-	UFUNCTION()
 	virtual bool IsDead_Implementation() const override;
 #pragma endregion
 

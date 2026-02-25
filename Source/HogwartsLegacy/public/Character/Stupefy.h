@@ -26,7 +26,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
-	void SetTarget(AActor* Target);
+	void SetTarget(AActor* target);
 	void NoTarget();
 
 	UPROPERTY(VisibleAnywhere, Category=Collision)

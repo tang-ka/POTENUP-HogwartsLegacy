@@ -29,7 +29,7 @@ AStupefy::AStupefy()
 	}
 	
 	ExplosionComp = CreateDefaultSubobject<UNiagaraSystem>(TEXT("ExplosionNiagaraSystem"));
-	ConstructorHelpers::FObjectFinder<UNiagaraSystem> ExpTempComp(TEXT("ExplosionNiagaraSystem'/Game/KHJ/FX/NS_BasicAttack_Explosion.NS_BasicAttack_Explosion'"));
+	ConstructorHelpers::FObjectFinder<UNiagaraSystem> ExpTempComp(TEXT("ExplosionNiagaraSystem'/Game/KHJ/FX/NS_Stupefy_Explosion.NS_Stupefy_Explosion'"));
 	if (ExpTempComp.Succeeded())
 	{
 		ExplosionComp = ExpTempComp.Object;
@@ -56,9 +56,9 @@ void AStupefy::Tick(float DeltaTime)
 	SetActorLocation(UKismetMathLibrary::VInterpTo_Constant(GetActorLocation(), TargetLocation, DeltaTime, Speed), true);
 }
 
-void AStupefy::SetTarget(AActor* Target)
+void AStupefy::SetTarget(AActor* target)
 {
-	TargetLocation = Target->GetActorLocation();
+	TargetLocation = target->GetActorLocation();
 }
 
 void AStupefy::NoTarget()
