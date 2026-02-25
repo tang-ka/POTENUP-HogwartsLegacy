@@ -4,6 +4,7 @@
 #include "Enemy/GuardianState/GuardianChargeAttackState.h"
 
 #include "AIController.h"
+#include "HogwartsLegacy.h"
 #include "Enemy/EnemyFSMComponent.h"
 #include "Enemy/Guardian.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -13,7 +14,7 @@ void UGuardianChargeAttackState::Reset()
 	Super::Reset();
 	
 	CurTime = 0;
-	bCanCharging = false;
+	bIsDashing = false;
 }
 
 void UGuardianChargeAttackState::OnEnter()
@@ -32,28 +33,48 @@ void UGuardianChargeAttackState::TickState(float DeltaTime)
 {
 	Super::TickState(DeltaTime);
 	
+	if (!bIsDashing)
+	{
+		CurTime += DeltaTime;
+		if (CurTime >= ChargingTime)
+		{
+			ChargeAttack();
+		}
+	}
+	else if (!bIsReachedTarget)
+	{
+		if (IsTargetInRange())
+		{
+			bIsReachedTarget = true;
+			
+			// 위치 보정
+			GetOwnerGuardian()->SnapToAttackLocation(Target, AttackRange);
+			
+			// 공격 실행
+			GetOwnerGuardian()->ExecuteMeleeAttack();
+		}
+	}
+	else
+	{
+		PRINT_LOG(TEXT("Charge Attack Reached Target"));
+	}
+}
+
+bool UGuardianChargeAttackState::IsTargetInRange() const
+{
 	AGuardian* Guardian = GetOwnerGuardian();
 	
-	float DistSqt = FVector::DistSquared(Guardian->GetActorLocation(), Target->GetActorLocation()); 
-	if (DistSqt <= FMath::Square(AttackRange))
-	{
-		Guardian->GetCharacterMovement()->StopMovementImmediately();
-		return;
-	}
+	float DistSqt = FVector::DistSquaredXY(Guardian->GetActorLocation(), Target->GetActorLocation()); 
+	return DistSqt <= FMath::Square(AttackRange);
+}
+
+void UGuardianChargeAttackState::ChargeAttack()
+{
+	AGuardian* Guardian = GetOwnerGuardian();
 	
-	CurTime += DeltaTime;
-	
-	if (CurTime >= ChargingTime)
+	if (Guardian && Target)
 	{
-		if (Guardian && Target)
-		{
-			FVector Direction = Target->GetActorLocation() - Guardian->GetActorLocation();
-			Direction.Z = 0.0f;
-			Direction.Normalize();
-			
-			FVector LaunchVelocity = Direction * ChargeStrength;
-			
-			Guardian->LaunchCharacter(LaunchVelocity, true, true);
-		}
+		bIsDashing = true;
+		Guardian->ExecuteChargeToTarget(Target, ChargeStrength);
 	}
 }

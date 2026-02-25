@@ -21,6 +21,10 @@ public:
 	virtual void OnEnter() override;
 	virtual void OnExit() override;
 	virtual void TickState(float DeltaTime) override;
+
+private:
+	bool IsTargetInRange() const;
+	void ChargeAttack();
 	
 private:
 	UPROPERTY()
@@ -30,7 +34,8 @@ private:
 	
 	float ChargingTime{1.5f};
 	float ChargeStrength{5000.f};
-	float AttackRange{200.f};
+	float AttackRange{150.f};
 	
-	bool bCanCharging{false};
+	bool bIsDashing{false};
+	bool bIsReachedTarget{false};
 };

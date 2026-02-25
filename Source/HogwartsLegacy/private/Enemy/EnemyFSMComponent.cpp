@@ -132,7 +132,7 @@ void UEnemyFSMComponent::FinishAttack(bool bSuccess)
 	}
 }
 
-void UEnemyFSMComponent::OnDead()
+void UEnemyFSMComponent::RequestDead()
 {
 	ChangeState(EEnemyState::Dead);
 	
@@ -140,8 +140,13 @@ void UEnemyFSMComponent::OnDead()
 	OnEnemyDead.Broadcast();
 }
 
-void UEnemyFSMComponent::OnDamaged(float DamageAmount, float RemainingHP)
+void UEnemyFSMComponent::RequestDamaged(float DamageAmount, float RemainingHP)
 {
+	if (IsDead())
+	{
+		return;
+	}
+	
 	ChangeState(EEnemyState::Damaged);
 	
 	// Broadcast the damaged event

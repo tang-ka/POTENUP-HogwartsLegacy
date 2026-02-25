@@ -59,10 +59,10 @@ public:
 	void FinishAttack(bool bSuccess);
 	
 	UFUNCTION(BLueprintCallable)
-	void OnDead();
+	void RequestDead();
 	
 	UFUNCTION(BlueprintCallable)
-	void OnDamaged(float DamageAmount, float RemainingHP);
+	void RequestDamaged(float DamageAmount, float RemainingHP);
 #pragma endregion
 
 	bool IsDead() const { return CurStateType == EEnemyState::Dead; }
@@ -85,16 +85,16 @@ private:
 	UPROPERTY()
 	TObjectPtr<AAIController> AIController;
 	
-	UPROPERTY(VisibleAnyWhere, Category="GuardianFSM|Target")
+	UPROPERTY(VisibleAnyWhere, Category="Target")
 	TMap<FName, TObjectPtr<AActor>> TargetMap;
 	
-	UPROPERTY(VisibleAnywhere, Category="GuardianFSM|Target")
+	UPROPERTY(VisibleAnywhere, Category="Target")
 	TObjectPtr<AActor> CurrentTarget;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UGuardianStateBase> CurState;
 	
-	UPROPERTY(Transient, VisibleAnywhere, Category="GuardianFSM|State")
+	UPROPERTY(Transient, VisibleAnywhere, Category="State")
 	EEnemyState CurStateType;
 	
 #pragma region State Instance 

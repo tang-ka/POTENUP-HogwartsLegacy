@@ -15,7 +15,7 @@ struct FDamageInfo
 	TObjectPtr<AActor> DamageCauser{};
 
 	UPROPERTY(BlueprintReadWrite, Category="Damage")
-	float DamageAmount{};
+	int DamageAmount{};
 };
 
 // This class does not need to be modified.
@@ -44,7 +44,7 @@ public:
 	bool ReceiveDamage (FDamageInfo DamageInfo);
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Damage")
-	float GetHP() const;
+	int GetHP() const;
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Damage")
 	bool IsDead() const;
