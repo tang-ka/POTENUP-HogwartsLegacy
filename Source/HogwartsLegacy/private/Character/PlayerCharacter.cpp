@@ -73,7 +73,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	
 	PlayerMove();
-	AimCapture();
+	AimCapture(AimTarget);
 	
 }
 
@@ -137,52 +137,60 @@ void APlayerCharacter::PlayerMove()
 	
 }
 
-void APlayerCharacter::AimCapture()
+void APlayerCharacter::AimCapture(AActor* Target)
 {
-	FVector _Location;
+	FVector _Start;
 	FRotator _Rotation;
 	FHitResult _HitOut;
+	FCollisionQueryParams _Params;
 	
-	GetController()->GetPlayerViewPoint(_Location, _Rotation);
-	FVector _Start = _Location;
-	int ViewDistance = 2000;
-	float SphereRadius = 200;
+	GetController()->GetPlayerViewPoint(_Start, _Rotation);
 	FVector _End = _Rotation.Vector() * ViewDistance;
-	FCollisionQueryParams _TraceParams;
-	_TraceParams.AddIgnoredActor(this);
-	// bool bCaptured = GetWorld()->SweepSingleByChannel(
-	// 	_HitOut,
-	// 	_Start,
-	// 	_End,
-	// 	FQuat::Identity,
-	// 	ECC_GameTraceChannel1,
-	// 	FCollisionShape::MakeSphere(SphereRadius),
-	// 	_TraceParams
-	// 	);
-	bool bCaptured = GetWorld()->LineTraceSingleByChannel(
+	
+	UGameplayStatics::GetAllActorsWithTag(GetWorld(), TEXT("Level"), ActorToIgnore);
+	_Params.AddIgnoredActors(ActorToIgnore);
+	_Params.AddIgnoredActor(this);
+	
+	GetWorld()->SweepSingleByProfile(
 		_HitOut,
 		_Start,
 		_End,
-		ECC_GameTraceChannel1,
-		_TraceParams
-		);
+		FQuat::Identity,
+		"PlayerTrace",
+		FCollisionShape::MakeSphere(ViewSphereRadius),
+		_Params);
+
 	
-	AActor* obj = _HitOut.GetActor();
-	// AActor* prevobj;
+	AActor* Obj = _HitOut.GetActor();
 	
-	if (IsValid(obj))
+	if (Obj != LastCachedObj)
 	{
-		GEngine->AddOnScreenDebugMessage(3, 1.0f, FColor::Green, obj->GetName());
-		if (obj->GetName().Contains(TEXT("Guardian")))
+		if (IsValid(LastCachedObj))
 		{
-			obj->FindComponentByClass<USkeletalMeshComponent>()->SetOverlayMaterial(OutlineMat);
+			if (LastCachedObj->GetActorNameOrLabel().Contains(TEXT("Guardian")))
+			{
+				LastCachedObj->FindComponentByClass<USkeletalMeshComponent>()->SetOverlayMaterial(nullptr);
+			}
+			if (LastCachedObj->ActorHasTag(FName("Item")))
+			{
+				LastCachedObj->FindComponentByClass<UMeshComponent>()->SetOverlayMaterial(nullptr);
+			}
 		}
-		else
+		if (IsValid(Obj))
 		{
-			// obj->FindComponentByClass<UMeshComponent>()->SetOverlayMaterial(ShineMat);
+			GEngine->AddOnScreenDebugMessage(3, 1.0f, FColor::Green, Obj->GetName());
+			AimTarget = Obj;
+			if (Obj->GetActorNameOrLabel().Contains(TEXT("Guardian")))
+			{
+				Obj->FindComponentByClass<USkeletalMeshComponent>()->SetOverlayMaterial(OutlineMat);
+			}
+			if (Obj->ActorHasTag(FName("Item")))
+			{
+				Obj->FindComponentByClass<UMeshComponent>()->SetOverlayMaterial(ShineMat);
+			}
 		}
 	}
-	// DrawDebugLine(GetWorld(), _Start, _End, FColor::Green, false, 2.0f);
+	LastCachedObj = Obj;
 }
 
 
@@ -190,20 +198,17 @@ void APlayerCharacter::SpellBasicAttack(const FInputActionValue& InputValue)
 {
 	if (!IsValid(atk))
 	{
-		if (AActor* target = UGameplayStatics::GetActorOfClass(GetWorld(), AGuardian::StaticClass()))
+		if (AimTarget && AimTarget->GetActorNameOrLabel().Contains(TEXT("Guardian")))
 		{
-			FVector dir = target->GetActorLocation() - this->GetActorLocation();
+			FVector dir = AimTarget->GetActorLocation() - this->GetActorLocation();
 			dir.Normalize();
-			if (BasicAttackComboCounter == 2) // is third attack?
+			BasicAttackComboCount++;
+			if (BasicAttackComboCount == 2) // is third attack?
 			{
-				GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("ThirdAttack"));
-				BasicAttackComboCounter = 0;
-			} else
-			{
-				BasicAttackComboCounter++;
+				BasicAttackComboCount = 0;
 			}
 			atk = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetActorLocation(), dir.Rotation());
-			atk->SetTarget(target);
+			atk->SetTarget(AimTarget);
 		}
 		else
 		{
@@ -242,3 +247,4 @@ void APlayerCharacter::SpellSkillSlotR(const FInputActionValue& InputValue)
 {
 	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill R"));
 }
+

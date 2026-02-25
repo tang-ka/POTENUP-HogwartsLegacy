@@ -3,6 +3,7 @@
 
 #include "Character/BasicAttack.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "NiagaraFunctionLibrary.h"
 
 
 // Sets default values
@@ -29,8 +30,16 @@ ABasicAttack::ABasicAttack()
 		NiagaraComp->SetAsset(TempComp.Object);
 	}
 	
+	ExplosionComp = CreateDefaultSubobject<UNiagaraSystem>(TEXT("ExplosionNiagaraSystem"));
+	ConstructorHelpers::FObjectFinder<UNiagaraSystem> ExpTempComp(TEXT("ExplosionNiagaraSystem'/Game/KHJ/FX/NS_BasicAttack_Explosion.NS_BasicAttack_Explosion'"));
+	if (ExpTempComp.Succeeded())
+	{
+		ExplosionComp = ExpTempComp.Object;
+	}
+	
 	NiagaraComp->SetupAttachment(RootComponent);
 	
+	Tags.Add(FName("Spell"));
 	InitialLifeSpan = 2.5f;
 	
 }
@@ -73,29 +82,26 @@ void ABasicAttack::NoTarget()
 	TargetLocation = this->GetActorLocation() + this->GetActorForwardVector() * Distance;
 }
 
-// When Hit On The WorldObject
-void ABasicAttack::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
-{
-
-	if (OtherComp->IsSimulatingPhysics())
-	{
-		OtherComp->AddImpulseAtLocation(GetVelocity() * PhysicsForce, GetActorLocation());
-		//GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("OnHit, AddImpulse"));
-	} else
-	{
-		//GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("OnHit"));
-	}
-	Destroy();
-}
-
 // When Begin Overlap On The Enemy
 void ABasicAttack::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	//GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("OnBeginOverlap"));
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ExplosionComp, SweepResult.TraceStart);
 	Destroy();
 }
+
+// When Hit On The WorldObject
+void ABasicAttack::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (OtherComp->IsSimulatingPhysics())
+	{
+		OtherComp->AddImpulseAtLocation(GetVelocity() * PhysicsForce, GetActorLocation());
+	}
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ExplosionComp, Hit.TraceStart);
+	Destroy();
+}
+
 
 
 

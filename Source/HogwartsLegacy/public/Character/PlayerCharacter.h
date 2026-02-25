@@ -74,7 +74,22 @@ public:
 	UPROPERTY()
 	AProtego* prt;
 	UPROPERTY()
-	int BasicAttackComboCounter = 0;
+	int BasicAttackComboCount = 0;
+	
+	UPROPERTY()
+	TArray<AActor*> ActorToIgnore;
+	UPROPERTY()
+	AActor* AimTarget;
+	UPROPERTY()
+	int ViewDistance = 2000;
+	UPROPERTY()
+	float ViewSphereRadius = 125;
+	UPROPERTY()
+	AActor* LastCachedObj;
+	UPROPERTY()
+	TObjectPtr <UMaterialInterface> OutlineMat;
+	UPROPERTY()
+	TObjectPtr <UMaterialInterface> ShineMat;
 	
 	void Turn(const FInputActionValue& InputValue);
 	void LookUp(const FInputActionValue& InputValue);
@@ -91,13 +106,9 @@ public:
 	
 	UFUNCTION()
 	void PlayerMove();
-	
+
 	UFUNCTION()
-	void AimCapture();
+	void AimCapture(AActor* Target);
 	
-	UPROPERTY()
-	TObjectPtr <UMaterialInterface> OutlineMat;
-	UPROPERTY()
-	TObjectPtr <UMaterialInterface> ShineMat;
 	
 };
