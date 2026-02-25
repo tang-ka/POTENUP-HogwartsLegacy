@@ -28,7 +28,10 @@ AProtego::AProtego()
 	{
 		SphereMesh->SetMaterial(0, TempMat.Object);
 	}
-
+	
+	Tags.Add(FName("Spell"));
+	InitialLifeSpan = 2.0f;
+	
 }
 
 // Called when the game starts or when spawned
@@ -37,7 +40,7 @@ void AProtego::BeginPlay()
 	Super::BeginPlay();
 	
 	//player = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerCharacter::StaticClass());
-	player = GetWorld()->GetFirstPlayerController()->GetPawn();
+	Player = GetWorld()->GetFirstPlayerController()->GetPawn();
 	
 }
 
@@ -51,12 +54,8 @@ void AProtego::Tick(float DeltaTime)
 	{
 		SetActorRelativeScale3D(FVector(2+Duration*2));
 	}
-	if (Duration > 2)
-	{
-		Destroy();
-	}
 	
-	SetActorLocation(player->GetActorLocation());
+	SetActorLocation(Player->GetActorLocation());
 
 }
 
