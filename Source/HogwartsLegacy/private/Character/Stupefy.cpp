@@ -6,6 +6,7 @@
 #include "NiagaraComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
+
 // Sets default values
 AStupefy::AStupefy()
 {
@@ -21,6 +22,7 @@ AStupefy::AStupefy()
 	RootComponent = CollisionComp;
 	
 	NiagaraComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraSystem"));
+	NiagaraComp->SetupAttachment(RootComponent);
 
 	ConstructorHelpers::FObjectFinder<UNiagaraSystem> TempComp(TEXT("NiagaraSystem'/Game/KHJ/FX/NS_Stupefy.NS_Stupefy'"));
 	if (TempComp.Succeeded())
@@ -34,8 +36,6 @@ AStupefy::AStupefy()
 	{
 		ExplosionComp = ExpTempComp.Object;
 	}
-	
-	NiagaraComp->SetupAttachment(RootComponent);
 	
 	Tags.Add(FName("Spell"));
 	InitialLifeSpan = 2.5f;

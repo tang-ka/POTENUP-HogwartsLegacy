@@ -159,6 +159,10 @@ void APlayerCharacter::PlayerMove()
 	WalkDirection = FVector::ZeroVector;
 }
 
+void APlayerCharacter::CheckCanAttack()
+{
+}
+
 void APlayerCharacter::AimCapture()
 {
 	FVector Start;

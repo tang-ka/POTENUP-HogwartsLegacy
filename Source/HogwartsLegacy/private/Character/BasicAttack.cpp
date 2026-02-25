@@ -18,13 +18,13 @@ ABasicAttack::ABasicAttack()
 	CollisionComp->SetSphereRadius(8);
 	CollisionComp->SetCollisionProfileName(TEXT("Spell"));
 	CollisionComp->SetGenerateOverlapEvents(true);
-	CollisionComp->SetSimulatePhysics(true);
 	
 	CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &ABasicAttack::OnOverlap); // Enemy
 	CollisionComp->OnComponentHit.AddDynamic(this, &ABasicAttack::OnHit); // WorldObject
 	RootComponent = CollisionComp;
 	
 	NiagaraComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraSystem"));
+	NiagaraComp->SetupAttachment(RootComponent);
 
 	ConstructorHelpers::FObjectFinder<UNiagaraSystem> TempComp(TEXT("NiagaraSystem'/Game/KHJ/FX/NS_BasicAttack.NS_BasicAttack'"));
 	if (TempComp.Succeeded())
@@ -38,8 +38,6 @@ ABasicAttack::ABasicAttack()
 	{
 		ExplosionComp = ExpTempComp.Object;
 	}
-	
-	NiagaraComp->SetupAttachment(RootComponent);
 	
 	Tags.Add(FName("Spell"));
 	InitialLifeSpan = 2.5f;

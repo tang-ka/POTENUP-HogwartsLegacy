@@ -117,6 +117,8 @@ public:
 	UFUNCTION()
 	void PlayerMove();
 	UFUNCTION()
+	void CheckCanAttack();
+	UFUNCTION()
 	void AimCapture();
 	UFUNCTION()
 	int GetCurrentHP() const { return this->HP; }
