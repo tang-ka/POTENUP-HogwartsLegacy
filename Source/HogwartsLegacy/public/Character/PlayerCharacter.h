@@ -69,24 +69,26 @@ public:
 #pragma region Properties
 	UPROPERTY()
 	FVector WalkDirection;
+	UPROPERTY()
+	bool CanAttack;
 	
-	UPROPERTY(EditDefaultsOnly,Category=Spell)
+	UPROPERTY(EditDefaultsOnly, Category=Spell)
 	TSubclassOf <class ABasicAttack> BasicAttacks;
 	UPROPERTY()
 	ABasicAttack* atk;
 	
-	UPROPERTY(EditDefaultsOnly,Category=Spell)
+	UPROPERTY(EditDefaultsOnly, Category=Spell)
 	TSubclassOf <class AProtego> Protegos;
 	UPROPERTY()
 	AProtego* prt;
 	
-	UPROPERTY(EditDefaultsOnly,Category=Spell)
+	UPROPERTY(EditDefaultsOnly, Category=Spell)
 	TSubclassOf <class AStupefy> Stupefies;
 	UPROPERTY()
 	AStupefy* stp;
-	
-	UPROPERTY()
-	int BasicAttackComboCount = 0;
+	//
+	// UPROPERTY()
+	// int BasicAttackComboCount = 0;
 	UPROPERTY()
 	TArray<AActor*> ActorToIgnore;
 	UPROPERTY()
@@ -117,6 +119,8 @@ public:
 	UFUNCTION()
 	void PlayerMove();
 	UFUNCTION()
+	void CheckCanAttack(bool& Check);
+	UFUNCTION()
 	void AimCapture();
 	UFUNCTION()
 	int GetCurrentHP() const { return this->HP; }
@@ -127,7 +131,6 @@ public:
 #pragma endregion
 	
 #pragma region IDamageable
-	UFUNCTION()
 	virtual bool ReceiveDamage_Implementation(FDamageInfo DamageInfo) override;
 	UFUNCTION()
 	virtual int GetHP_Implementation() const override;

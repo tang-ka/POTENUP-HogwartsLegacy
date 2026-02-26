@@ -18,13 +18,13 @@ ABasicAttack::ABasicAttack()
 	CollisionComp->SetSphereRadius(8);
 	CollisionComp->SetCollisionProfileName(TEXT("Spell"));
 	CollisionComp->SetGenerateOverlapEvents(true);
-	CollisionComp->SetSimulatePhysics(true);
 	
 	CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &ABasicAttack::OnOverlap); // Enemy
 	CollisionComp->OnComponentHit.AddDynamic(this, &ABasicAttack::OnHit); // WorldObject
 	RootComponent = CollisionComp;
 	
 	NiagaraComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraSystem"));
+	NiagaraComp->SetupAttachment(RootComponent);
 
 	ConstructorHelpers::FObjectFinder<UNiagaraSystem> TempComp(TEXT("NiagaraSystem'/Game/KHJ/FX/NS_BasicAttack.NS_BasicAttack'"));
 	if (TempComp.Succeeded())
@@ -38,8 +38,6 @@ ABasicAttack::ABasicAttack()
 	{
 		ExplosionComp = ExpTempComp.Object;
 	}
-	
-	NiagaraComp->SetupAttachment(RootComponent);
 	
 	Tags.Add(FName("Spell"));
 	InitialLifeSpan = 2.5f;
@@ -64,11 +62,11 @@ void ABasicAttack::Tick(float DeltaTime)
 	SetActorLocation(UKismetMathLibrary::VInterpTo_Constant(GetActorLocation(), TargetLocation, DeltaTime, Speed), true);
 }
 
-void ABasicAttack::SetTarget(AActor* causer, AActor* target, int count)
+void ABasicAttack::SetTarget(AActor* causer, AActor* target, bool combo)
 {
 	Target = target;
 	TargetLocation = target->GetActorLocation();
-	ComboCount = count;
+	ComboAttack = combo;
 }
 
 void ABasicAttack::NoTarget()
@@ -82,8 +80,9 @@ void ABasicAttack::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* O
 {
 	if (!DamageableHelpers::IsDead(Target))
 	{
-		int damage = ComboCount == 2 ? GetBasicDamage() : GetThirdDamage();
-		DamageableHelpers::ApplyDamage(Target, Causer, damage);
+		int Damage = ComboAttack ? GetThirdDamage() : GetBasicDamage();
+		DamageableHelpers::ApplyDamage(Target, Causer, Damage);
+		GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, FString::Printf(TEXT("Damage: %d"), Damage));
 	}
 	
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ExplosionComp, SweepResult.TraceStart);
@@ -96,6 +95,7 @@ void ABasicAttack::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
 {
 	if (OtherComp->IsSimulatingPhysics())
 	{
+		CollisionComp->SetSimulatePhysics(true);
 		OtherComp->AddImpulseAtLocation(GetVelocity() * PhysicsForce, GetActorLocation());
 	}
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ExplosionComp, Hit.TraceStart);

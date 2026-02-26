@@ -17,6 +17,12 @@ APlayerCharacter::APlayerCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	
+	ConstructorHelpers::FObjectFinder<USkeletalMesh> TempMesh(TEXT("SkeletalMesh'/Game/KHJ/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple'"));
+	if (TempMesh.Succeeded())
+	{
+		GetMesh()->SetSkeletalMesh(TempMesh.Object);
+		GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -90), FRotator(0, -90, 0));
+	}
 	ConstructorHelpers::FObjectFinder<UMaterial> TempMat(TEXT("M_Outline'/Game/KHJ/Materials/M_Outline.M_Outline'"));
 	if (TempMat.Succeeded())
 	{
@@ -27,13 +33,6 @@ APlayerCharacter::APlayerCharacter()
 	if (TempMat2.Succeeded())
 	{
 		ShineMat = TempMat2.Object;
-	}
-	
-	ConstructorHelpers::FObjectFinder<USkeletalMesh> TempMesh(TEXT("SkeletalMesh'/Game/KHJ/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple'"));
-	if (TempMesh.Succeeded())
-	{
-		GetMesh()->SetSkeletalMesh(TempMesh.Object);
-		GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -90), FRotator(0, -90, 0));
 	}
 
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("PlayerCharacter"));
@@ -68,7 +67,7 @@ void APlayerCharacter::BeginPlay()
 		}
 	}
 	
-	if (IA_SkillSlotQ)
+	if (IA_SkillSlotQ) // Change the Hold Time Threshold to 2.0 sec
 	{
 		bool bFoundTrigger = false;
 		for (UInputTrigger* Trigger : IA_SkillSlotQ->Triggers)
@@ -96,6 +95,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	
 	PlayerMove();
+	CheckCanAttack(CanAttack);
 	AimCapture();
 	
 }
@@ -119,7 +119,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		PlayerInput->BindAction(IA_SkillSlot2, ETriggerEvent::Started, this, &APlayerCharacter::SpellSkillSlot2);
 		PlayerInput->BindAction(IA_SkillSlot3, ETriggerEvent::Started, this, &APlayerCharacter::SpellSkillSlot3);
 		PlayerInput->BindAction(IA_SkillSlotQ, ETriggerEvent::Started, this, &APlayerCharacter::SpellSkillSlotQ);
-		PlayerInput->BindAction(IA_SkillSlotQ, ETriggerEvent::Triggered, this, &APlayerCharacter::SpellStupefy);
+		PlayerInput->BindAction(IA_SkillSlotQ, ETriggerEvent::Completed, this, &APlayerCharacter::SpellStupefy);
 		PlayerInput->BindAction(IA_SkillSlotR, ETriggerEvent::Started, this, &APlayerCharacter::SpellSkillSlotR);
 	}
 }
@@ -160,6 +160,11 @@ void APlayerCharacter::PlayerMove()
 	WalkDirection = FVector::ZeroVector;
 }
 
+void APlayerCharacter::CheckCanAttack(bool& Check)
+{
+	Check = IsValid(atk) || IsValid(prt) || IsValid(stp) ? false : true;
+}
+
 void APlayerCharacter::AimCapture()
 {
 	FVector Start;
@@ -174,14 +179,7 @@ void APlayerCharacter::AimCapture()
 	Params.AddIgnoredActors(ActorToIgnore);
 	Params.AddIgnoredActor(this);
 	
-	GetWorld()->SweepSingleByProfile(
-		HitOut,
-		Start,
-		End,
-		FQuat::Identity,
-		"PlayerTrace",
-		FCollisionShape::MakeSphere(ViewSphereRadius),
-		Params);
+	GetWorld()->SweepSingleByProfile(HitOut, Start, End, FQuat::Identity, "PlayerTrace", FCollisionShape::MakeSphere(ViewSphereRadius), Params);
 	
 	AActor* Obj = HitOut.GetActor();
 	
@@ -220,19 +218,29 @@ void APlayerCharacter::AimCapture()
 
 void APlayerCharacter::SpellBasicAttack(const FInputActionValue& InputValue)
 {
-	if (!IsValid(atk))
+	static int ComboCount = 0;
+	static bool ComboAttack;
+	if (IsValid(atk))
+	{
+		if (ComboCount == 2)
+		{
+			ComboAttack = true;
+			ComboCount = 0;
+		}
+		else
+		{
+			ComboAttack = false;
+			ComboCount++;
+		}
+	}
+	if (CanAttack)
 	{
 		if (AimedTarget && AimedTarget->GetActorNameOrLabel().Contains(TEXT("Guardian")))
 		{
 			FVector dir = AimedTarget->GetActorLocation() - this->GetActorLocation();
 			dir.Normalize();
-			BasicAttackComboCount++;
-			if (BasicAttackComboCount == 2)
-			{
-				BasicAttackComboCount = 0;
-			}
 			atk = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetActorLocation(), dir.Rotation());
-			atk->SetTarget(this, AimedTarget, BasicAttackComboCount);
+			atk->SetTarget(this, AimedTarget, ComboAttack);
 		}
 		else
 		{
@@ -246,7 +254,7 @@ void APlayerCharacter::SpellSkillSlot1(const FInputActionValue& InputValue)
 {
 	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill 1"));
 }
-	
+
 void APlayerCharacter::SpellSkillSlot2(const FInputActionValue& InputValue)
 {
 	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill 2"));
@@ -259,7 +267,7 @@ void APlayerCharacter::SpellSkillSlot3(const FInputActionValue& InputValue)
 
 void APlayerCharacter::SpellSkillSlotQ(const FInputActionValue& InputValue) // Protego
 {
-	if (!IsValid(prt))
+	if (CanAttack)
 	{
 		prt = GetWorld()->SpawnActor<AProtego>(Protegos, GetActorLocation(), GetActorRotation());
 		// 타임 스토푸
@@ -269,18 +277,22 @@ void APlayerCharacter::SpellSkillSlotQ(const FInputActionValue& InputValue) // P
 
 void APlayerCharacter::SpellStupefy(const FInputActionValue& InputValue)
 {
-	if (AimedTarget && AimedTarget->GetActorNameOrLabel().Contains(TEXT("Guardian")))
+	if (CanAttack)
 	{
-		FVector dir = AimedTarget->GetActorLocation() - this->GetActorLocation();
-		dir.Normalize();
-		stp = GetWorld()->SpawnActor<AStupefy>(Stupefies, GetActorLocation(), dir.Rotation());
-		stp->SetTarget(AimedTarget);
+		if (AimedTarget && AimedTarget->GetActorNameOrLabel().Contains(TEXT("Guardian")))
+		{
+			FVector dir = AimedTarget->GetActorLocation() - this->GetActorLocation();
+			dir.Normalize();
+			stp = GetWorld()->SpawnActor<AStupefy>(Stupefies, GetActorLocation(), dir.Rotation());
+			stp->SetTarget(AimedTarget);
+		}
+		else
+		{
+			stp = GetWorld()->SpawnActor<AStupefy>(Stupefies, GetActorLocation(), GetActorRotation());
+			stp->NoTarget();
+		}
 	}
-	else
-	{
-		stp = GetWorld()->SpawnActor<AStupefy>(Stupefies, GetActorLocation(), GetActorRotation());
-		stp->NoTarget();
-	}
+	
 }
 
 void APlayerCharacter::SpellSkillSlotR(const FInputActionValue& InputValue)
@@ -290,12 +302,17 @@ void APlayerCharacter::SpellSkillSlotR(const FInputActionValue& InputValue)
 
 bool APlayerCharacter::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
 {
+	if (prt)
+	{
+		return false;
+	}
 	int NewHP = GetCurrentHP() - DamageInfo.DamageAmount;
 	UE_LOG(LogTemp, Warning, TEXT("Player received damage: %d, New HP: %d"), DamageInfo.DamageAmount, NewHP);
 	if (NewHP <= 0)
 	{
 		SetCurrentHP(0);
-	} else
+	}
+	else
 	{
 		SetCurrentHP(NewHP);
 	}

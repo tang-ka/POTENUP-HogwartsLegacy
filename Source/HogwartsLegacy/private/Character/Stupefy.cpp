@@ -6,6 +6,7 @@
 #include "NiagaraComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
+
 // Sets default values
 AStupefy::AStupefy()
 {
@@ -21,6 +22,7 @@ AStupefy::AStupefy()
 	RootComponent = CollisionComp;
 	
 	NiagaraComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraSystem"));
+	NiagaraComp->SetupAttachment(RootComponent);
 
 	ConstructorHelpers::FObjectFinder<UNiagaraSystem> TempComp(TEXT("NiagaraSystem'/Game/KHJ/FX/NS_Stupefy.NS_Stupefy'"));
 	if (TempComp.Succeeded())
@@ -29,13 +31,11 @@ AStupefy::AStupefy()
 	}
 	
 	ExplosionComp = CreateDefaultSubobject<UNiagaraSystem>(TEXT("ExplosionNiagaraSystem"));
-	ConstructorHelpers::FObjectFinder<UNiagaraSystem> ExpTempComp(TEXT("ExplosionNiagaraSystem'/Game/KHJ/FX/NS_BasicAttack_Explosion.NS_BasicAttack_Explosion'"));
+	ConstructorHelpers::FObjectFinder<UNiagaraSystem> ExpTempComp(TEXT("ExplosionNiagaraSystem'/Game/KHJ/FX/NS_Stupefy_Explosion.NS_Stupefy_Explosion'"));
 	if (ExpTempComp.Succeeded())
 	{
 		ExplosionComp = ExpTempComp.Object;
 	}
-	
-	NiagaraComp->SetupAttachment(RootComponent);
 	
 	Tags.Add(FName("Spell"));
 	InitialLifeSpan = 2.5f;
@@ -56,9 +56,9 @@ void AStupefy::Tick(float DeltaTime)
 	SetActorLocation(UKismetMathLibrary::VInterpTo_Constant(GetActorLocation(), TargetLocation, DeltaTime, Speed), true);
 }
 
-void AStupefy::SetTarget(AActor* Target)
+void AStupefy::SetTarget(AActor* target)
 {
-	TargetLocation = Target->GetActorLocation();
+	TargetLocation = target->GetActorLocation();
 }
 
 void AStupefy::NoTarget()
