@@ -130,7 +130,7 @@ public:
 	UFUNCTION()
 	virtual bool ReceiveDamage_Implementation(FDamageInfo DamageInfo) override;
 	UFUNCTION()
-	virtual float GetHP_Implementation() const override;
+	virtual int GetHP_Implementation() const override;
 	UFUNCTION()
 	virtual bool IsDead_Implementation() const override;
 #pragma endregion

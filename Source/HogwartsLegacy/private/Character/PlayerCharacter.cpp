@@ -291,6 +291,7 @@ void APlayerCharacter::SpellSkillSlotR(const FInputActionValue& InputValue)
 bool APlayerCharacter::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
 {
 	int NewHP = GetCurrentHP() - DamageInfo.DamageAmount;
+	UE_LOG(LogTemp, Warning, TEXT("Player received damage: %d, New HP: %d"), DamageInfo.DamageAmount, NewHP);
 	if (NewHP <= 0)
 	{
 		SetCurrentHP(0);
@@ -301,7 +302,7 @@ bool APlayerCharacter::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
 	return true;
 }
 
-float APlayerCharacter::GetHP_Implementation() const
+int APlayerCharacter::GetHP_Implementation() const
 {
 	return GetCurrentHP();
 }
