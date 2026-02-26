@@ -4,10 +4,10 @@
 #include "Character/PlayerCharacter.h"
 #include <GameFramework/CharacterMovementComponent.h>
 #include "Character/BasicAttack.h"
+#include "Character/Lumos.h"
 #include "Character/Protego.h"
 #include "Character/Stupefy.h"
 #include "Components/CapsuleComponent.h"
-#include "Enemy/Guardian.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -23,12 +23,12 @@ APlayerCharacter::APlayerCharacter()
 		GetMesh()->SetSkeletalMesh(TempMesh.Object);
 		GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -90), FRotator(0, -90, 0));
 	}
+	
 	ConstructorHelpers::FObjectFinder<UMaterial> TempMat(TEXT("M_Outline'/Game/KHJ/Materials/M_Outline.M_Outline'"));
 	if (TempMat.Succeeded())
 	{
 		OutlineMat = TempMat.Object;
 	}
-	
 	ConstructorHelpers::FObjectFinder<UMaterial> TempMat2(TEXT("M_ShineEffect'/Game/KHJ/Materials/M_ShineEffect.M_ShineEffect'"));
 	if (TempMat2.Succeeded())
 	{
@@ -46,6 +46,12 @@ APlayerCharacter::APlayerCharacter()
 	PlayerCameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("PlayerCamera"));
 	PlayerCameraComp->SetupAttachment(CameraArmComp);
 	PlayerCameraComp->bUsePawnControlRotation = false;
+	
+	WandTipComp = CreateDefaultSubobject<USceneComponent>(TEXT("WandTip"));
+	WandTipComp->SetupAttachment(RootComponent);
+	WandTipComp->SetRelativeLocation(FVector(0, 80, 120));
+	
+	
 	
 	bUseControllerRotationYaw = true;
 	
@@ -253,6 +259,7 @@ void APlayerCharacter::SpellBasicAttack(const FInputActionValue& InputValue)
 void APlayerCharacter::SpellSkillSlot1(const FInputActionValue& InputValue)
 {
 	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill 1"));
+	// SpellLumos();
 }
 
 void APlayerCharacter::SpellSkillSlot2(const FInputActionValue& InputValue)
@@ -300,6 +307,19 @@ void APlayerCharacter::SpellSkillSlotR(const FInputActionValue& InputValue)
 	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill R"));
 }
 
+void APlayerCharacter::SpellLumos()
+{
+	if (!IsValid(lms))
+	{
+		lms = GetWorld()->SpawnActor<ALumos>(Lumoses, WandTipComp->GetComponentLocation(), FRotator(0));
+		lms->SetLocation(WandTipComp->GetComponentLocation());
+	}
+	else
+	{
+		lms->Destroy();
+	}
+}
+
 bool APlayerCharacter::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
 {
 	if (prt)
@@ -307,15 +327,7 @@ bool APlayerCharacter::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
 		return false;
 	}
 	int NewHP = GetCurrentHP() - DamageInfo.DamageAmount;
-	UE_LOG(LogTemp, Warning, TEXT("Player received damage: %d, New HP: %d"), DamageInfo.DamageAmount, NewHP);
-	if (NewHP <= 0)
-	{
-		SetCurrentHP(0);
-	}
-	else
-	{
-		SetCurrentHP(NewHP);
-	}
+	SetCurrentHP(NewHP = NewHP <= 0 ? 0 : NewHP);
 	return true;
 }
 

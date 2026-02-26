@@ -12,6 +12,10 @@
 #include <Interface/Damageable.h>
 #include "PlayerCharacter.generated.h"
 
+class USpringArmComponent;
+class UCameraComponent;
+class USceneComponent;
+
 UCLASS()
 class HOGWARTSLEGACY_API APlayerCharacter : public ACharacter, public IDamageable
 {
@@ -37,6 +41,8 @@ public:
 	USpringArmComponent* CameraArmComp;
 	UPROPERTY(VisibleAnywhere, Category=Camera)
 	UCameraComponent* PlayerCameraComp;
+	UPROPERTY(VisibleAnywhere)
+	USceneComponent* WandTipComp;
 #pragma endregion
 	
 #pragma region Inputs
@@ -73,6 +79,11 @@ public:
 	bool CanAttack;
 	
 	UPROPERTY(EditDefaultsOnly, Category=Spell)
+	TSubclassOf <class ALumos> Lumoses;
+	UPROPERTY()
+	ALumos* lms;
+	
+	UPROPERTY(EditDefaultsOnly, Category=Spell)
 	TSubclassOf <class ABasicAttack> BasicAttacks;
 	UPROPERTY()
 	ABasicAttack* atk;
@@ -86,9 +97,7 @@ public:
 	TSubclassOf <class AStupefy> Stupefies;
 	UPROPERTY()
 	AStupefy* stp;
-	//
-	// UPROPERTY()
-	// int BasicAttackComboCount = 0;
+
 	UPROPERTY()
 	TArray<AActor*> ActorToIgnore;
 	UPROPERTY()
@@ -115,6 +124,8 @@ public:
 	void SpellSkillSlotQ(const FInputActionValue& InputValue);
 	void SpellStupefy(const FInputActionValue& InputValue);
 	void SpellSkillSlotR(const FInputActionValue& InputValue);
+	
+	void SpellLumos();
 	
 	UFUNCTION()
 	void PlayerMove();
