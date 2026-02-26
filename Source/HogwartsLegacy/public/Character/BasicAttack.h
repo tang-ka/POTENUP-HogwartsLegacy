@@ -29,11 +29,11 @@ public:
 	UPROPERTY()
 	AActor* Target;
 	UPROPERTY()
-	int ComboCount = 0;
+	bool ComboAttack;
 	UPROPERTY()
 	TObjectPtr <AActor> Causer;
 	UFUNCTION()
-	void SetTarget(AActor* InCauser, AActor* InTarget, int count);
+	void SetTarget(AActor* InCauser, AActor* InTarget, bool combo);
 	UFUNCTION()
 	void NoTarget();
 
@@ -44,7 +44,7 @@ public:
 	UPROPERTY(VisibleAnywhere, Category=Niagara)
 	UNiagaraSystem* ExplosionComp;
 	UPROPERTY(VisibleAnywhere, Category=Physics)
-	float PhysicsForce = 300;
+	float PhysicsForce = 20;
 	UFUNCTION()
 	void OnHit(
 		UPrimitiveComponent* HitComponent,

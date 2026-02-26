@@ -62,11 +62,11 @@ void ABasicAttack::Tick(float DeltaTime)
 	SetActorLocation(UKismetMathLibrary::VInterpTo_Constant(GetActorLocation(), TargetLocation, DeltaTime, Speed), true);
 }
 
-void ABasicAttack::SetTarget(AActor* causer, AActor* target, int count)
+void ABasicAttack::SetTarget(AActor* causer, AActor* target, bool combo)
 {
 	Target = target;
 	TargetLocation = target->GetActorLocation();
-	ComboCount = count;
+	ComboAttack = combo;
 }
 
 void ABasicAttack::NoTarget()
@@ -80,8 +80,9 @@ void ABasicAttack::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* O
 {
 	if (!DamageableHelpers::IsDead(Target))
 	{
-		int damage = ComboCount == 2 ? GetBasicDamage() : GetThirdDamage();
-		DamageableHelpers::ApplyDamage(Target, Causer, damage);
+		int Damage = ComboAttack ? GetThirdDamage() : GetBasicDamage();
+		DamageableHelpers::ApplyDamage(Target, Causer, Damage);
+		GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, FString::Printf(TEXT("Damage: %d"), Damage));
 	}
 	
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ExplosionComp, SweepResult.TraceStart);
@@ -94,6 +95,7 @@ void ABasicAttack::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
 {
 	if (OtherComp->IsSimulatingPhysics())
 	{
+		CollisionComp->SetSimulatePhysics(true);
 		OtherComp->AddImpulseAtLocation(GetVelocity() * PhysicsForce, GetActorLocation());
 	}
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ExplosionComp, Hit.TraceStart);

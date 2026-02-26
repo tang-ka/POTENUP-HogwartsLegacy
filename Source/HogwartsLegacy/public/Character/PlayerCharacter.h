@@ -69,6 +69,8 @@ public:
 #pragma region Properties
 	UPROPERTY()
 	FVector WalkDirection;
+	UPROPERTY()
+	bool CanAttack;
 	
 	UPROPERTY(EditDefaultsOnly, Category=Spell)
 	TSubclassOf <class ABasicAttack> BasicAttacks;
@@ -84,9 +86,9 @@ public:
 	TSubclassOf <class AStupefy> Stupefies;
 	UPROPERTY()
 	AStupefy* stp;
-	
-	UPROPERTY()
-	int BasicAttackComboCount = 0;
+	//
+	// UPROPERTY()
+	// int BasicAttackComboCount = 0;
 	UPROPERTY()
 	TArray<AActor*> ActorToIgnore;
 	UPROPERTY()
@@ -117,7 +119,7 @@ public:
 	UFUNCTION()
 	void PlayerMove();
 	UFUNCTION()
-	void CheckCanAttack();
+	void CheckCanAttack(bool& Check);
 	UFUNCTION()
 	void AimCapture();
 	UFUNCTION()
@@ -130,7 +132,7 @@ public:
 	
 #pragma region IDamageable
 	virtual bool ReceiveDamage_Implementation(FDamageInfo DamageInfo) override;
-	virtual float GetHP_Implementation() const override;
+	virtual int GetHP_Implementation() const override;
 	virtual bool IsDead_Implementation() const override;
 #pragma endregion
 

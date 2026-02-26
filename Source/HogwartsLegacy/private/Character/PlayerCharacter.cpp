@@ -95,6 +95,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	
 	PlayerMove();
+	CheckCanAttack(CanAttack);
 	AimCapture();
 	
 }
@@ -159,8 +160,9 @@ void APlayerCharacter::PlayerMove()
 	WalkDirection = FVector::ZeroVector;
 }
 
-void APlayerCharacter::CheckCanAttack()
+void APlayerCharacter::CheckCanAttack(bool& Check)
 {
+	Check = IsValid(atk) || IsValid(prt) || IsValid(stp) ? false : true;
 }
 
 void APlayerCharacter::AimCapture()
@@ -216,19 +218,29 @@ void APlayerCharacter::AimCapture()
 
 void APlayerCharacter::SpellBasicAttack(const FInputActionValue& InputValue)
 {
-	if (!IsValid(atk))
+	static int ComboCount = 0;
+	static bool ComboAttack;
+	if (IsValid(atk))
+	{
+		if (ComboCount == 2)
+		{
+			ComboAttack = true;
+			ComboCount = 0;
+		}
+		else
+		{
+			ComboAttack = false;
+			ComboCount++;
+		}
+	}
+	if (CanAttack)
 	{
 		if (AimedTarget && AimedTarget->GetActorNameOrLabel().Contains(TEXT("Guardian")))
 		{
 			FVector dir = AimedTarget->GetActorLocation() - this->GetActorLocation();
 			dir.Normalize();
-			BasicAttackComboCount++;
-			if (BasicAttackComboCount == 2)
-			{
-				BasicAttackComboCount = 0;
-			}
 			atk = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetActorLocation(), dir.Rotation());
-			atk->SetTarget(this, AimedTarget, BasicAttackComboCount);
+			atk->SetTarget(this, AimedTarget, ComboAttack);
 		}
 		else
 		{
@@ -255,7 +267,7 @@ void APlayerCharacter::SpellSkillSlot3(const FInputActionValue& InputValue)
 
 void APlayerCharacter::SpellSkillSlotQ(const FInputActionValue& InputValue) // Protego
 {
-	if (!IsValid(prt))
+	if (CanAttack)
 	{
 		prt = GetWorld()->SpawnActor<AProtego>(Protegos, GetActorLocation(), GetActorRotation());
 		// 타임 스토푸
@@ -265,18 +277,22 @@ void APlayerCharacter::SpellSkillSlotQ(const FInputActionValue& InputValue) // P
 
 void APlayerCharacter::SpellStupefy(const FInputActionValue& InputValue)
 {
-	if (AimedTarget && AimedTarget->GetActorNameOrLabel().Contains(TEXT("Guardian")))
+	if (CanAttack)
 	{
-		FVector dir = AimedTarget->GetActorLocation() - this->GetActorLocation();
-		dir.Normalize();
-		stp = GetWorld()->SpawnActor<AStupefy>(Stupefies, GetActorLocation(), dir.Rotation());
-		stp->SetTarget(AimedTarget);
+		if (AimedTarget && AimedTarget->GetActorNameOrLabel().Contains(TEXT("Guardian")))
+		{
+			FVector dir = AimedTarget->GetActorLocation() - this->GetActorLocation();
+			dir.Normalize();
+			stp = GetWorld()->SpawnActor<AStupefy>(Stupefies, GetActorLocation(), dir.Rotation());
+			stp->SetTarget(AimedTarget);
+		}
+		else
+		{
+			stp = GetWorld()->SpawnActor<AStupefy>(Stupefies, GetActorLocation(), GetActorRotation());
+			stp->NoTarget();
+		}
 	}
-	else
-	{
-		stp = GetWorld()->SpawnActor<AStupefy>(Stupefies, GetActorLocation(), GetActorRotation());
-		stp->NoTarget();
-	}
+	
 }
 
 void APlayerCharacter::SpellSkillSlotR(const FInputActionValue& InputValue)
@@ -290,7 +306,6 @@ bool APlayerCharacter::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
 	{
 		return false;
 	}
-	
 	int NewHP = GetCurrentHP() - DamageInfo.DamageAmount;
 	if (NewHP <= 0)
 	{
@@ -303,7 +318,7 @@ bool APlayerCharacter::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
 	return true;
 }
 
-float APlayerCharacter::GetHP_Implementation() const
+int APlayerCharacter::GetHP_Implementation() const
 {
 	return GetCurrentHP();
 }
