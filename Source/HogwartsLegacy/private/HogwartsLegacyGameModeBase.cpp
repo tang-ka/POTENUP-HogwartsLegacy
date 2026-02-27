@@ -3,8 +3,9 @@
 
 #include "HogwartsLegacyGameModeBase.h"
 #include "HogwartsLegacy.h"
+#include "Kismet/KismetMathLibrary.h"
 
 AHogwartsLegacyGameModeBase::AHogwartsLegacyGameModeBase()
 {
-
+	
 }

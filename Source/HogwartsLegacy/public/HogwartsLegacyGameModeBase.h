@@ -16,4 +16,9 @@ class HOGWARTSLEGACY_API AHogwartsLegacyGameModeBase : public AGameModeBase
 	
 public:
 	AHogwartsLegacyGameModeBase();
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf <class UUserWidget> Widgets;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf <class UMinimapUserWidget> MinimapWidget;
 };

@@ -220,13 +220,10 @@ void APlayerCharacter::AimCapture()
 }
 
 
-
-
 void APlayerCharacter::SkillMouseL(const FInputActionValue& InputValue)
 {
 	SpellBasicAttack();
 }
-
 
 void APlayerCharacter::SkillSlot1(const FInputActionValue& InputValue)
 {
