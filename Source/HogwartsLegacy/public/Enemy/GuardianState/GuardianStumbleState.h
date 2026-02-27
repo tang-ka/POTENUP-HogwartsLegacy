@@ -23,6 +23,7 @@ public:
 	virtual void TickState(float DeltaTime) override;
 	
 private:
+	FTimerHandle StumbleTimerHandle;
 	float StumbleDuration{2.0f};
 	float CurTime{0.f};
 	

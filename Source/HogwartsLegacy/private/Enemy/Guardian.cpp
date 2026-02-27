@@ -43,8 +43,11 @@ AGuardian::AGuardian()
 	// 메쉬 충돌은 끄고 싶다.
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Enemy"));
-	ChargeAttackHitBox->SetCollisionProfileName(TEXT("NoCollision"));
-	BashAttackHitBox->SetCollisionProfileName(TEXT("NoCollision"));
+	
+	SetActiveChargeAttackHitBox(false);
+	SetActiveBashAttackHitBox(false);
+	// ChargeAttackHitBox->SetCollisionProfileName(TEXT("NoCollision"));
+	// BashAttackHitBox->SetCollisionProfileName(TEXT("NoCollision"));
 }
 
 void AGuardian::BeginPlay()
@@ -56,6 +59,7 @@ void AGuardian::BeginPlay()
 	InitHP();
 
 	ChargeAttackHitBox->OnComponentBeginOverlap.AddDynamic(this, &AGuardian::OnChargeAttackHitBoxOverlap);
+	BashAttackHitBox->OnComponentBeginOverlap.AddDynamic(this, &AGuardian::OnBashAttackHitBoxOverlap);
 }
 
 void AGuardian::Tick(float DeltaTime)
@@ -68,30 +72,19 @@ void AGuardian::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
-void AGuardian::ExecuteChargeToTarget(AActor* Target, const float ChargeStrength)
+void AGuardian::ExecuteChargeToTarget(AActor* InTarget, const float ChargeStrength)
 {
-	// 타겟을 처다보게 하고 싶다.
-	FRotator LookAtRotation = (Target->GetActorLocation() - GetActorLocation()).Rotation();
-	SetActorRotation(LookAtRotation);
-
-	FVector Direction = Target->GetActorLocation() - GetActorLocation();
-	Direction.Z = 0.0f;
-	Direction.Normalize();
-
-	FVector LaunchVelocity = Direction * ChargeStrength;
-	GetCharacterMovement()->Velocity = LaunchVelocity;
-	GetCharacterMovement()->MaxWalkSpeed = ChargeStrength;
-	Cast<AAIController>(GetController())->MoveToActor(Target);
+	LaunchToTarget(InTarget, ChargeStrength);
 }
 
-void AGuardian::SnapToAttackLocation(const AActor* Target, const float AttackRange)
+void AGuardian::SnapToAttackLocation(const AActor* InTarget, const float AttackRange)
 {
 	// 정지
 	GetCharacterMovement()->StopMovementImmediately();
 
 	// 위치 보정
-	FVector Dir = GetActorLocation() - Target->GetActorLocation();
-	FVector AttackLocation = Target->GetActorLocation() + Dir.GetSafeNormal() * AttackRange;
+	FVector Dir = GetActorLocation() - InTarget->GetActorLocation();
+	FVector AttackLocation = InTarget->GetActorLocation() + Dir.GetSafeNormal() * AttackRange;
 	SetActorLocation(AttackLocation);
 }
 
@@ -129,9 +122,17 @@ void AGuardian::ExecuteStumble(float StumbleStrength)
 	GetCharacterMovement()->Launch(LaunchVelocity);
 }
 
-void AGuardian::ExecuteBashAttack()
+void AGuardian::ExecuteBashAttack(AActor* InTarget, const float BashStrength)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Guardian executes bash attack!"));
+	SetActiveBashAttackHitBox(true);
+	LaunchToTarget(InTarget, BashStrength);
+	
+	GetWorld()->GetTimerManager().SetTimer(BashAttackTimerHandle, FTimerDelegate::CreateLambda([this]()
+	{
+		SetActiveBashAttackHitBox(false);
+		// 로그: 충돌하지 않고 끝났다 
+		PRINT_LOG(TEXT("End Bash Attack without hit"));
+	}), 2.0f, false);
 }
 
 void AGuardian::OnBashAttackHitBoxOverlap(UPrimitiveComponent* OverlappedComponent,
@@ -139,8 +140,10 @@ void AGuardian::OnBashAttackHitBoxOverlap(UPrimitiveComponent* OverlappedCompone
                                           int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	bool bIsDamageApplied = DamageableHelpers::ApplyDamage(OtherActor, this, 20);
-
-	SetActiveChargeAttackHitBox(false);
+	
+	StopMovementImmediately();
+	GetWorldTimerManager().ClearTimer(BashAttackTimerHandle);
+	SetActiveBashAttackHitBox(false);
 	FSMComponent->FinishAttack(true); // Bash 공격은 항상 성공으로 간주 (Stumble 상태로 가지 않음)
 }
 
@@ -165,6 +168,25 @@ void AGuardian::StopMovementImmediately() const
 	GetCharacterMovement()->StopMovementImmediately();
 }
 
+void AGuardian::LaunchToTarget(AActor* InTarget, float Strength, bool bLookAtTarget)
+{
+	if (bLookAtTarget)
+	{
+		// 타겟을 처다보게 하고 싶다.
+		FRotator LookAtRotation = (InTarget->GetActorLocation() - GetActorLocation()).Rotation();
+		SetActorRotation(LookAtRotation);
+	}
+	
+	FVector Direction = InTarget->GetActorLocation() - GetActorLocation();
+	Direction.Z = 0.0f;
+	Direction.Normalize();
+
+	FVector LaunchVelocity = Direction * Strength;
+	GetCharacterMovement()->Velocity = LaunchVelocity;
+	GetCharacterMovement()->MaxWalkSpeed = Strength;
+	Cast<AAIController>(GetController())->MoveToActor(InTarget);
+}
+
 void AGuardian::SetActiveChargeAttackHitBox(bool bIsActivate) const
 {
 	if (bIsActivate)
@@ -181,11 +203,11 @@ void AGuardian::SetActiveBashAttackHitBox(bool bIsActivate) const
 {
 	if (bIsActivate)
 	{
-		ChargeAttackHitBox->SetCollisionProfileName(TEXT("EnemyAttack"));
+		BashAttackHitBox->SetCollisionProfileName(TEXT("EnemyAttack"));
 	}
 	else
 	{
-		ChargeAttackHitBox->SetCollisionProfileName(TEXT("NoCollision"));
+		BashAttackHitBox->SetCollisionProfileName(TEXT("NoCollision"));
 	}
 }
 

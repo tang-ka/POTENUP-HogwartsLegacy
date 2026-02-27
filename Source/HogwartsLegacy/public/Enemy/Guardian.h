@@ -28,8 +28,8 @@ public:
 
 public:
 #pragma region Charge Attack
-	void ExecuteChargeToTarget(AActor* Target, const float ChargeStrength);
-	void SnapToAttackLocation(const AActor* Target, const float AttackRange);
+	void ExecuteChargeToTarget(AActor* InTarget, const float ChargeStrength);
+	void SnapToAttackLocation(const AActor* InTarget, const float AttackRange);
 	void ExecuteMeleeAttack();
 
 	UFUNCTION()
@@ -43,7 +43,8 @@ public:
 #pragma endregion
 	
 #pragma region Bash Attack
-	void ExecuteBashAttack();
+	FTimerHandle BashAttackTimerHandle;
+	void ExecuteBashAttack(AActor* InTarget, float BashStrength);
 	
 	UFUNCTION()
 	void OnBashAttackHitBoxOverlap(UPrimitiveComponent* OverlappedComponent,
@@ -56,15 +57,21 @@ public:
 #pragma region Movement
 	UFUNCTION(BlueprintCallable)
 	void SetCharacterMaxWalkSpeed(float InMaxWalkSpeed) const;
+	
 	UFUNCTION(BlueprintCallable)
 	void MoveToActor(AActor* Target, float AcceptanceRadius = -1.0f) const;
+	
 	UFUNCTION(BlueprintCallable)
 	void StopMovementImmediately() const;
+	
+	UFUNCTION(BlueprintCallable)
+	void LaunchToTarget(AActor* InTarget, float Strength, bool bLookAtTarget = true);
 #pragma endregion
 
 #pragma region HitBox
 	UFUNCTION(BlueprintCallable)
 	void SetActiveChargeAttackHitBox(bool bIsActivate) const;
+	
 	UFUNCTION(BlueprintCallable)
 	void SetActiveBashAttackHitBox(bool bIsActivate) const;
 #pragma endregion
@@ -82,10 +89,16 @@ public:
 	void ResetMaterialColor();
 #pragma endregion
 
+#pragma region Getters
 	int GetCurrentHP() const { return HP; }
 	UEnemyFSMComponent* GetFSMComponent() const { return FSMComponent; }
 	AActor* GetTargetActor() const { return TargetActor; }
-
+#pragma endregion
+	
+#pragma region Setters
+	void SetsCurrentDamage(int InDamageAmount) { CurrentDamage = InDamageAmount; }
+#pragma endregion
+	
 private:
 	void InitHP();
 
@@ -95,6 +108,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category="Stats")
 	int32 MaxHP{150};
+	
+	UPROPERTY(EditAnywhere, Category="Stats")
+	int CurrentDamage{20};
 
 private:
 	UPROPERTY(EditAnywhere, Category="FSMComponent")
