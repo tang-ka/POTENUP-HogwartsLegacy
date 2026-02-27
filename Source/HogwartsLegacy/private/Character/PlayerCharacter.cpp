@@ -49,7 +49,7 @@ APlayerCharacter::APlayerCharacter()
 	
 	WandTipComp = CreateDefaultSubobject<USceneComponent>(TEXT("WandTip"));
 	WandTipComp->SetupAttachment(RootComponent);
-	WandTipComp->SetRelativeLocation(FVector(0, 80, 120));
+	WandTipComp->SetRelativeLocation(FVector(0, 60, 88));
 	
 	bUseControllerRotationYaw = true;
 	
@@ -203,14 +203,14 @@ void APlayerCharacter::AimCapture()
 		}
 		if (IsValid(Obj))
 		{
-			GEngine->AddOnScreenDebugMessage(3, 1.0f, FColor::Green, Obj->GetName());
+			// GEngine->AddOnScreenDebugMessage(3, 1.0f, FColor::Green, Obj->GetName());
 			AimedTarget = nullptr;
 			if (Obj->GetActorNameOrLabel().Contains(TEXT("Guardian")))
 			{
 				Obj->FindComponentByClass<USkeletalMeshComponent>()->SetOverlayMaterial(OutlineMat);
 				AimedTarget = Obj;
 			}
-			if (Obj->ActorHasTag(FName("Item")))
+			if (Obj->ActorHasTag(FName("Item")) && IsValid(lumos))
 			{
 				Obj->FindComponentByClass<UMeshComponent>()->SetOverlayMaterial(ShineMat);
 			}
@@ -231,7 +231,7 @@ void APlayerCharacter::SpellBasicAttack(const FInputActionValue& InputValue)
 		if (GetWorldTimerManager().IsTimerActive(ComboTimerHandle)) // Check Combo Timing
 		{
 			ComboCount++;
-			GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, FString::Printf(TEXT("ComboCount: %d"), ComboCount));
+			GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Blue, FString::Printf(TEXT("ComboCount: %d"), ComboCount));
 		}
 		else
 		{

@@ -4,10 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "NiagaraComponent.h"
 #include "Lumos.generated.h"
 
 class UStaticMeshComponent;
 class UNiagaraSystem;
+class UNiagaraComponent;
+class USceneComponent;
 
 UCLASS()
 class HOGWARTSLEGACY_API ALumos : public AActor
@@ -29,7 +32,9 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* SpellSphereComp;
 	UPROPERTY(EditAnywhere, Category=Niagara)
-	UNiagaraSystem* SpawnNiagara;
+	UNiagaraSystem* StartNiagara;
+	UPROPERTY(EditAnywhere, Category=Niagara)
+	UNiagaraComponent* SpawnedNiagara;
 	UPROPERTY()
 	USceneComponent* Caster;
 	
