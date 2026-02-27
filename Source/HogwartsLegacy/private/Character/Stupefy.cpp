@@ -4,6 +4,8 @@
 #include "Character/Stupefy.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "Enemy/Guardian.h" // temp
+#include "Enemy/EnemyFSMComponent.h" // temp
 #include "Kismet/KismetMathLibrary.h"
 
 
@@ -58,7 +60,7 @@ void AStupefy::Tick(float DeltaTime)
 
 void AStupefy::SetTarget(AActor* target)
 {
-	TargetLocation = target->GetActorLocation();
+	TargetLocation = target->GetActorLocation() + UKismetMathLibrary::MakeVector(0,0,40);
 }
 
 void AStupefy::NoTarget()
@@ -69,6 +71,9 @@ void AStupefy::NoTarget()
 void AStupefy::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	auto gd = Cast<AGuardian>(OtherActor); // temp
+	gd->GetFSMComponent()->ChangeState(EEnemyState::Stun); // temp
+	
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ExplosionComp, SweepResult.TraceStart);
 	Destroy();
 }
