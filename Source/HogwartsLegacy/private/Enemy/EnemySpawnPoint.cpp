@@ -31,7 +31,7 @@ void AEnemySpawnPoint::BeginPlay()
 		GetActorLocation(),
 		10.f,
 		12,
-		FColor::Blue,
+		FColor::Yellow,
 		true,
 		-1.f,
 		0,
