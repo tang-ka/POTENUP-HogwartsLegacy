@@ -2,9 +2,9 @@
 
 
 #include "Character/BasicAttack.h"
-#include "Kismet/KismetMathLibrary.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include <Interface/DamageableHelpers.h>
 
 
@@ -65,7 +65,7 @@ void ABasicAttack::Tick(float DeltaTime)
 void ABasicAttack::SetTarget(AActor* causer, AActor* target, bool combo)
 {
 	Target = target;
-	TargetLocation = target->GetActorLocation();
+	TargetLocation = target->GetActorLocation() + UKismetMathLibrary::MakeVector(0,0,40);
 	ComboAttack = combo;
 }
 
@@ -82,7 +82,7 @@ void ABasicAttack::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* O
 	{
 		int Damage = ComboAttack ? GetThirdDamage() : GetBasicDamage();
 		DamageableHelpers::ApplyDamage(Target, Causer, Damage);
-		GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, FString::Printf(TEXT("Damage: %d"), Damage));
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("Damage: %d"), Damage));
 	}
 	
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ExplosionComp, SweepResult.TraceStart);

@@ -28,13 +28,11 @@ public:
 	
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* SpellSphereComp;
-	UPROPERTY(VisibleAnywhere, Category=Niagara)
-	UNiagaraSystem* StartNiagara;
-	// UPROPERTY()
-	// APlayerCharacter* Player;
+	UPROPERTY(EditAnywhere, Category=Niagara)
+	UNiagaraSystem* SpawnNiagara;
 	UPROPERTY()
-	FVector Location;
+	USceneComponent* Caster;
 	
 	UFUNCTION()
-	void SetLocation(FVector loc);
+	void SetLocation(USceneComponent* WandTip);
 };

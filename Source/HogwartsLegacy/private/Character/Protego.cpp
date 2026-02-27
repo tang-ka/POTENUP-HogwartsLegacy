@@ -11,7 +11,6 @@ AProtego::AProtego()
 	PrimaryActorTick.bCanEverTick = true;
 
 	SphereMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BodyMesh"));
-	//SphereMesh->SetRelativeScale3D(FVector(3));
 	RootComponent = SphereMesh;
 	
 	SetActorEnableCollision(false);
@@ -39,7 +38,6 @@ void AProtego::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	//player = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerCharacter::StaticClass());
 	Player = GetWorld()->GetFirstPlayerController()->GetPawn();
 	
 }

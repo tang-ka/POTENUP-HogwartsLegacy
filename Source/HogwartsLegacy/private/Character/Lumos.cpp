@@ -11,12 +11,12 @@ ALumos::ALumos()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	
-	StartNiagara = CreateDefaultSubobject<UNiagaraSystem>(TEXT("NiagaraSystem"));
+	SpawnNiagara = CreateDefaultSubobject<UNiagaraSystem>(TEXT("NiagaraSystem"));
 
 	ConstructorHelpers::FObjectFinder<UNiagaraSystem> TempComp(TEXT("NiagaraSystem'/Game/KHJ/FX/NS_Lumos.NS_Lumos'"));
 	if (TempComp.Succeeded())
 	{
-		StartNiagara = TempComp.Object;
+		  SpawnNiagara = TempComp.Object;
 	}
 	
 	SpellSphereComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SpellSphere"));
@@ -33,7 +33,10 @@ ALumos::ALumos()
 		SpellSphereComp->SetMaterial(0, TempMat3.Object);
 	}
 	
-	SpellSphereComp->SetRelativeScale3D(FVector(0.1));
+	SpellSphereComp->SetWorldScale3D(FVector(0.1f));
+	SpellSphereComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
+	Tags.Add(FName("Spell"));
 }
 
 // Called when the game starts or when spawned
@@ -41,7 +44,7 @@ void ALumos::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), StartNiagara, this->GetActorLocation());
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), SpawnNiagara, this->GetActorLocation());
 }
 
 // Called every frame
@@ -49,12 +52,11 @@ void ALumos::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	// Player = Cast<APlayerCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
-	SetActorLocation(Location);
+	SetActorLocation(Caster->GetComponentLocation());
 }
 
-void ALumos::SetLocation(FVector loc)
+void ALumos::SetLocation(USceneComponent* WandTip)
 {
-	Location = loc;
+	Caster = WandTip;
 }
 

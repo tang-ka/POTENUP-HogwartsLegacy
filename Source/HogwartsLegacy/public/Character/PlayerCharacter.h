@@ -77,26 +77,32 @@ public:
 	FVector WalkDirection;
 	UPROPERTY()
 	bool CanAttack;
+	UPROPERTY()
+	int ComboCount = 0;
+	UPROPERTY()
+	bool ComboAttack;
+	UPROPERTY()
+	FTimerHandle ComboTimerHandle;
 	
 	UPROPERTY(EditDefaultsOnly, Category=Spell)
 	TSubclassOf <class ALumos> Lumoses;
 	UPROPERTY()
-	ALumos* lms;
+	ALumos* lumos;
 	
 	UPROPERTY(EditDefaultsOnly, Category=Spell)
 	TSubclassOf <class ABasicAttack> BasicAttacks;
 	UPROPERTY()
-	ABasicAttack* atk;
+	ABasicAttack* attack;
 	
 	UPROPERTY(EditDefaultsOnly, Category=Spell)
 	TSubclassOf <class AProtego> Protegos;
 	UPROPERTY()
-	AProtego* prt;
+	AProtego* protego;
 	
 	UPROPERTY(EditDefaultsOnly, Category=Spell)
 	TSubclassOf <class AStupefy> Stupefies;
 	UPROPERTY()
-	AStupefy* stp;
+	AStupefy* stupefy;
 
 	UPROPERTY()
 	TArray<AActor*> ActorToIgnore;

@@ -51,8 +51,6 @@ APlayerCharacter::APlayerCharacter()
 	WandTipComp->SetupAttachment(RootComponent);
 	WandTipComp->SetRelativeLocation(FVector(0, 80, 120));
 	
-	
-	
 	bUseControllerRotationYaw = true;
 	
 }
@@ -168,7 +166,7 @@ void APlayerCharacter::PlayerMove()
 
 void APlayerCharacter::CheckCanAttack(bool& Check)
 {
-	Check = IsValid(atk) || IsValid(prt) || IsValid(stp) ? false : true;
+	Check = IsValid(attack) || IsValid(protego) || IsValid(stupefy) ? false : true;
 }
 
 void APlayerCharacter::AimCapture()
@@ -224,42 +222,49 @@ void APlayerCharacter::AimCapture()
 
 void APlayerCharacter::SpellBasicAttack(const FInputActionValue& InputValue)
 {
-	static int ComboCount = 0;
-	static bool ComboAttack;
-	if (IsValid(atk))
+	if (!CanAttack)
 	{
-		if (ComboCount == 2)
+		return;
+	}
+	else
+	{
+		if (GetWorldTimerManager().IsTimerActive(ComboTimerHandle)) // Check Combo Timing
 		{
-			ComboAttack = true;
-			ComboCount = 0;
+			ComboCount++;
+			GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, FString::Printf(TEXT("ComboCount: %d"), ComboCount));
 		}
 		else
 		{
-			ComboAttack = false;
-			ComboCount++;
+			ComboCount = 0;
 		}
-	}
-	if (CanAttack)
-	{
+	
+		if (ComboCount >= 4) // Check Whether Is This ComboAttack
+		{
+			ComboCount = 0;
+			ComboAttack = true;
+		}
 		if (AimedTarget && AimedTarget->GetActorNameOrLabel().Contains(TEXT("Guardian")))
 		{
 			FVector dir = AimedTarget->GetActorLocation() - this->GetActorLocation();
 			dir.Normalize();
-			atk = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetActorLocation(), dir.Rotation());
-			atk->SetTarget(this, AimedTarget, ComboAttack);
+			attack = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetActorLocation(), dir.Rotation());
+			attack->SetTarget(this, AimedTarget, ComboAttack);
 		}
 		else
 		{
-			atk = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetActorLocation(), GetActorRotation());
-			atk->NoTarget();
+			attack = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetActorLocation(), GetViewRotation());
+			attack->NoTarget();
 		}
 	}
+	GetWorldTimerManager().SetTimer(ComboTimerHandle,
+		[this](){this->ComboCount=0;}, 1.0f, false);
+	ComboAttack = false;
 }
 
 void APlayerCharacter::SpellSkillSlot1(const FInputActionValue& InputValue)
 {
 	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill 1"));
-	// SpellLumos();
+	SpellLumos();
 }
 
 void APlayerCharacter::SpellSkillSlot2(const FInputActionValue& InputValue)
@@ -276,7 +281,7 @@ void APlayerCharacter::SpellSkillSlotQ(const FInputActionValue& InputValue) // P
 {
 	if (CanAttack)
 	{
-		prt = GetWorld()->SpawnActor<AProtego>(Protegos, GetActorLocation(), GetActorRotation());
+		protego = GetWorld()->SpawnActor<AProtego>(Protegos, GetActorLocation(), GetActorRotation());
 		// 타임 스토푸
 		// GetWorld()->GetWorldSettings()->SetTimeDilation(0.5f);
 	}
@@ -290,13 +295,13 @@ void APlayerCharacter::SpellStupefy(const FInputActionValue& InputValue)
 		{
 			FVector dir = AimedTarget->GetActorLocation() - this->GetActorLocation();
 			dir.Normalize();
-			stp = GetWorld()->SpawnActor<AStupefy>(Stupefies, GetActorLocation(), dir.Rotation());
-			stp->SetTarget(AimedTarget);
+			stupefy = GetWorld()->SpawnActor<AStupefy>(Stupefies, GetActorLocation(), dir.Rotation());
+			stupefy->SetTarget(AimedTarget);
 		}
 		else
 		{
-			stp = GetWorld()->SpawnActor<AStupefy>(Stupefies, GetActorLocation(), GetActorRotation());
-			stp->NoTarget();
+			stupefy = GetWorld()->SpawnActor<AStupefy>(Stupefies, GetActorLocation(), GetActorRotation());
+			stupefy->NoTarget();
 		}
 	}
 	
@@ -309,20 +314,20 @@ void APlayerCharacter::SpellSkillSlotR(const FInputActionValue& InputValue)
 
 void APlayerCharacter::SpellLumos()
 {
-	if (!IsValid(lms))
+	if (!IsValid(lumos))
 	{
-		lms = GetWorld()->SpawnActor<ALumos>(Lumoses, WandTipComp->GetComponentLocation(), FRotator(0));
-		lms->SetLocation(WandTipComp->GetComponentLocation());
+		lumos = GetWorld()->SpawnActor<ALumos>(Lumoses, WandTipComp->GetComponentLocation(), WandTipComp->GetComponentRotation());
+		lumos->SetLocation(WandTipComp);
 	}
 	else
 	{
-		lms->Destroy();
+		lumos->Destroy();
 	}
 }
 
 bool APlayerCharacter::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
 {
-	if (prt)
+	if (protego)
 	{
 		return false;
 	}
