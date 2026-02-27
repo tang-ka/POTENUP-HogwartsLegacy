@@ -3,7 +3,7 @@
 
 #include "GuardianCombatGameMode.h"
 
-#include "GuardianManager.h"
+#include "Enemy/GuardianManager.h"
 
 void AGuardianCombatGameMode::StartPlay()
 {
