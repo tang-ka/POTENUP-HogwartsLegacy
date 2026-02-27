@@ -3,11 +3,24 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "HogwartsLegacy.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "GuardianManager.generated.h"
 
 class AEnemySpawnPoint;
 class AGuardian;
+
+class SpawnPointGenerator
+{
+public:
+	 void Generate(UWorld* World, TArray<TObjectPtr<AEnemySpawnPoint>>& OutSpawnPoints) const;
+
+private:
+	int32 SpawnPointCount{6};
+	float SpawnRadius{1000.f};
+	FVector CenterLocation{0.f, 0.f, 0.f};
+};
+
 /**
  * 
  */
@@ -18,7 +31,11 @@ class HOGWARTSLEGACY_API UGuardianManager : public UWorldSubsystem
 
 public:
 	
-	void Enable() { bIsEnabled = true; }
+	FORCENOINLINE void Enable()
+	{
+		bIsEnabled = true;
+		SpawnPointsGenerator.Generate(GetWorld(), SpawnPoints);
+	}
 	void Disable() { bIsEnabled = false; }
 	bool IsEnabled() const { return bIsEnabled; }
 	
@@ -53,5 +70,7 @@ private:
 	TArray<TWeakObjectPtr<AGuardian>> AliveGuardians;
 	
 	UPROPERTY(VisibleAnywhere)
-	TArray<TWeakObjectPtr<AEnemySpawnPoint>> SpawnPoints;
+	TArray<TObjectPtr<AEnemySpawnPoint>> SpawnPoints;
+	
+	SpawnPointGenerator SpawnPointsGenerator{};
 };

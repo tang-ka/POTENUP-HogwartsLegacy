@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "EnemySpawnPoint.generated.h"
 
+class UArrowComponent;
+
 UCLASS()
 class HOGWARTSLEGACY_API AEnemySpawnPoint : public AActor
 {
@@ -23,4 +25,10 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	bool IsSafeToSpawn();
+	
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USceneComponent> RootComp;
+	
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UArrowComponent> ArrowComp;
 };

@@ -26,7 +26,6 @@ AGuardian::AGuardian()
 	{
 		GetMesh()->SetSkeletalMesh(tempMesh.Object);
 		GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -88), FRotator(0, -90, 0));
-		PRINT_LOG(TEXT("My Log : %s"), TEXT("Enemy"));
 	}
 
 	// ForCopyFSMComponent = CreateDefaultSubobject<UEnemyFSMComponent>(TEXT("FSMComponent"));

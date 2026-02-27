@@ -7,6 +7,35 @@
 #include "Enemy/Guardian.h"
 #include "Enemy/EnemySpawnPoint.h"
 
+void SpawnPointGenerator::Generate(UWorld* World, TArray<TObjectPtr<AEnemySpawnPoint>>& OutSpawnPoints) const
+{
+	const float AngleStep = 360.f / SpawnPointCount;
+	
+	for (int i = 0; i < SpawnPointCount; ++i)
+	{
+		float Angle = i * AngleStep;
+		const float x = FMath::Cos(FMath::DegreesToRadians(Angle)) * SpawnRadius;
+		const float y = FMath::Sin(FMath::DegreesToRadians(Angle)) * SpawnRadius;
+		const float z = 100.f;
+		FVector SpawnLocation = FVector(x, y, z);
+		
+		FVector Direction = CenterLocation - SpawnLocation;
+		FRotator LookAtRotation = Direction.Rotation();
+		
+		FTransform SpawnTransform(LookAtRotation, SpawnLocation);
+		
+		FActorSpawnParameters SpawnParams;
+		// 스폰 시 충돌이 있어도 위치를 조금 조정해서 무조건 스폰되게 보장하는 옵션
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+		
+		AEnemySpawnPoint* NewSpawnPoint = World->SpawnActor<AEnemySpawnPoint>(AEnemySpawnPoint::StaticClass(), SpawnTransform, SpawnParams);
+		if (NewSpawnPoint)
+		{
+			OutSpawnPoints.Add(NewSpawnPoint);
+			NewSpawnPoint->SetFolderPath(FName("SpawnPoints"));
+		}
+	}
+}
 
 void UGuardianManager::RequestSpawnGuardian()
 {
