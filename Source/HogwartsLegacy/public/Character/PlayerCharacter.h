@@ -122,16 +122,27 @@ public:
 	void Move(const FInputActionValue& InputValue);
 	void Run(const FInputActionValue& InputValue);
 	void InputJump(const FInputActionValue& InputValue);
-
-	void SpellBasicAttack(const FInputActionValue& InputValue);
-	void SpellSkillSlot1(const FInputActionValue& InputValue);
-	void SpellSkillSlot2(const FInputActionValue& InputValue);
-	void SpellSkillSlot3(const FInputActionValue& InputValue);
-	void SpellSkillSlotQ(const FInputActionValue& InputValue);
-	void SpellStupefy(const FInputActionValue& InputValue);
-	void SpellSkillSlotR(const FInputActionValue& InputValue);
 	
-	void SpellLumos();
+	void SkillMouseL(const FInputActionValue& InputValue);
+	void SkillSlot1(const FInputActionValue& InputValue);
+	void SkillSlot2(const FInputActionValue& InputValue);
+	void SkillSlot3(const FInputActionValue& InputValue);
+	void SkillSlotQ(const FInputActionValue& InputValue);
+	void SkillSlotQLongClick(const FInputActionValue& InputValue);
+	void SkillSlotR(const FInputActionValue& InputValue);
+	
+	UFUNCTION()
+	void SpellBasicAttack();
+	UFUNCTION()
+	void SpellProtego(AProtego* prt);
+	UFUNCTION()
+	void SpellStupefy(AStupefy* stp);
+	UFUNCTION()
+	void SpellLumos(USceneComponent* WandTip);
+	UFUNCTION()
+	void SpellLevioso();
+	UFUNCTION()
+	void SpellDescendo();
 	
 	UFUNCTION()
 	void PlayerMove();

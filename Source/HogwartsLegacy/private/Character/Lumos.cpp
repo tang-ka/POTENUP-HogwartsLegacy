@@ -56,6 +56,12 @@ void ALumos::Tick(float DeltaTime)
 	SpawnedNiagara->SetWorldLocation(Caster->GetComponentLocation());
 }
 
+void ALumos::BeginDestroy()
+{
+	Super::BeginDestroy();
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), StartNiagara, this->GetActorLocation());
+}
+
 void ALumos::SetLocation(USceneComponent* WandTip)
 {
 	Caster = WandTip;

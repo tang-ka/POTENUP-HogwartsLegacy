@@ -118,13 +118,13 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		PlayerInput->BindAction(IA_Run, ETriggerEvent::Started, this, &APlayerCharacter::Run);
 		PlayerInput->BindAction(IA_Jump, ETriggerEvent::Started, this, &APlayerCharacter::InputJump);
 
-		PlayerInput->BindAction(IA_Attack, ETriggerEvent::Started, this, &APlayerCharacter::SpellBasicAttack);
-		PlayerInput->BindAction(IA_SkillSlot1, ETriggerEvent::Started, this, &APlayerCharacter::SpellSkillSlot1);
-		PlayerInput->BindAction(IA_SkillSlot2, ETriggerEvent::Started, this, &APlayerCharacter::SpellSkillSlot2);
-		PlayerInput->BindAction(IA_SkillSlot3, ETriggerEvent::Started, this, &APlayerCharacter::SpellSkillSlot3);
-		PlayerInput->BindAction(IA_SkillSlotQ, ETriggerEvent::Started, this, &APlayerCharacter::SpellSkillSlotQ);
-		PlayerInput->BindAction(IA_SkillSlotQ, ETriggerEvent::Completed, this, &APlayerCharacter::SpellStupefy);
-		PlayerInput->BindAction(IA_SkillSlotR, ETriggerEvent::Started, this, &APlayerCharacter::SpellSkillSlotR);
+		PlayerInput->BindAction(IA_Attack, ETriggerEvent::Started, this, &APlayerCharacter::SkillMouseL);
+		PlayerInput->BindAction(IA_SkillSlot1, ETriggerEvent::Started, this, &APlayerCharacter::SkillSlot1);
+		PlayerInput->BindAction(IA_SkillSlot2, ETriggerEvent::Started, this, &APlayerCharacter::SkillSlot2);
+		PlayerInput->BindAction(IA_SkillSlot3, ETriggerEvent::Started, this, &APlayerCharacter::SkillSlot3);
+		PlayerInput->BindAction(IA_SkillSlotQ, ETriggerEvent::Started, this, &APlayerCharacter::SkillSlotQ);
+		PlayerInput->BindAction(IA_SkillSlotQ, ETriggerEvent::Completed, this, &APlayerCharacter::SkillSlotQLongClick);
+		PlayerInput->BindAction(IA_SkillSlotR, ETriggerEvent::Started, this, &APlayerCharacter::SkillSlotR);
 	}
 }
 
@@ -220,7 +220,49 @@ void APlayerCharacter::AimCapture()
 }
 
 
-void APlayerCharacter::SpellBasicAttack(const FInputActionValue& InputValue)
+
+
+void APlayerCharacter::SkillMouseL(const FInputActionValue& InputValue)
+{
+	SpellBasicAttack();
+}
+
+
+void APlayerCharacter::SkillSlot1(const FInputActionValue& InputValue)
+{
+	SpellLumos(WandTipComp);
+}
+
+void APlayerCharacter::SkillSlot2(const FInputActionValue& InputValue)
+{
+	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill 2"));
+}
+
+void APlayerCharacter::SkillSlot3(const FInputActionValue& InputValue)
+{
+	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill 3"));
+}
+
+void APlayerCharacter::SkillSlotQ(const FInputActionValue& InputValue)
+{
+	SpellProtego(protego);
+}
+
+void APlayerCharacter::SkillSlotQLongClick(const FInputActionValue& InputValue)
+{
+	SpellStupefy(stupefy);
+}
+
+
+void APlayerCharacter::SkillSlotR(const FInputActionValue& InputValue)
+{
+	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill R"));
+}
+
+
+
+
+void APlayerCharacter::SpellBasicAttack()
 {
 	if (!CanAttack)
 	{
@@ -261,33 +303,30 @@ void APlayerCharacter::SpellBasicAttack(const FInputActionValue& InputValue)
 	ComboAttack = false;
 }
 
-void APlayerCharacter::SpellSkillSlot1(const FInputActionValue& InputValue)
-{
-	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill 1"));
-	SpellLumos();
-}
-
-void APlayerCharacter::SpellSkillSlot2(const FInputActionValue& InputValue)
-{
-	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill 2"));
-}
-
-void APlayerCharacter::SpellSkillSlot3(const FInputActionValue& InputValue)
-{
-	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill 3"));
-}
-
-void APlayerCharacter::SpellSkillSlotQ(const FInputActionValue& InputValue) // Protego
+void APlayerCharacter::SpellProtego(AProtego* prt)
 {
 	if (CanAttack)
 	{
-		protego = GetWorld()->SpawnActor<AProtego>(Protegos, GetActorLocation(), GetActorRotation());
-		// 타임 스토푸
+		prt = GetWorld()->SpawnActor<AProtego>(Protegos, GetActorLocation(), GetActorRotation());
 		// GetWorld()->GetWorldSettings()->SetTimeDilation(0.5f);
 	}
 }
 
-void APlayerCharacter::SpellStupefy(const FInputActionValue& InputValue)
+
+void APlayerCharacter::SpellLumos(USceneComponent* WandTip)
+{
+	if (!IsValid(lumos))
+	{
+		lumos = GetWorld()->SpawnActor<ALumos>(Lumoses, WandTip->GetComponentLocation(), WandTipComp->GetComponentRotation());
+		lumos->SetLocation(WandTip);
+	}
+	else
+	{
+		lumos->Destroy();
+	}
+}
+
+void APlayerCharacter::SpellStupefy(AStupefy* stp)
 {
 	if (CanAttack)
 	{
@@ -295,34 +334,32 @@ void APlayerCharacter::SpellStupefy(const FInputActionValue& InputValue)
 		{
 			FVector dir = AimedTarget->GetActorLocation() - this->GetActorLocation();
 			dir.Normalize();
-			stupefy = GetWorld()->SpawnActor<AStupefy>(Stupefies, GetActorLocation(), dir.Rotation());
-			stupefy->SetTarget(AimedTarget);
+			stp = GetWorld()->SpawnActor<AStupefy>(Stupefies, GetActorLocation(), dir.Rotation());
+			stp->SetTarget(AimedTarget);
 		}
 		else
 		{
-			stupefy = GetWorld()->SpawnActor<AStupefy>(Stupefies, GetActorLocation(), GetActorRotation());
-			stupefy->NoTarget();
+			stp = GetWorld()->SpawnActor<AStupefy>(Stupefies, GetActorLocation(), GetActorRotation());
+			stp->NoTarget();
 		}
 	}
 	
 }
 
-void APlayerCharacter::SpellSkillSlotR(const FInputActionValue& InputValue)
+void APlayerCharacter::SpellLevioso()
 {
-	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill R"));
-}
-
-void APlayerCharacter::SpellLumos()
-{
-	if (!IsValid(lumos))
+	if (!CanAttack)
 	{
-		lumos = GetWorld()->SpawnActor<ALumos>(Lumoses, WandTipComp->GetComponentLocation(), WandTipComp->GetComponentRotation());
-		lumos->SetLocation(WandTipComp);
+		return;
 	}
 	else
 	{
-		lumos->Destroy();
+		
 	}
+}
+
+void APlayerCharacter::SpellDescendo()
+{
 }
 
 bool APlayerCharacter::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
