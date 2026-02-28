@@ -2,28 +2,39 @@
 
 
 #include "HUD/MinimapUserWidget.h"
-#include "Character/PlayerCharacter.h"
-#include "Kismet/KismetMathLibrary.h"
+#include "Components/CanvasPanel.h"
+#include "Components/Image.h"
+#include "Kismet/GameplayStatics.h"
+
+void UMinimapUserWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+	//
+	// if (MainCanvas)
+	// {
+	// 	if (MinimapTrim && PlayerArrow)
+	// 	{
+	// 		MainCanvas->AddChildToCanvas(MinimapTrim);
+	// 		MainCanvas->AddChildToCanvas(PlayerArrow);
+	// 	}
+	// }
+}
 
 void UMinimapUserWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
-	
-	APawn* PlayerPawn = GetOwningPlayerPawn();
-	GetController()->GetPlayerViewPoint(DummyLocation, DummyRotation);
-	if (PlayerPawn && MinimapTrim)
-	{
-		float PlayerYaw = PlayerPawn->GetActorRotation().Yaw;
 
-		// 3. Apply it to the Render Transform
-		// Note: You might need to add or subtract 90/180 degrees 
-		// depending on how your texture is oriented.
-		MinimapTrim->SetRenderAngle(PlayerYaw);
+	PlayerController = GetOwningPlayer();
+	PlayerPawn = GetOwningPlayerPawn();
+
+	if (PlayerController && MinimapTrim && PlayerPawn && PlayerArrow)
+	{
+		MinimapTrim->SetRenderTransformAngle(PlayerController->GetControlRotation().Yaw);
+		PlayerArrow->SetRenderTransformAngle(PlayerPawn->GetActorRotation().Yaw);
 	}
 }
 
-void UMinimapUserWidget::SetPlayerRotation()
+void UMinimapUserWidget::FindEnemy()
 {
-	PlayerPawn = GetWorld()->GetFirstPlayerController()->GetPawn();
-	UKismetMathLibrary::MapRangeClamped();
+	// UGameplayStatics::GetAllActorsOfClass(ACharacter*);
 }
