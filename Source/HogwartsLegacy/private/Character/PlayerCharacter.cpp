@@ -17,19 +17,19 @@ APlayerCharacter::APlayerCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	
-	ConstructorHelpers::FObjectFinder<USkeletalMesh> TempMesh(TEXT("SkeletalMesh'/Game/KHJ/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple'"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> TempMesh(TEXT("SkeletalMesh'/Game/KHJ/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple'"));
 	if (TempMesh.Succeeded())
 	{
 		GetMesh()->SetSkeletalMesh(TempMesh.Object);
 		GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -90), FRotator(0, -90, 0));
 	}
 	
-	ConstructorHelpers::FObjectFinder<UMaterial> TempMat(TEXT("M_Outline'/Game/KHJ/Materials/M_Outline.M_Outline'"));
+	static ConstructorHelpers::FObjectFinder<UMaterial> TempMat(TEXT("M_Outline'/Game/KHJ/Materials/M_Outline.M_Outline'"));
 	if (TempMat.Succeeded())
 	{
 		OutlineMat = TempMat.Object;
 	}
-	ConstructorHelpers::FObjectFinder<UMaterial> TempMat2(TEXT("M_ShineEffect'/Game/KHJ/Materials/M_ShineEffect.M_ShineEffect'"));
+	static ConstructorHelpers::FObjectFinder<UMaterial> TempMat2(TEXT("M_ShineEffect'/Game/KHJ/Materials/M_ShineEffect.M_ShineEffect'"));
 	if (TempMat2.Succeeded())
 	{
 		ShineMat = TempMat2.Object;
@@ -91,6 +91,10 @@ void APlayerCharacter::BeginPlay()
 			IA_SkillSlotQ->Triggers.Add(NewHoldTrigger);
 		}
 	}
+	
+	UGameplayStatics::GetAllActorsWithTag(GetWorld(), TEXT("Level"), ActorToIgnore);
+	AimCaptureParams.AddIgnoredActors(ActorToIgnore);
+	AimCaptureParams.AddIgnoredActor(this);
 }
 
 // Called every frame
@@ -174,16 +178,11 @@ void APlayerCharacter::AimCapture()
 	FVector Start;
 	FRotator Rot;
 	FHitResult HitOut;
-	FCollisionQueryParams Params;
 	
 	GetController()->GetPlayerViewPoint(Start, Rot);
 	FVector End = Rot.Vector() * ViewDistance;
 	
-	UGameplayStatics::GetAllActorsWithTag(GetWorld(), TEXT("Level"), ActorToIgnore);
-	Params.AddIgnoredActors(ActorToIgnore);
-	Params.AddIgnoredActor(this);
-	
-	GetWorld()->SweepSingleByProfile(HitOut, Start, End, FQuat::Identity, "PlayerTrace", FCollisionShape::MakeSphere(ViewSphereRadius), Params);
+	GetWorld()->SweepSingleByProfile(HitOut, Start, End, FQuat::Identity, "PlayerTrace", FCollisionShape::MakeSphere(ViewSphereRadius), AimCaptureParams);
 	
 	AActor* Obj = HitOut.GetActor();
 	
@@ -192,7 +191,7 @@ void APlayerCharacter::AimCapture()
 		if (IsValid(LastCachedObj))
 		{
 			AimedTarget = nullptr;
-			if (LastCachedObj->GetActorNameOrLabel().Contains(TEXT("Guardian")))
+			if (LastCachedObj->ActorHasTag(FName("Enemy")))
 			{
 				LastCachedObj->FindComponentByClass<USkeletalMeshComponent>()->SetOverlayMaterial(nullptr);
 			}
@@ -205,7 +204,7 @@ void APlayerCharacter::AimCapture()
 		{
 			// GEngine->AddOnScreenDebugMessage(3, 1.0f, FColor::Green, Obj->GetName());
 			AimedTarget = nullptr;
-			if (Obj->GetActorNameOrLabel().Contains(TEXT("Guardian")))
+			if (Obj->ActorHasTag(FName("Enemy")))
 			{
 				Obj->FindComponentByClass<USkeletalMeshComponent>()->SetOverlayMaterial(OutlineMat);
 				AimedTarget = Obj;
@@ -270,7 +269,6 @@ void APlayerCharacter::SpellBasicAttack()
 		if (GetWorldTimerManager().IsTimerActive(ComboTimerHandle)) // Check Combo Timing
 		{
 			ComboCount++;
-			GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Blue, FString::Printf(TEXT("ComboCount: %d"), ComboCount));
 		}
 		else
 		{
@@ -282,7 +280,7 @@ void APlayerCharacter::SpellBasicAttack()
 			ComboCount = 0;
 			ComboAttack = true;
 		}
-		if (AimedTarget && AimedTarget->GetActorNameOrLabel().Contains(TEXT("Guardian")))
+		if (AimedTarget && AimedTarget->ActorHasTag(FName("Enemy")))
 		{
 			FVector dir = AimedTarget->GetActorLocation() - this->GetActorLocation();
 			dir.Normalize();
@@ -295,8 +293,7 @@ void APlayerCharacter::SpellBasicAttack()
 			attack->NoTarget();
 		}
 	}
-	GetWorldTimerManager().SetTimer(ComboTimerHandle,
-		[this](){this->ComboCount=0;}, 1.0f, false);
+	GetWorldTimerManager().SetTimer(ComboTimerHandle,[this](){this->ComboCount=0;}, 1.0f, false);
 	ComboAttack = false;
 }
 

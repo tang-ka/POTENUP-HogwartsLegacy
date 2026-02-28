@@ -26,14 +26,14 @@ AStupefy::AStupefy()
 	NiagaraComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraSystem"));
 	NiagaraComp->SetupAttachment(RootComponent);
 
-	ConstructorHelpers::FObjectFinder<UNiagaraSystem> TempComp(TEXT("NiagaraSystem'/Game/KHJ/FX/NS_Stupefy.NS_Stupefy'"));
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> TempComp(TEXT("NiagaraSystem'/Game/KHJ/FX/NS_Stupefy.NS_Stupefy'"));
 	if (TempComp.Succeeded())
 	{
 		NiagaraComp->SetAsset(TempComp.Object);
 	}
 	
 	ExplosionComp = CreateDefaultSubobject<UNiagaraSystem>(TEXT("ExplosionNiagaraSystem"));
-	ConstructorHelpers::FObjectFinder<UNiagaraSystem> ExpTempComp(TEXT("ExplosionNiagaraSystem'/Game/KHJ/FX/NS_Stupefy_Explosion.NS_Stupefy_Explosion'"));
+	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> ExpTempComp(TEXT("ExplosionNiagaraSystem'/Game/KHJ/FX/NS_Stupefy_Explosion.NS_Stupefy_Explosion'"));
 	if (ExpTempComp.Succeeded())
 	{
 		ExplosionComp = ExpTempComp.Object;

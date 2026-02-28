@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "Blueprint/UserWidget.h"
 #include "HogwartsLegacyGameModeBase.generated.h"
 
 /**
@@ -17,12 +16,4 @@ class HOGWARTSLEGACY_API AHogwartsLegacyGameModeBase : public AGameModeBase
 	
 public:
 	AHogwartsLegacyGameModeBase();
-
-	UFUNCTION(BlueprintCallable)
-	void SetMiniMapWidget(TSubclassOf<UUserWidget> NewWidget);
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf <UUserWidget> Widgets;
-	UPROPERTY()
-	UUserWidget* MinimapWidget;
 };

@@ -69,11 +69,16 @@ public:
 	float Speed = 2000;
 	UPROPERTY()
 	float Distance = 2000;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf <class UDamageIndicatorWidget> DamageWidgetClass;
 
 	UFUNCTION()
 	float GetBasicDamage() const { return BaseDamage; }
 	UFUNCTION()
 	float GetThirdDamage() const { return ThirdDamage; }
+	
+	UFUNCTION()
+	void ShowDamageWidget(FVector WorldLocation, float DamageAmount);
 	
 private:
 	

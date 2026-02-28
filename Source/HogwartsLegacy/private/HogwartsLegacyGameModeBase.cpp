@@ -2,26 +2,11 @@
 
 
 #include "HogwartsLegacyGameModeBase.h"
+#include "UI/ControllerHUD.h"
 #include "HogwartsLegacy.h"
 
 AHogwartsLegacyGameModeBase::AHogwartsLegacyGameModeBase()
 {
-	SetMiniMapWidget(Widgets);
+	HUDClass = AControllerHUD::StaticClass();
 }
 
-void AHogwartsLegacyGameModeBase::SetMiniMapWidget(TSubclassOf<UUserWidget> NewWidget)
-{
-	if (MinimapWidget != nullptr)
-	{
-		MinimapWidget->RemoveFromViewport();
-		MinimapWidget = nullptr;
-	}
-	if (NewWidget != nullptr)
-	{
-		MinimapWidget = CreateWidget<UUserWidget>(GetWorld(), NewWidget);
-		if (MinimapWidget != nullptr)
-		{
-			MinimapWidget->AddToViewport();
-		}
-	}
-}

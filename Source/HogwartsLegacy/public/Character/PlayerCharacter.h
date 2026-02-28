@@ -103,7 +103,8 @@ public:
 	TSubclassOf <class AStupefy> Stupefies;
 	UPROPERTY()
 	AStupefy* stupefy;
-
+	
+	FCollisionQueryParams AimCaptureParams;
 	UPROPERTY()
 	TArray<AActor*> ActorToIgnore;
 	UPROPERTY()

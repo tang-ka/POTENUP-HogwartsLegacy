@@ -16,13 +16,13 @@ AProtego::AProtego()
 	SetActorEnableCollision(false);
 	
 
-	ConstructorHelpers::FObjectFinder<UStaticMesh> TempMesh(TEXT("/Script/Engine.StaticMesh'/Engine/BasicShapes/Sphere.Sphere'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> TempMesh(TEXT("/Script/Engine.StaticMesh'/Engine/BasicShapes/Sphere.Sphere'"));
 	if (TempMesh.Succeeded())
 	{
 		SphereMesh->SetStaticMesh(TempMesh.Object);
 	}
 
-	ConstructorHelpers::FObjectFinder<UMaterial> TempMat(TEXT("M_Protego'/Game/KHJ/Materials/M_Protego.M_Protego'"));
+	static ConstructorHelpers::FObjectFinder<UMaterial> TempMat(TEXT("M_Protego'/Game/KHJ/Materials/M_Protego.M_Protego'"));
 	if (TempMat.Succeeded())
 	{
 		SphereMesh->SetMaterial(0, TempMat.Object);
