@@ -55,7 +55,7 @@ void UMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	
 	MinimapCanvas->SetRenderScale(FVector2D(FMath::Lerp(1.0f, MaxCanvasScale, CurrentZoomAlpha)));
 	MinimapCanvas->SetRenderTranslation(FMath::Lerp(FVector2D::ZeroVector, MaxCanvasTranslation, CurrentZoomAlpha));
-
+	
 	MinimapWorldRadius = FMath::FInterpTo(MinimapWorldRadius, TargetWorldRadius, InDeltaTime, ZoomInterpSpeed);
 	
 	UpdateEnemyMarkers(ControlYaw, PlayerPawn->GetActorLocation());
@@ -140,7 +140,7 @@ void UMinimapWidget::UpdateEnemyMarkers(float yaw, FVector Location)
     TArray<AActor*> FoundEnemies;
     UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("Enemy"), FoundEnemies);
     
-    // 풀링 관리: 더 이상 존재하지 않는 적 제거
+    // 더 이상 존재하지 않는 적 제거
     TArray<AActor*> ActorsToRemove;
     for (auto& Pair : ActiveMarkers)
     {

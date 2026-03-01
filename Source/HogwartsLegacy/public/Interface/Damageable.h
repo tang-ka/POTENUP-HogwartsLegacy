@@ -18,6 +18,8 @@ struct FDamageInfo
 	int DamageAmount{};
 };
 
+// DECLARE_MULTICAST_DELEGATE_TwoParams(FOnHPChanged, int CurrentHP, int MaxHP);
+
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
 class UDamageable : public UInterface
@@ -47,5 +49,10 @@ public:
 	int GetHP() const;
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Damage")
+	int GetMaxHP() const;
+	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Damage")
 	bool IsDead() const;
+
+	//virtual FOnHPChanged& GetOnHPChangedDelegate() = 0;
 };

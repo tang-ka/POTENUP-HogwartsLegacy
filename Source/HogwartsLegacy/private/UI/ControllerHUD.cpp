@@ -3,26 +3,66 @@
 
 #include "UI/ControllerHUD.h"
 #include "UI/MinimapWidget.h"
+#include "UI/PlayerHPWidget.h"
 #include "UI/EnemyHPWidget.h"
 
 AControllerHUD::AControllerHUD()
 {
-	ConstructorHelpers::FClassFinder<UMinimapWidget> MiniMapWidgetAsset(TEXT("/Game/KHJ/HUD/WBP_HUD_MiniMap_C"));
-	if (MiniMapWidgetAsset.Succeeded())
+	static ConstructorHelpers::FObjectFinder<UMaterial> TempMat(TEXT("M_Outline'/Game/KHJ/Materials/M_Outline.M_Outline'"));
+	if (TempMat.Succeeded())
 	{
-		MinimapWidgetClass = MiniMapWidgetAsset.Class;
+		OutlineMat = TempMat.Object;
 	}
-	ConstructorHelpers::FClassFinder<UEnemyHPWidget> UEnemyHPWidgetAsset(TEXT("/Game/KHJ/HUD/WBP_EnemyHPWidget_C"));
-	if (UEnemyHPWidgetAsset.Succeeded())
+	static ConstructorHelpers::FObjectFinder<UMaterial> TempMat2(TEXT("M_ShineEffect'/Game/KHJ/Materials/M_ShineEffect.M_ShineEffect'"));
+	if (TempMat2.Succeeded())
 	{
-		EnemyHPWidgetClass = UEnemyHPWidgetAsset.Class;
+		ShineMat = TempMat2.Object;
 	}
+	
 }
 
 void AControllerHUD::BeginPlay()
 {
 	Super::BeginPlay();
 	SetMiniMapWidget(MinimapWidgetClass);
+	
+	// auto Player = Cast<APlayerCharacter>(GetOwningPawn());
+	TScriptInterface<IDamageable> DamageableActor = GetOwningPawn();
+	if (DamageableActor)
+	{
+		SetPlayerHPWidget(PlayerHPWidgetClass, DamageableActor);
+	}
+}
+
+
+void AControllerHUD::OverlayMatOnAimCaptured(AActor* Object, AActor* CachedObj)
+{
+	if (Object != CachedObj)
+	{
+		if (IsValid(CachedObj))
+		{
+			if (CachedObj->ActorHasTag(FName("Enemy")))
+			{
+				CachedObj->FindComponentByClass<USkeletalMeshComponent>()->SetOverlayMaterial(nullptr);
+			}
+			if (CachedObj->ActorHasTag(FName("Item")))
+			{
+				CachedObj->FindComponentByClass<UMeshComponent>()->SetOverlayMaterial(nullptr);
+			}
+		}
+		if (IsValid(Object))
+		{
+			// GEngine->AddOnScreenDebugMessage(3, 1.0f, FColor::Green, Obj->GetName());
+			if (Object->ActorHasTag(FName("Enemy")))
+			{
+				Object->FindComponentByClass<USkeletalMeshComponent>()->SetOverlayMaterial(OutlineMat);
+			}
+			if (Object->ActorHasTag(FName("Item")))
+			{
+				Object->FindComponentByClass<UMeshComponent>()->SetOverlayMaterial(ShineMat);
+			}
+		}
+	}
 }
 
 void AControllerHUD::SetMiniMapWidget(TSubclassOf<UUserWidget> NewWidget)
@@ -42,7 +82,29 @@ void AControllerHUD::SetMiniMapWidget(TSubclassOf<UUserWidget> NewWidget)
 	}
 }
 
-void AControllerHUD::SetEnemyHPWidget(TSubclassOf<UUserWidget> NewWidget)
+void AControllerHUD::SetPlayerHPWidget(TSubclassOf<UUserWidget> NewWidget, TScriptInterface<IDamageable> Player)
+{
+	if (PlayerHPWidget != nullptr)
+	{
+		PlayerHPWidget->RemoveFromParent();
+		PlayerHPWidget = nullptr;
+	}
+	if (NewWidget != nullptr)
+	{
+		PlayerHPWidget = CreateWidget<UPlayerHPWidget>(GetWorld(), PlayerHPWidgetClass);
+		if (PlayerHPWidget)
+		{
+			// float Percent = Player->GetHP_Implementation() / Player->GetMaxHP_Implementation();
+			// GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Green, FString::FromInt(Percent));
+			PlayerHPWidget->InitializeHPBar(Player);
+			PlayerHPWidget->AddToViewport();
+			
+			// EnemyHPWidget->SetVisibility(ESlateVisibility::Collapsed);
+		}
+	}
+}
+
+void AControllerHUD::SetEnemyHPWidget(TSubclassOf<UUserWidget> NewWidget, float NewPercent)
 {
 	if (EnemyHPWidget != nullptr)
 	{
@@ -54,8 +116,9 @@ void AControllerHUD::SetEnemyHPWidget(TSubclassOf<UUserWidget> NewWidget)
 		EnemyHPWidget = CreateWidget<UEnemyHPWidget>(GetWorld(), EnemyHPWidgetClass);
 		if (EnemyHPWidget)
 		{
+			EnemyHPWidget->UpdateHPBar(NewPercent);
 			EnemyHPWidget->AddToViewport();
-			EnemyHPWidget->SetVisibility(ESlateVisibility::Collapsed);
+			// EnemyHPWidget->SetVisibility(ESlateVisibility::Collapsed);
 		}
 	}
 }

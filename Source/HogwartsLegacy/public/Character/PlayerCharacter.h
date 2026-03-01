@@ -15,6 +15,7 @@
 class USpringArmComponent;
 class UCameraComponent;
 class USceneComponent;
+class AControllerHUD;
 
 UCLASS()
 class HOGWARTSLEGACY_API APlayerCharacter : public ACharacter, public IDamageable
@@ -83,7 +84,7 @@ public:
 	bool ComboAttack;
 	UPROPERTY()
 	FTimerHandle ComboTimerHandle;
-	
+
 	UPROPERTY(EditDefaultsOnly, Category=Spell)
 	TSubclassOf <class ALumos> Lumoses;
 	UPROPERTY()
@@ -154,9 +155,9 @@ public:
 	UFUNCTION()
 	int GetCurrentHP() const { return this->HP; }
 	UFUNCTION()
-	void SetCurrentHP(int NewHP) { this->HP = NewHP; }
+	int GetDefaultHP() const { return this->MaxHP; }
 	UFUNCTION()
-	int GetMaxHP() const { return this->MaxHP; }
+	void SetCurrentHP(int NewHP) { this->HP = NewHP; }
 #pragma endregion
 	
 #pragma region IDamageable
@@ -164,7 +165,11 @@ public:
 	UFUNCTION()
 	virtual int GetHP_Implementation() const override;
 	UFUNCTION()
+	virtual int GetMaxHP_Implementation() const override;
+	UFUNCTION()
 	virtual bool IsDead_Implementation() const override;
+	//FOnHPChanged HPChangedDelegate;
+	//virtual FOnHPChanged& GetOnHPChangedDelegate() override { return HPChangedDelegate; };
 #pragma endregion
 
 #pragma region Privates

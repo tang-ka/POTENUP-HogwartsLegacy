@@ -61,7 +61,6 @@ void APlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	APlayerController* PC = Cast<APlayerController>(Controller);
-	// auto* PC = GetWorld()->GetFirstPlayerController();
 	if (PC)
 	{
 		UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer());
@@ -184,7 +183,7 @@ void APlayerCharacter::AimCapture()
 	
 	GetWorld()->SweepSingleByProfile(HitOut, Start, End, FQuat::Identity, "PlayerTrace", FCollisionShape::MakeSphere(ViewSphereRadius), AimCaptureParams);
 	
-	AActor* Obj = HitOut.GetActor();
+	TObjectPtr<AActor> Obj = HitOut.GetActor();
 	
 	if (Obj != LastCachedObj)
 	{
@@ -291,6 +290,7 @@ void APlayerCharacter::SpellBasicAttack()
 		{
 			attack = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetActorLocation(), GetViewRotation());
 			attack->NoTarget();
+			ReceiveDamage_Implementation(FDamageInfo{ this, 20});
 		}
 	}
 	GetWorldTimerManager().SetTimer(ComboTimerHandle,[this](){this->ComboCount=0;}, 1.0f, false);
@@ -364,12 +364,22 @@ bool APlayerCharacter::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
 	}
 	int NewHP = GetCurrentHP() - DamageInfo.DamageAmount;
 	SetCurrentHP(NewHP = NewHP <= 0 ? 0 : NewHP);
+	// 델리게이트를 통해 신호 보내기 (Broadcast). 이 함수를 호출하는 순간, 이 델리게이트를 Bind하고 있는 모든 UI가 반응
+	// if (HPChangedDelegate.IsBound())
+	// {
+	// 	HPChangedDelegate.Broadcast(GetHP_Implementation(), GetMaxHP_Implementation());
+	// }
 	return true;
 }
 
 int APlayerCharacter::GetHP_Implementation() const
 {
 	return GetCurrentHP();
+}
+
+int APlayerCharacter::GetMaxHP_Implementation() const
+{
+	return GetDefaultHP();
 }
 
 bool APlayerCharacter::IsDead_Implementation() const

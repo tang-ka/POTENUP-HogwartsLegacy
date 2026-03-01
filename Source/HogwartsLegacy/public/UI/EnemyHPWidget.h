@@ -19,9 +19,9 @@ class HOGWARTSLEGACY_API UEnemyHPWidget : public UUserWidget
 protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 	
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UPROPERTY(EditAnywhere, meta=(BindWidget))
 	UCanvasPanel* HPBarPanel;
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UPROPERTY(EditAnywhere, meta=(BindWidget))
 	UProgressBar* HPBar;
 
 public:

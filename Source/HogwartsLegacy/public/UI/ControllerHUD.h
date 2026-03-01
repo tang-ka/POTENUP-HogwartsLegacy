@@ -4,8 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
+#include "Character/PlayerCharacter.h"
 #include "ControllerHUD.generated.h"
 
+class UMinimapWidget;
+class UPlayerHPWidget;
+class UEnemyHPWidget;
 /**
  * 
  */
@@ -18,18 +22,33 @@ protected:
 	AControllerHUD();
 	virtual void BeginPlay() override;
 	
+private:
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class UMinimapWidget> MinimapWidgetClass;
+	TSubclassOf <UMinimapWidget> MinimapWidgetClass;
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class UEnemyHPWidget> EnemyHPWidgetClass;
+	TSubclassOf <UPlayerHPWidget> PlayerHPWidgetClass;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf <UEnemyHPWidget> EnemyHPWidgetClass;
 	UPROPERTY()
 	UMinimapWidget* MinimapWidget;
 	UPROPERTY()
+	UPlayerHPWidget* PlayerHPWidget;
+	UPROPERTY()
 	UEnemyHPWidget* EnemyHPWidget;
+	UPROPERTY()
+	TObjectPtr <UMaterialInterface> OutlineMat;
+	UPROPERTY()
+	TObjectPtr <UMaterialInterface> ShineMat;
+	UFUNCTION()
+	void OverlayMatOnAimCaptured(AActor* Object, AActor* CachedObj);
 	
 public:
 	UFUNCTION(BlueprintCallable)
 	void SetMiniMapWidget(TSubclassOf<UUserWidget> NewWidget);
 	UFUNCTION(BlueprintCallable)
-	void SetEnemyHPWidget(TSubclassOf<UUserWidget> NewWidget);
+	void SetPlayerHPWidget(TSubclassOf<UUserWidget> NewWidget, TScriptInterface<IDamageable> Player);
+	UFUNCTION(BlueprintCallable)
+	void SetEnemyHPWidget(TSubclassOf<UUserWidget> NewWidget, float NewPercent);
+	// UFUNCTION(BlueprintCallable)
+	// void ShowDamageWidget();
 };

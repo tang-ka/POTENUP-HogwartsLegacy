@@ -7,6 +7,6 @@
 
 AHogwartsLegacyGameModeBase::AHogwartsLegacyGameModeBase()
 {
-	HUDClass = AControllerHUD::StaticClass();
+	// HUDClass = AControllerHUD::StaticClass();
 }
 

@@ -8,9 +8,10 @@
 #include "UI/DamageIndicatorWidget.h" // Damage UI
 #include "Blueprint/UserWidget.h" // Damage UI
 #include "Kismet/GameplayStatics.h" // Damage UI
-#include <Interface/DamageableHelpers.h>
+#include "Interface/DamageableHelpers.h"
 
 
+class IDamageable;
 // Sets default values
 ABasicAttack::ABasicAttack()
 {

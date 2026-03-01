@@ -6,11 +6,11 @@
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
 #include "NiagaraSystem.h"
-#include <Interface/Damageable.h>
+// #include <Interface/Damageable.h>
 #include "BasicAttack.generated.h"
 
 UCLASS()
-class HOGWARTSLEGACY_API ABasicAttack : public AActor, public IDamageable
+class HOGWARTSLEGACY_API ABasicAttack : public AActor
 {
 	GENERATED_BODY()
 	
