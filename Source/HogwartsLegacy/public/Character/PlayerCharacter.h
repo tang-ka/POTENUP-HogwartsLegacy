@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include <GameFramework/SpringArmComponent.h>
+#include "PhysicsEngine/PhysicsHandleComponent.h"
 #include <Camera/CameraComponent.h>
 #include <EnhancedInputSubsystems.h>
 #include <EnhancedInputComponent.h>
@@ -15,7 +16,7 @@
 class USpringArmComponent;
 class UCameraComponent;
 class USceneComponent;
-class AControllerHUD;
+class UPhysicsHandleComponent;
 
 UCLASS()
 class HOGWARTSLEGACY_API APlayerCharacter : public ACharacter, public IDamageable
@@ -38,12 +39,14 @@ public:
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	
 #pragma region Components
-	UPROPERTY(VisibleAnywhere, Category=Camera)
+	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* CameraArmComp;
-	UPROPERTY(VisibleAnywhere, Category=Camera)
+	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* PlayerCameraComp;
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* WandTipComp;
+	UPROPERTY(VisibleAnywhere)
+	UPhysicsHandleComponent* PhysicsHandleComp;
 #pragma endregion
 	
 #pragma region Inputs
@@ -77,7 +80,7 @@ public:
 	UPROPERTY()
 	FVector WalkDirection;
 	UPROPERTY()
-	bool CanAttack;
+	bool bCanAttack = false;
 	UPROPERTY()
 	int ComboCount = 0;
 	UPROPERTY()
@@ -104,6 +107,19 @@ public:
 	TSubclassOf <class AStupefy> Stupefies;
 	UPROPERTY()
 	AStupefy* stupefy;
+	
+	UPROPERTY(EditDefaultsOnly, Category=Spell)
+	float LeviosoGrabDistance = 500.f;
+	UPROPERTY(EditDefaultsOnly, Category=Spell)
+	float LeviosoHoldDistance = 300.f;
+	
+	float LeviosoFloatTimer = 0.f;
+	UPROPERTY(EditDefaultsOnly, Category=Spell)
+	float LeviosoFloatAmplitude = 10.f;
+	UPROPERTY(EditDefaultsOnly, Category=Spell)
+	float LeviosoFloatSpeed = 2.f;
+	bool bCanUseLevioso = false;
+	bool bIsDoingLevioso = false;
 	
 	FCollisionQueryParams AimCaptureParams;
 	UPROPERTY()
@@ -142,7 +158,7 @@ public:
 	UFUNCTION()
 	void SpellLumos(USceneComponent* WandTip);
 	UFUNCTION()
-	void SpellLevioso();
+	void SpellLevioso(UPrimitiveComponent* TargetComp, FVector Location, FRotator Rotation);
 	UFUNCTION()
 	void SpellDescendo();
 	

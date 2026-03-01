@@ -51,6 +51,12 @@ APlayerCharacter::APlayerCharacter()
 	WandTipComp->SetupAttachment(RootComponent);
 	WandTipComp->SetRelativeLocation(FVector(0, 60, 88));
 	
+	// Levioso
+	PhysicsHandleComp = CreateDefaultSubobject<UPhysicsHandleComponent>(TEXT("PhysicsHandle"));
+	PhysicsHandleComp->LinearDamping = 200.0f; // 높을수록 덜 출렁임
+	PhysicsHandleComp->LinearStiffness = 1500.0f; // 잡는 힘의 강도
+	PhysicsHandleComp->InterpolationSpeed = 10.0f; // 추적 속도 (천천히 따라오게 조절)
+	
 	bUseControllerRotationYaw = true;
 	
 }
@@ -102,9 +108,20 @@ void APlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	
 	PlayerMove();
-	CheckCanAttack(CanAttack);
+	CheckCanAttack(bCanAttack);
 	AimCapture();
 	
+	if (bIsDoingLevioso && PhysicsHandleComp->GrabbedComponent)
+	{
+		// 1. 기본 목표 위치 계산 (카메라 앞)
+		FVector TargetLocation = GetPawnViewLocation() + (GetViewRotation().Vector() * LeviosoHoldDistance);
+		
+		LeviosoFloatTimer += DeltaTime * LeviosoFloatSpeed;
+		float ZOffset = FMath::Sin(LeviosoFloatTimer) * LeviosoFloatAmplitude;
+		TargetLocation.Z += ZOffset;
+		
+		PhysicsHandleComp->SetTargetLocationAndRotation(TargetLocation, GetViewRotation());
+	}
 }
 
 // Called to bind functionality to input
@@ -194,6 +211,10 @@ void APlayerCharacter::AimCapture()
 			{
 				LastCachedObj->FindComponentByClass<USkeletalMeshComponent>()->SetOverlayMaterial(nullptr);
 			}
+			if (LastCachedObj->ActorHasTag(FName("Leviosoable")))
+			{
+				LastCachedObj->FindComponentByClass<UMeshComponent>()->SetOverlayMaterial(nullptr);
+			}
 			if (LastCachedObj->ActorHasTag(FName("Item")))
 			{
 				LastCachedObj->FindComponentByClass<UMeshComponent>()->SetOverlayMaterial(nullptr);
@@ -206,6 +227,11 @@ void APlayerCharacter::AimCapture()
 			if (Obj->ActorHasTag(FName("Enemy")))
 			{
 				Obj->FindComponentByClass<USkeletalMeshComponent>()->SetOverlayMaterial(OutlineMat);
+				AimedTarget = Obj;
+			}
+			if (Obj->ActorHasTag(FName("Leviosoable")))
+			{
+				Obj->FindComponentByClass<UMeshComponent>()->SetOverlayMaterial(OutlineMat);
 				AimedTarget = Obj;
 			}
 			if (Obj->ActorHasTag(FName("Item")) && IsValid(lumos))
@@ -259,7 +285,7 @@ void APlayerCharacter::SkillSlotR(const FInputActionValue& InputValue)
 
 void APlayerCharacter::SpellBasicAttack()
 {
-	if (!CanAttack)
+	if (!bCanAttack)
 	{
 		return;
 	}
@@ -299,7 +325,7 @@ void APlayerCharacter::SpellBasicAttack()
 
 void APlayerCharacter::SpellProtego(AProtego* prt)
 {
-	if (CanAttack)
+	if (bCanAttack)
 	{
 		prt = GetWorld()->SpawnActor<AProtego>(Protegos, GetActorLocation(), GetActorRotation());
 		// GetWorld()->GetWorldSettings()->SetTimeDilation(0.5f);
@@ -322,7 +348,7 @@ void APlayerCharacter::SpellLumos(USceneComponent* WandTip)
 
 void APlayerCharacter::SpellStupefy(AStupefy* stp)
 {
-	if (CanAttack)
+	if (bCanAttack)
 	{
 		if (AimedTarget && AimedTarget->GetActorNameOrLabel().Contains(TEXT("Guardian")))
 		{
@@ -340,15 +366,22 @@ void APlayerCharacter::SpellStupefy(AStupefy* stp)
 	
 }
 
-void APlayerCharacter::SpellLevioso()
+void APlayerCharacter::SpellLevioso(UPrimitiveComponent* TargetComp, FVector Location, FRotator Rotation)
 {
-	if (!CanAttack)
+	if (!bCanAttack)
 	{
 		return;
 	}
-	else
+	if (TargetComp && TargetComp->IsSimulatingPhysics())
 	{
-		
+		if (bIsDoingLevioso && PhysicsHandleComp->GrabbedComponent)
+		{
+			PhysicsHandleComp->ReleaseComponent();
+			bIsDoingLevioso = false;
+			LeviosoFloatTimer = 0.f;
+		}
+		PhysicsHandleComp->GrabComponentAtLocationWithRotation(TargetComp, NAME_None, Location, Rotation);
+		bIsDoingLevioso = true;
 	}
 }
 
