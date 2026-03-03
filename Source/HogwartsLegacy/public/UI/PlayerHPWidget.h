@@ -26,10 +26,9 @@ protected:
 	
 public:
 	void InitializeHPBar(TScriptInterface<IDamageable> InTarget);
-	void UpdateHPBar(int CurrentHP, int MaxHP);
+	void UpdateHPBar(float NewPercent);
 	
 private:
 	float CurrentHPPercent = 1.0f;
-	
 	
 };

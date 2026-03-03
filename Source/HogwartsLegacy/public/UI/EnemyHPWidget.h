@@ -17,8 +17,6 @@ class HOGWARTSLEGACY_API UEnemyHPWidget : public UUserWidget
 	GENERATED_BODY()
 	
 protected:
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-	
 	UPROPERTY(EditAnywhere, meta=(BindWidget))
 	UCanvasPanel* HPBarPanel;
 	UPROPERTY(EditAnywhere, meta=(BindWidget))
@@ -26,11 +24,4 @@ protected:
 
 public:
 	void UpdateHPBar(float NewPercent);
-	
-private:
-	float InterpTargetHPPercent = 1.0f;
-	float CurrentHPPercent = 1.0f;
-
-	UPROPERTY(EditAnywhere)
-	float InterpSpeed = 5.0f;
 };

@@ -21,7 +21,6 @@ AControllerHUD::AControllerHUD()
 	{
 		ShineMat = TempMat2.Object;
 	}
-	// OnDamaged.AddDynamic(this, &AControllerHUD::DrawDamageWidget);
 }
 
 void AControllerHUD::BeginPlay()
@@ -48,6 +47,10 @@ void AControllerHUD::OverlayMatOnAimCaptured(AActor* Object, AActor* CachedObj)
 			{
 				CachedObj->FindComponentByClass<USkeletalMeshComponent>()->SetOverlayMaterial(nullptr);
 			}
+			if (EnemyHPWidget)
+			{
+				EnemyHPWidget->RemoveFromParent();
+			}
 			if (CachedObj->ActorHasTag(FName("Item")))
 			{
 				CachedObj->FindComponentByClass<UMeshComponent>()->SetOverlayMaterial(nullptr);
@@ -55,10 +58,14 @@ void AControllerHUD::OverlayMatOnAimCaptured(AActor* Object, AActor* CachedObj)
 		}
 		if (IsValid(Object))
 		{
-			// GEngine->AddOnScreenDebugMessage(3, 1.0f, FColor::Green, Obj->GetName());
 			if (Object->ActorHasTag(FName("Enemy")))
 			{
 				Object->FindComponentByClass<USkeletalMeshComponent>()->SetOverlayMaterial(OutlineMat);
+				SetEnemyHPWidget(EnemyHPWidgetClass, IDamageable::Execute_GetHPPercent(Object));
+			}
+			else if (EnemyHPWidget)
+			{
+				EnemyHPWidget->RemoveFromParent();
 			}
 			if (Object->ActorHasTag(FName("Item")))
 			{
@@ -72,7 +79,7 @@ void AControllerHUD::SetMiniMapWidget(TSubclassOf<UUserWidget> NewWidget)
 {
 	if (MinimapWidget != nullptr)
 	{
-		MinimapWidget->RemoveFromParent(); // RemoveFromViewport()
+		MinimapWidget->RemoveFromParent();
 		MinimapWidget = nullptr;
 	}
 	if (NewWidget != nullptr)
@@ -97,14 +104,17 @@ void AControllerHUD::SetPlayerHPWidget(TSubclassOf<UUserWidget> NewWidget, TScri
 		PlayerHPWidget = CreateWidget<UPlayerHPWidget>(GetWorld(), PlayerHPWidgetClass);
 		if (PlayerHPWidget)
 		{
-			// float Percent = Player->GetHP_Implementation() / Player->GetMaxHP_Implementation();
-			// GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Green, FString::FromInt(Percent));
 			PlayerHPWidget->InitializeHPBar(Player);
 			PlayerHPWidget->AddToViewport();
 			
 			// EnemyHPWidget->SetVisibility(ESlateVisibility::Collapsed);
 		}
 	}
+}
+
+void AControllerHUD::UpdatePlayerHPWidget(float NewPercent)
+{
+	PlayerHPWidget->UpdateHPBar(NewPercent);
 }
 
 void AControllerHUD::SetEnemyHPWidget(TSubclassOf<UUserWidget> NewWidget, float NewPercent)
@@ -121,9 +131,13 @@ void AControllerHUD::SetEnemyHPWidget(TSubclassOf<UUserWidget> NewWidget, float 
 		{
 			EnemyHPWidget->UpdateHPBar(NewPercent);
 			EnemyHPWidget->AddToViewport();
-			// EnemyHPWidget->SetVisibility(ESlateVisibility::Collapsed);
 		}
 	}
+}
+
+void AControllerHUD::UpdateEnemyHPWidget(AActor* Object)
+{
+	EnemyHPWidget->UpdateHPBar(IDamageable::Execute_GetHPPercent(Object));
 }
 
 void AControllerHUD::DrawDamageWidget(FVector WorldLocation, int DamageAmount)

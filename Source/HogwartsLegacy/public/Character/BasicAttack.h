@@ -75,8 +75,6 @@ public:
 	float Speed = 2000;
 	UPROPERTY()
 	float Distance = 2000;
-	// UPROPERTY(EditAnywhere)
-	// TSubclassOf <class UDamageIndicatorWidget> DamageWidgetClass;
 
 	UFUNCTION()
 	float GetBasicDamage() const { return BaseDamage; }

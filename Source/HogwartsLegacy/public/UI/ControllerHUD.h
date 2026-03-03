@@ -25,7 +25,7 @@ protected:
 	AControllerHUD();
 	virtual void BeginPlay() override;
 	
-private:
+public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf <UMinimapWidget> MinimapWidgetClass;
 	UPROPERTY(EditAnywhere)
@@ -46,21 +46,19 @@ private:
 	TObjectPtr <UMaterialInterface> OutlineMat;
 	UPROPERTY()
 	TObjectPtr <UMaterialInterface> ShineMat;
-	UFUNCTION()
-	void OverlayMatOnAimCaptured(AActor* Object, AActor* CachedObj);
 	
-public:
 	UFUNCTION(BlueprintCallable)
 	void SetMiniMapWidget(TSubclassOf<UUserWidget> NewWidget);
 	UFUNCTION(BlueprintCallable)
 	void SetPlayerHPWidget(TSubclassOf<UUserWidget> NewWidget, TScriptInterface<IDamageable> Player);
 	UFUNCTION(BlueprintCallable)
+	void UpdatePlayerHPWidget(float NewPercent);
+	UFUNCTION(BlueprintCallable)
 	void SetEnemyHPWidget(TSubclassOf<UUserWidget> NewWidget, float NewPercent);
-	//UFUNCTION(BlueprintCallable)
-	//FOnDamaged OnDamaged;
+	UFUNCTION(BlueprintCallable)
+	void UpdateEnemyHPWidget(AActor* Object);
+	UFUNCTION(BlueprintCallable)
+	void OverlayMatOnAimCaptured(AActor* Object, AActor* CachedObj);
 	UFUNCTION(BlueprintCallable)
 	void DrawDamageWidget(FVector WorldLocation, int DamageAmount);
-	
-	// ShowDamageWidgetDelegate;
-	// TSharedRef <FOnDamaged> OnDamaged(new FOnDamaged());
 };

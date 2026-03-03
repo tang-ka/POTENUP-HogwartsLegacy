@@ -20,17 +20,6 @@ APlayerCharacter::APlayerCharacter()
 		GetMesh()->SetSkeletalMesh(TempMesh.Object);
 		GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -90), FRotator(0, -90, 0));
 	}
-	
-	static ConstructorHelpers::FObjectFinder<UMaterial> TempMat(TEXT("M_Outline'/Game/KHJ/Materials/M_Outline.M_Outline'"));
-	if (TempMat.Succeeded())
-	{
-		OutlineMat = TempMat.Object;
-	}
-	static ConstructorHelpers::FObjectFinder<UMaterial> TempMat2(TEXT("M_ShineEffect'/Game/KHJ/Materials/M_ShineEffect.M_ShineEffect'"));
-	if (TempMat2.Succeeded())
-	{
-		ShineMat = TempMat2.Object;
-	}
 
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("PlayerCharacter"));
 	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
@@ -94,6 +83,7 @@ void APlayerCharacter::BeginPlay()
 		}
 	}
 	
+	HUD = Cast<AControllerHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
 	UGameplayStatics::GetAllActorsWithTag(GetWorld(), TEXT("Level"), ActorToIgnore);
 	AimCaptureParams.AddIgnoredActors(ActorToIgnore);
 	AimCaptureParams.AddIgnoredActor(this);
@@ -198,45 +188,11 @@ void APlayerCharacter::AimCapture()
 	GetWorld()->SweepSingleByProfile(HitOut, Start, End, FQuat::Identity, "PlayerTrace", FCollisionShape::MakeSphere(ViewSphereRadius), AimCaptureParams);
 	
 	TObjectPtr<AActor> Obj = HitOut.GetActor();
-	
-	if (Obj != LastCachedObj)
+	if (IsValid(Obj))
 	{
-		if (IsValid(LastCachedObj))
-		{
-			AimedTarget = nullptr;
-			if (LastCachedObj->ActorHasTag(FName("Enemy")))
-			{
-				LastCachedObj->FindComponentByClass<USkeletalMeshComponent>()->SetOverlayMaterial(nullptr);
-			}
-			if (LastCachedObj->ActorHasTag(FName("Leviosoable")))
-			{
-				LastCachedObj->FindComponentByClass<UMeshComponent>()->SetOverlayMaterial(nullptr);
-			}
-			if (LastCachedObj->ActorHasTag(FName("Item")))
-			{
-				LastCachedObj->FindComponentByClass<UMeshComponent>()->SetOverlayMaterial(nullptr);
-			}
-		}
-		if (IsValid(Obj))
-		{
-			// GEngine->AddOnScreenDebugMessage(3, 1.0f, FColor::Green, Obj->GetName());
-			AimedTarget = nullptr;
-			if (Obj->ActorHasTag(FName("Enemy")))
-			{
-				Obj->FindComponentByClass<USkeletalMeshComponent>()->SetOverlayMaterial(OutlineMat);
-				AimedTarget = Obj;
-			}
-			if (Obj->ActorHasTag(FName("Leviosoable")))
-			{
-				Obj->FindComponentByClass<UMeshComponent>()->SetOverlayMaterial(OutlineMat);
-				AimedTarget = Obj;
-			}
-			if (Obj->ActorHasTag(FName("Item")) && IsValid(lumos))
-			{
-				Obj->FindComponentByClass<UMeshComponent>()->SetOverlayMaterial(ShineMat);
-			}
-		}
+		AimedTarget = Obj;
 	}
+	HUD->OverlayMatOnAimCaptured(Obj, LastCachedObj);
 	LastCachedObj = Obj;
 }
 
@@ -347,7 +303,7 @@ void APlayerCharacter::SpellStupefy(AStupefy* stp)
 {
 	if (bCanAttack)
 	{
-		if (AimedTarget && AimedTarget->GetActorNameOrLabel().Contains(TEXT("Guardian")))
+		if (AimedTarget && AimedTarget->ActorHasTag(FName("Enemy")))
 		{
 			FVector dir = AimedTarget->GetActorLocation() - this->GetActorLocation();
 			dir.Normalize();
@@ -394,11 +350,7 @@ bool APlayerCharacter::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
 	}
 	int NewHP = GetCurrentHP() - DamageInfo.DamageAmount;
 	SetCurrentHP(NewHP = NewHP <= 0 ? 0 : NewHP);
-	// 델리게이트를 통해 신호 보내기 (Broadcast). 이 함수를 호출하는 순간, 이 델리게이트를 Bind하고 있는 모든 UI가 반응
-	// if (HPChangedDelegate.IsBound())
-	// {
-	// 	HPChangedDelegate.Broadcast(GetHP_Implementation(), GetMaxHP_Implementation());
-	// }
+	HUD->UpdatePlayerHPWidget(GetHPPercent_Implementation());
 	return true;
 }
 
@@ -409,7 +361,7 @@ int APlayerCharacter::GetHP_Implementation() const
 
 float APlayerCharacter::GetHPPercent_Implementation() const
 {
-	return GetCurrentHP() / GetDefaultHP();
+	return static_cast<float>(GetCurrentHP()) / static_cast<float>(GetDefaultHP());
 }
 
 bool APlayerCharacter::IsDead_Implementation() const

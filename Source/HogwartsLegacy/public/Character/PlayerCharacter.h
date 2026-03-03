@@ -13,6 +13,7 @@
 #include <Interface/Damageable.h>
 #include "PlayerCharacter.generated.h"
 
+class AControllerHUD;
 class USpringArmComponent;
 class UCameraComponent;
 class USceneComponent;
@@ -47,6 +48,8 @@ public:
 	USceneComponent* WandTipComp;
 	UPROPERTY(VisibleAnywhere)
 	UPhysicsHandleComponent* PhysicsHandleComp;
+	UPROPERTY()
+	AControllerHUD* HUD;
 #pragma endregion
 	
 #pragma region Inputs
@@ -128,10 +131,6 @@ public:
 	TObjectPtr <AActor> AimedTarget;
 	UPROPERTY()
 	TObjectPtr <AActor> LastCachedObj;
-	UPROPERTY()
-	TObjectPtr <UMaterialInterface> OutlineMat;
-	UPROPERTY()
-	TObjectPtr <UMaterialInterface> ShineMat;
 #pragma endregion
 	
 #pragma region Functions
