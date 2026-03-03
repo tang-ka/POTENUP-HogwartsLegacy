@@ -27,8 +27,7 @@ AGuardian::AGuardian()
 		GetMesh()->SetSkeletalMesh(tempMesh.Object);
 		GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -88), FRotator(0, -90, 0));
 	}
-
-	// ForCopyFSMComponent = CreateDefaultSubobject<UEnemyFSMComponent>(TEXT("FSMComponent"));
+	
 	FSMComponent = CreateDefaultSubobject<UEnemyFSMComponent>(TEXT("FSMComponent"));
 
 	ChargeAttackHitBox = CreateDefaultSubobject<USphereComponent>(TEXT("ChargeAttackHitBox"));
@@ -54,11 +53,13 @@ void AGuardian::BeginPlay()
 	Super::BeginPlay();
 
 	DefaultColor = GetMesh()->CreateAndSetMaterialInstanceDynamic(0)->K2_GetVectorParameterValue("Paint Tint");
-	// FSMComponent = ForCopyFSMComponent;
+
 	InitHP();
 
 	ChargeAttackHitBox->OnComponentBeginOverlap.AddDynamic(this, &AGuardian::OnChargeAttackHitBoxOverlap);
 	BashAttackHitBox->OnComponentBeginOverlap.AddDynamic(this, &AGuardian::OnBashAttackHitBoxOverlap);
+	
+	Tags.Add(FName("Enemy"));
 }
 
 void AGuardian::Tick(float DeltaTime)
@@ -229,6 +230,11 @@ bool AGuardian::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
 int AGuardian::GetHP_Implementation() const
 {
 	return GetCurrentHP();
+}
+
+float AGuardian::GetHPPercent_Implementation() const
+{
+	return static_cast<float>(GetCurrentHP()) / MaxHP;
 }
 
 bool AGuardian::IsDead_Implementation() const

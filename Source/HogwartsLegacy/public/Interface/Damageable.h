@@ -49,7 +49,7 @@ public:
 	int GetHP() const;
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Damage")
-	int GetMaxHP() const;
+	float GetHPPercent() const;
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Damage")
 	bool IsDead() const;

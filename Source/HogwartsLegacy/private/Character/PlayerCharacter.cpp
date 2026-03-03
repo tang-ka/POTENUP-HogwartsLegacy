@@ -407,9 +407,9 @@ int APlayerCharacter::GetHP_Implementation() const
 	return GetCurrentHP();
 }
 
-int APlayerCharacter::GetMaxHP_Implementation() const
+float APlayerCharacter::GetHPPercent_Implementation() const
 {
-	return GetDefaultHP();
+	return GetCurrentHP() / GetDefaultHP();
 }
 
 bool APlayerCharacter::IsDead_Implementation() const

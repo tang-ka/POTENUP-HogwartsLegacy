@@ -80,6 +80,7 @@ public:
 #pragma region IDamageable
 	virtual bool ReceiveDamage_Implementation(FDamageInfo DamageInfo) override;
 	virtual int GetHP_Implementation() const override;
+	virtual float GetHPPercent_Implementation() const override;
 	virtual bool IsDead_Implementation() const override;
 #pragma endregion
 
@@ -91,6 +92,7 @@ public:
 
 #pragma region Getters
 	int GetCurrentHP() const { return HP; }
+	float GetCurrentHPPercent() const { return static_cast<float>(GetCurrentHP()) / MaxHP; }
 	UEnemyFSMComponent* GetFSMComponent() const { return FSMComponent; }
 	AActor* GetTargetActor() const { return TargetActor; }
 #pragma endregion
@@ -115,9 +117,6 @@ private:
 private:
 	UPROPERTY(EditAnywhere, Category="FSMComponent")
 	TObjectPtr<UEnemyFSMComponent> FSMComponent;
-	
-	// UPROPERTY(EditAnywhere, Category="FSMComponent")
-	// TObjectPtr<UEnemyFSMComponent> ForCopyFSMComponent;
 
 	UPROPERTY(EditAnywhere, Category="HitBox")
 	TObjectPtr<USphereComponent> ChargeAttackHitBox;

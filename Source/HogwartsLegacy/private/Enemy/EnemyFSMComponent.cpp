@@ -135,6 +135,7 @@ void UEnemyFSMComponent::FinishAttack(bool bSuccess)
 void UEnemyFSMComponent::RequestDead()
 {
 	ChangeState(EEnemyState::Dead);
+	Me->Tags.Remove(FName("Enemy"));
 	
 	// Broadcast the death event
 	OnEnemyDead.Broadcast();

@@ -181,7 +181,7 @@ public:
 	UFUNCTION()
 	virtual int GetHP_Implementation() const override;
 	UFUNCTION()
-	virtual int GetMaxHP_Implementation() const override;
+	virtual float GetHPPercent_Implementation() const override;
 	UFUNCTION()
 	virtual bool IsDead_Implementation() const override;
 	//FOnHPChanged HPChangedDelegate;
