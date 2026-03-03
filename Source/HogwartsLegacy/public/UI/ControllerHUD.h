@@ -10,9 +10,12 @@
 class UMinimapWidget;
 class UPlayerHPWidget;
 class UEnemyHPWidget;
+class UDamageIndicatorWidget;
 /**
  * 
  */
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDamaged, FVector, WorldLocation, int, DamageAmount);
+
 UCLASS()
 class HOGWARTSLEGACY_API AControllerHUD : public AHUD
 {
@@ -29,12 +32,16 @@ private:
 	TSubclassOf <UPlayerHPWidget> PlayerHPWidgetClass;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf <UEnemyHPWidget> EnemyHPWidgetClass;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf <UDamageIndicatorWidget> DamageWidgetClass;
 	UPROPERTY()
 	UMinimapWidget* MinimapWidget;
 	UPROPERTY()
 	UPlayerHPWidget* PlayerHPWidget;
 	UPROPERTY()
 	UEnemyHPWidget* EnemyHPWidget;
+	UPROPERTY()
+	UDamageIndicatorWidget* DamageWidget;
 	UPROPERTY()
 	TObjectPtr <UMaterialInterface> OutlineMat;
 	UPROPERTY()
@@ -49,6 +56,11 @@ public:
 	void SetPlayerHPWidget(TSubclassOf<UUserWidget> NewWidget, TScriptInterface<IDamageable> Player);
 	UFUNCTION(BlueprintCallable)
 	void SetEnemyHPWidget(TSubclassOf<UUserWidget> NewWidget, float NewPercent);
-	// UFUNCTION(BlueprintCallable)
-	// void ShowDamageWidget();
+	//UFUNCTION(BlueprintCallable)
+	//FOnDamaged OnDamaged;
+	UFUNCTION(BlueprintCallable)
+	void DrawDamageWidget(FVector WorldLocation, int DamageAmount);
+	
+	// ShowDamageWidgetDelegate;
+	// TSharedRef <FOnDamaged> OnDamaged(new FOnDamaged());
 };

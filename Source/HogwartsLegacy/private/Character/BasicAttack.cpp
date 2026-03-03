@@ -1,21 +1,16 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Character/BasicAttack.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "UI/DamageIndicatorWidget.h" // Damage UI
-#include "Blueprint/UserWidget.h" // Damage UI
-#include "Kismet/GameplayStatics.h" // Damage UI
 #include "Interface/DamageableHelpers.h"
+#include "Kismet/GameplayStatics.h"
 
 
 class IDamageable;
-// Sets default values
 ABasicAttack::ABasicAttack()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComp"));
@@ -48,17 +43,18 @@ ABasicAttack::ABasicAttack()
 	
 }
 
-// Called when the game starts or when spawned
 void ABasicAttack::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	// MidPointCalculation(TargetLocation, MinCurve, MaxCurve, MidPoint);
-	// CurveControlPoint(MidPoint, TargetLocation, MinRadius, MaxRadius, MinAngle, MaxAngle, CurvedPoint);
-	// bAfterBeginPlay = true;
+	if (SpellSound)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), SpellSound);
+	}
+	
+	HUD = Cast<AControllerHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
 }
 
-// Called every frame
 void ABasicAttack::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -86,7 +82,8 @@ void ABasicAttack::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* O
 	{
 		int Damage = ComboAttack ? GetThirdDamage() : GetBasicDamage();
 		DamageableHelpers::ApplyDamage(Target, Causer, Damage);
-		ShowDamageWidget(GetActorLocation() + FVector(0, 0, 50.f), Damage);
+		HUD->DrawDamageWidget(GetActorLocation() + FVector(0, 0, 50.f), Damage);
+		// ShowDamageWidget(GetActorLocation() + FVector(0, 0, 50.f), Damage);
 		// GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("Damage: %d"), Damage));
 	}
 	
@@ -105,30 +102,6 @@ void ABasicAttack::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
 	}
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ExplosionComp, Hit.TraceStart);
 	Destroy();
-}
-
-void ABasicAttack::ShowDamageWidget(FVector WorldLocation, float DamageAmount)
-{
-	if (!DamageWidgetClass)
-	{
-		return;
-	}
-	
-	UDamageIndicatorWidget* DamageWidget = CreateWidget<UDamageIndicatorWidget>(GetWorld(), DamageWidgetClass);
-	
-	if (DamageWidget)
-	{
-		DamageWidget->SetDamageValue(DamageAmount);
-		DamageWidget->AddToViewport();
-		
-		FVector2D ScreenLocation;
-		
-		APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-		if (PC && PC->ProjectWorldLocationToScreen(WorldLocation, ScreenLocation))
-		{
-			DamageWidget->SetPositionInViewport(ScreenLocation);
-		}
-	}
 }
 
 

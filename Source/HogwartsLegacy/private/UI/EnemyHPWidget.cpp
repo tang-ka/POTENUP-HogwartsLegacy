@@ -3,7 +3,6 @@
 
 #include "UI/EnemyHPWidget.h"
 #include "Components/CanvasPanel.h"
-#include "Components/CanvasPanelSlot.h"
 
 void UEnemyHPWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {

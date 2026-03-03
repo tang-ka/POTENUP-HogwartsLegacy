@@ -6,8 +6,10 @@
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
 #include "NiagaraSystem.h"
-// #include <Interface/Damageable.h>
+#include "UI/ControllerHUD.h"
 #include "BasicAttack.generated.h"
+
+class AControllerHUD;
 
 UCLASS()
 class HOGWARTSLEGACY_API ABasicAttack : public AActor
@@ -36,7 +38,9 @@ public:
 	void SetTarget(AActor* InCauser, AActor* InTarget, bool combo);
 	UFUNCTION()
 	void NoTarget();
-
+	UPROPERTY()
+	AControllerHUD* HUD;
+	
 	UPROPERTY(VisibleAnywhere, Category=Collision)
 	USphereComponent* CollisionComp;
 	UPROPERTY(VisibleAnywhere, Category=Niagara)
@@ -45,6 +49,8 @@ public:
 	UNiagaraSystem* ExplosionComp;
 	UPROPERTY(VisibleAnywhere, Category=Physics)
 	float PhysicsForce = 20;
+	UPROPERTY()
+	USoundBase* SpellSound;
 	UFUNCTION()
 	void OnHit(
 		UPrimitiveComponent* HitComponent,
@@ -69,17 +75,15 @@ public:
 	float Speed = 2000;
 	UPROPERTY()
 	float Distance = 2000;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf <class UDamageIndicatorWidget> DamageWidgetClass;
+	// UPROPERTY(EditAnywhere)
+	// TSubclassOf <class UDamageIndicatorWidget> DamageWidgetClass;
 
 	UFUNCTION()
 	float GetBasicDamage() const { return BaseDamage; }
 	UFUNCTION()
 	float GetThirdDamage() const { return ThirdDamage; }
-	
-	UFUNCTION()
-	void ShowDamageWidget(FVector WorldLocation, float DamageAmount);
-	
+
+
 private:
 	
 	UPROPERTY()

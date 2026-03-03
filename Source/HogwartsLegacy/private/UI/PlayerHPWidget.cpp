@@ -2,8 +2,6 @@
 
 
 #include "UI/PlayerHPWidget.h"
-#include "Components/CanvasPanel.h"
-#include "Components/CanvasPanelSlot.h"
 
 
 void UPlayerHPWidget::InitializeHPBar(TScriptInterface<IDamageable> InTarget)

@@ -54,5 +54,6 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Damage")
 	bool IsDead() const;
 
-	//virtual FOnHPChanged& GetOnHPChangedDelegate() = 0;
+	//UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Damage")
+	//FOnHPChanged& GetOnHPChangedDelegate();
 };

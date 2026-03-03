@@ -84,7 +84,7 @@ public:
 	UPROPERTY()
 	int ComboCount = 0;
 	UPROPERTY()
-	bool ComboAttack;
+	bool bComboAttack;
 	UPROPERTY()
 	FTimerHandle ComboTimerHandle;
 

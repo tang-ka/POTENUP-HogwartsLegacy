@@ -2,9 +2,12 @@
 
 
 #include "UI/ControllerHUD.h"
+#include "Kismet/GameplayStatics.h"
 #include "UI/MinimapWidget.h"
 #include "UI/PlayerHPWidget.h"
 #include "UI/EnemyHPWidget.h"
+#include "UI/DamageIndicatorWidget.h"
+#include "Blueprint/UserWidget.h"
 
 AControllerHUD::AControllerHUD()
 {
@@ -18,7 +21,7 @@ AControllerHUD::AControllerHUD()
 	{
 		ShineMat = TempMat2.Object;
 	}
-	
+	// OnDamaged.AddDynamic(this, &AControllerHUD::DrawDamageWidget);
 }
 
 void AControllerHUD::BeginPlay()
@@ -119,6 +122,30 @@ void AControllerHUD::SetEnemyHPWidget(TSubclassOf<UUserWidget> NewWidget, float 
 			EnemyHPWidget->UpdateHPBar(NewPercent);
 			EnemyHPWidget->AddToViewport();
 			// EnemyHPWidget->SetVisibility(ESlateVisibility::Collapsed);
+		}
+	}
+}
+
+void AControllerHUD::DrawDamageWidget(FVector WorldLocation, int DamageAmount)
+{
+	if (!DamageWidgetClass)
+	{
+		return;
+	}
+	
+	DamageWidget = CreateWidget<UDamageIndicatorWidget>(GetWorld(), DamageWidgetClass);
+	
+	if (DamageWidget)
+	{
+		DamageWidget->SetDamageValue(DamageAmount);
+		DamageWidget->AddToViewport();
+		
+		FVector2D ScreenLocation;
+		
+		APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+		if (PC && PC->ProjectWorldLocationToScreen(WorldLocation, ScreenLocation))
+		{
+			DamageWidget->SetPositionInViewport(ScreenLocation);
 		}
 	}
 }

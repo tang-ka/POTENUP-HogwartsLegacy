@@ -1,4 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Character/PlayerCharacter.h"
@@ -11,10 +10,8 @@
 #include "Kismet/GameplayStatics.h"
 
 
-// Sets default values
 APlayerCharacter::APlayerCharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> TempMesh(TEXT("SkeletalMesh'/Game/KHJ/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple'"));
@@ -303,14 +300,14 @@ void APlayerCharacter::SpellBasicAttack()
 		if (ComboCount >= 4) // Check Whether Is This ComboAttack
 		{
 			ComboCount = 0;
-			ComboAttack = true;
+			bComboAttack = true;
 		}
 		if (AimedTarget && AimedTarget->ActorHasTag(FName("Enemy")))
 		{
 			FVector dir = AimedTarget->GetActorLocation() - this->GetActorLocation();
 			dir.Normalize();
 			attack = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetActorLocation(), dir.Rotation());
-			attack->SetTarget(this, AimedTarget, ComboAttack);
+			attack->SetTarget(this, AimedTarget, bComboAttack);
 		}
 		else
 		{
@@ -320,7 +317,7 @@ void APlayerCharacter::SpellBasicAttack()
 		}
 	}
 	GetWorldTimerManager().SetTimer(ComboTimerHandle,[this](){this->ComboCount=0;}, 1.0f, false);
-	ComboAttack = false;
+	bComboAttack = false;
 }
 
 void APlayerCharacter::SpellProtego(AProtego* prt)
