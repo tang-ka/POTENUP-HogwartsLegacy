@@ -37,12 +37,13 @@ void AControllerHUD::BeginPlay()
 }
 
 
-void AControllerHUD::OverlayMatOnAimCaptured(AActor* Object, AActor* CachedObj)
+void AControllerHUD::OverlayMatOnAimCaptured(AActor* Object, AActor* CachedObj, AActor*& Aimed)
 {
 	if (Object != CachedObj)
 	{
 		if (IsValid(CachedObj))
 		{
+			Aimed = nullptr;
 			if (CachedObj->ActorHasTag(FName("Enemy")))
 			{
 				CachedObj->FindComponentByClass<USkeletalMeshComponent>()->SetOverlayMaterial(nullptr);
@@ -58,10 +59,12 @@ void AControllerHUD::OverlayMatOnAimCaptured(AActor* Object, AActor* CachedObj)
 		}
 		if (IsValid(Object))
 		{
+			Aimed = nullptr;
 			if (Object->ActorHasTag(FName("Enemy")))
 			{
 				Object->FindComponentByClass<USkeletalMeshComponent>()->SetOverlayMaterial(OutlineMat);
 				SetEnemyHPWidget(EnemyHPWidgetClass, IDamageable::Execute_GetHPPercent(Object));
+				Aimed = Object;
 			}
 			else if (EnemyHPWidget)
 			{

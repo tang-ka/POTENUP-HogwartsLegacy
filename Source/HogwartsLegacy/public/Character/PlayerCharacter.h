@@ -128,7 +128,7 @@ public:
 	UPROPERTY()
 	TArray<AActor*> ActorToIgnore;
 	UPROPERTY()
-	TObjectPtr <AActor> AimedTarget;
+	AActor* AimedTarget;
 	UPROPERTY()
 	TObjectPtr <AActor> LastCachedObj;
 #pragma endregion

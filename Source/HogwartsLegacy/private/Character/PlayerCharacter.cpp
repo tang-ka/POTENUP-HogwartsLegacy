@@ -188,11 +188,7 @@ void APlayerCharacter::AimCapture()
 	GetWorld()->SweepSingleByProfile(HitOut, Start, End, FQuat::Identity, "PlayerTrace", FCollisionShape::MakeSphere(ViewSphereRadius), AimCaptureParams);
 	
 	TObjectPtr<AActor> Obj = HitOut.GetActor();
-	if (IsValid(Obj))
-	{
-		AimedTarget = Obj;
-	}
-	HUD->OverlayMatOnAimCaptured(Obj, LastCachedObj);
+	HUD->OverlayMatOnAimCaptured(Obj, LastCachedObj, AimedTarget);
 	LastCachedObj = Obj;
 }
 

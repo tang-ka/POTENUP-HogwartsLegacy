@@ -58,7 +58,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UpdateEnemyHPWidget(AActor* Object);
 	UFUNCTION(BlueprintCallable)
-	void OverlayMatOnAimCaptured(AActor* Object, AActor* CachedObj);
+	void OverlayMatOnAimCaptured(AActor* Object, AActor* CachedObj, AActor*& Aimed);
 	UFUNCTION(BlueprintCallable)
 	void DrawDamageWidget(FVector WorldLocation, int DamageAmount);
 };
