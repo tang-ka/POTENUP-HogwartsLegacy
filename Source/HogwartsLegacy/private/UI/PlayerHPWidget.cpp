@@ -9,7 +9,7 @@ void UPlayerHPWidget::InitializeHPBar(TScriptInterface<IDamageable> InTarget)
 	if (InTarget)
 	{
 		float CurrentHP = InTarget->Execute_GetHP(InTarget.GetObject());
-		float MaxHP = InTarget->Execute_GetMaxHP(InTarget.GetObject());
+		float MaxHP = InTarget->Execute_GetHPPercent(InTarget.GetObject());
 		UpdateHPBar(CurrentHP, MaxHP);
 		
 		// 2. 델리게이트 바인딩
