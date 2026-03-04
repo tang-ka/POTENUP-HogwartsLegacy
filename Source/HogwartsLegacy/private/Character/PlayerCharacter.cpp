@@ -88,6 +88,7 @@ void APlayerCharacter::BeginPlay()
 		}
 	}
 	
+	AnimInstance = GetMesh()->GetAnimInstance();
 	HUD = Cast<AControllerHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
 	UGameplayStatics::GetAllActorsWithTag(GetWorld(), TEXT("Level"), ActorToIgnore);
 	AimCaptureParams.AddIgnoredActors(ActorToIgnore);
@@ -99,7 +100,10 @@ void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	PlayerMove();
+	if (bCanMove)
+	{
+		PlayerMove();
+	}
 	CheckCanAttack(bCanAttack);
 	AimCapture();
 	
@@ -245,7 +249,6 @@ void APlayerCharacter::SpellBasicAttack()
 	}
 	else
 	{
-		AnimInstance = GetMesh()->GetAnimInstance();
 		if (GetWorldTimerManager().IsTimerActive(ComboTimerHandle)) // Check Combo Timing
 		{
 			ComboCount++;
@@ -261,26 +264,25 @@ void APlayerCharacter::SpellBasicAttack()
 			bComboAttack = true;
 		}
 		
-		switch (ComboCount)
+		if (!AnimInstance->Montage_IsPlaying(ComboAttackMontage))
 		{
-			case 2: AnimInstance->Montage_JumpToSection(FName(TEXT("ComboAttack2")));
-			case 3: AnimInstance->Montage_JumpToSection(FName(TEXT("ComboAttack3")));
-			case 4: AnimInstance->Montage_JumpToSection(FName(TEXT("ComboAttack4")));
-			default: AnimInstance->Montage_Play(ComboAttackMontage);
-		}
-		if (AimedTarget && AimedTarget->ActorHasTag(FName("Enemy")))
-		{
-			FVector dir = AimedTarget->GetActorLocation() - this->GetActorLocation();
-			dir.Normalize();
-			attack = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, WandTipComp->GetComponentLocation(), dir.Rotation());
-			attack->SetTarget(this, AimedTarget, bComboAttack);
+			bCanMove = false;
+			PlayAnimMontage(ComboAttackMontage, 1.0f, FName(*FString::Printf(TEXT("ComboAttack%d"), ComboCount)));
+			// switch (ComboCount)
+			// {
+			// case 2: AnimInstance->Montage_JumpToSection(FName(TEXT("ComboAttack2")));
+			// case 3: AnimInstance->Montage_JumpToSection(FName(TEXT("ComboAttack3")));
+			// case 4: AnimInstance->Montage_JumpToSection(FName(TEXT("ComboAttack4")));
+			// default: AnimInstance->Montage_Play(ComboAttackMontage);
+			// }
 		}
 		else
 		{
-			attack = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, WandTipComp->GetComponentLocation(), GetViewRotation());
-			attack->NoTarget();
-			ReceiveDamage_Implementation(FDamageInfo{ this, 20});
+			// 이미 재생 중이면 해당 섹션으로 바로 점프
+			AnimInstance->Montage_JumpToSection(FName(*FString::Printf(TEXT("ComboAttack%d"), ComboCount)), ComboAttackMontage);
 		}
+		
+
 	}
 	GetWorldTimerManager().SetTimer(ComboTimerHandle,[this](){this->ComboCount=0;}, 1.0f, false);
 	bComboAttack = false;
@@ -350,6 +352,23 @@ void APlayerCharacter::SpellLevioso(UPrimitiveComponent* TargetComp, FVector Loc
 
 void APlayerCharacter::SpellDescendo()
 {
+}
+
+void APlayerCharacter::SpawnBasicAttack()
+{
+	if (AimedTarget && AimedTarget->ActorHasTag(FName("Enemy")))
+	{
+		FVector dir = AimedTarget->GetActorLocation() - this->GetActorLocation();
+		dir.Normalize();
+		attack = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, WandTipComp->GetComponentLocation(), dir.Rotation());
+		attack->SetTarget(this, AimedTarget, bComboAttack);
+	}
+	else
+	{
+		attack = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, WandTipComp->GetComponentLocation(), GetViewRotation());
+		attack->NoTarget();
+		ReceiveDamage_Implementation(FDamageInfo{ this, 20});
+	}
 }
 
 bool APlayerCharacter::ReceiveDamage_Implementation(FDamageInfo DamageInfo)

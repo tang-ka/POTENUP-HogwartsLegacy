@@ -82,7 +82,9 @@ public:
 	UPROPERTY()
 	FVector WalkDirection;
 	UPROPERTY()
-	bool bCanAttack = false;
+	bool bCanAttack = true;
+	UPROPERTY()
+	bool bCanMove = true;
 	UPROPERTY()
 	int ComboCount = 0;
 	UPROPERTY()
@@ -159,6 +161,9 @@ public:
 	void SpellLevioso(UPrimitiveComponent* TargetComp, FVector Location, FRotator Rotation);
 	UFUNCTION()
 	void SpellDescendo();
+	
+	UFUNCTION()
+	void SpawnBasicAttack();
 	
 	UFUNCTION()
 	void PlayerMove();
