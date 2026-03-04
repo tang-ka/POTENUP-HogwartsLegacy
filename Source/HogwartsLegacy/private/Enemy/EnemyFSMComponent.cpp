@@ -117,19 +117,31 @@ void UEnemyFSMComponent::ChangeState(EEnemyState NewStateType)
 	bIsChanging = false;
 }
 
+void UEnemyFSMComponent::RequestAttack()
+{
+	// Strafe 상태에서만 공격 명령이 가능 -> Guardian::IsAttackReady()에서도 체크 
+	if (CurStateType == EEnemyState::Strafe)
+	{
+		// 공격 상태는 랜덤하게 선택 (ChargeAttack 또는 BashAttack)
+		EEnemyState AttackState = FMath::RandBool() ? EEnemyState::ChargeAttack : EEnemyState::BashAttack;
+		ChangeState(AttackState);
+	}
+}
+
 void UEnemyFSMComponent::FinishAttack(bool bSuccess)
 {
 	if (bSuccess)
 	{
-		// For simplicity, we just go back to Strafe after an attack
 		ChangeState(EEnemyState::Idle);
 	}
 	else
 	{
-		// If the attack failed (e.g. missed), we can decide what to do here
-		// For now, let's just go back to Idle
 		ChangeState(EEnemyState::Stumble);
 	}
+	
+	// Manager에게 공격 종료를 알린다
+	// 각 공격 상태의 OnExit에서 호출
+	// OnAttackFinished.Broadcast();
 }
 
 void UEnemyFSMComponent::RequestDead()
@@ -149,7 +161,7 @@ void UEnemyFSMComponent::RequestDamaged(float DamageAmount, float RemainingHP)
 	}
 	
 	ChangeState(EEnemyState::Damaged);
-	
+
 	// Broadcast the damaged event
 	OnEnemyDamaged.Broadcast(DamageAmount, RemainingHP);
 }
@@ -179,7 +191,7 @@ void UEnemyFSMComponent::InitStates()
 	// Non Combat
 	StateMap.Add(EEnemyState::Sleep, SleepState);
 	StateMap.Add(EEnemyState::Idle, IdleState);
-	// Combat Readiness
+	// Combat Readinessdd
 	StateMap.Add(EEnemyState::Strafe, StrafeState);
 	// Offense
 	StateMap.Add(EEnemyState::ChargeAttack, ChargeAttackState);

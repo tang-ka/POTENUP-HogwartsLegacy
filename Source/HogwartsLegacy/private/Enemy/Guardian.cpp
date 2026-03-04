@@ -29,6 +29,7 @@ AGuardian::AGuardian()
 	}
 	
 	FSMComponent = CreateDefaultSubobject<UEnemyFSMComponent>(TEXT("FSMComponent"));
+	// FSMComponentForCopy = CreateDefaultSubobject<UEnemyFSMComponent>(TEXT("FSMComponent"));
 
 	ChargeAttackHitBox = CreateDefaultSubobject<USphereComponent>(TEXT("ChargeAttackHitBox"));
 	ChargeAttackHitBox->SetupAttachment(GetCapsuleComponent()/*, FName("RightHandSocket")*/);
@@ -41,6 +42,9 @@ AGuardian::AGuardian()
 	// 메쉬 충돌은 끄고 싶다.
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Enemy"));
+
+	// AI 컨트롤러 자동 빙의 설정: 스폰된 경우에도 AIController가 할당되도록 함
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 	
 	SetActiveChargeAttackHitBox(false);
 	SetActiveBashAttackHitBox(false);
@@ -51,9 +55,12 @@ AGuardian::AGuardian()
 void AGuardian::BeginPlay()
 {
 	Super::BeginPlay();
-
+	// FSMComponent = FSMComponentForCopy;
+	if (!FSMComponent)
+	{
+		PRINT_LOG(TEXT("FSMComponent is NULL"));
+	}
 	DefaultColor = GetMesh()->CreateAndSetMaterialInstanceDynamic(0)->K2_GetVectorParameterValue("Paint Tint");
-
 	InitHP();
 
 	ChargeAttackHitBox->OnComponentBeginOverlap.AddDynamic(this, &AGuardian::OnChargeAttackHitBoxOverlap);
@@ -221,7 +228,8 @@ bool AGuardian::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
 	}
 	else
 	{
-		FSMComponent->RequestDamaged(DamageInfo.DamageAmount, HP);;
+		// FSMComponent->RequestDamaged(DamageInfo.DamageAmount, HP);;
+		FSMComponent->RequestDamaged(50, HP);;
 	}
 
 	return true;
@@ -259,3 +267,47 @@ void AGuardian::InitHP()
 {
 	HP = MaxHP;
 }
+
+// ============================================================
+// Combat Info — Manager에게 판단 정보 제공
+// ============================================================
+
+bool AGuardian::IsAttackReady() const
+{
+	if (!FSMComponent)
+	{
+		return false;
+	}
+	
+	const EEnemyState State = FSMComponent->GetCurrentStateType();
+	return State == EEnemyState::Strafe;
+}
+
+float AGuardian::GetDistanceToTarget() const
+{
+	const AActor* Target = FSMComponent ? FSMComponent->GetCurrentTarget() : nullptr;
+	if (!Target)
+	{
+		return TNumericLimits<float>::Max();
+	}
+	
+	return FVector::Dist(GetActorLocation(), Target->GetActorLocation());
+}
+
+float AGuardian::GetAngleToTarget() const
+{
+	const AActor* Target = FSMComponent ? FSMComponent->GetCurrentTarget() : nullptr;
+	if (!Target)
+	{
+		return 180.f;
+	}
+	
+	const FVector Forward = GetActorForwardVector();
+	FVector ToTarget = Target->GetActorLocation() - GetActorLocation();
+	ToTarget.Z = 0.f;
+	ToTarget.Normalize();
+	
+	const float Dot = FVector::DotProduct(Forward, ToTarget);
+	return FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(Dot, -1.f, 1.f)));
+}
+

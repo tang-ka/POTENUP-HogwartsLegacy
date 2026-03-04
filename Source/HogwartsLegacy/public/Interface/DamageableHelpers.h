@@ -43,6 +43,15 @@ namespace DamageableHelpers
 		}
 		return IDamageable::Execute_GetHP(const_cast<UObject*>(Target));
 	}
+	
+	inline float GetHPPercent(const UObject* Target, float DefaultValue = 0.f)
+	{
+		if (!IsDamageable(Target))
+		{
+			return DefaultValue;
+		}
+		return IDamageable::Execute_GetHPPercent(const_cast<UObject*>(Target));
+	}
 
 	inline bool IsDead(const UObject* Target, bool DefaultValue = false)
 	{

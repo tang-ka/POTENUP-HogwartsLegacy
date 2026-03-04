@@ -8,6 +8,21 @@
 void UGuardianDeadState::OnEnter()
 {
 	Super::OnEnter();
+	
+	FTimerHandle DestroyTimerHandle;
+	TWeakObjectPtr<ThisClass> WeakThis(this);
+
+	GetWorld()->GetTimerManager().SetTimer(DestroyTimerHandle, [WeakThis]()
+	{
+		// 실행 시점에 객체가 아직 살아있는지 확인합니다.
+		if (WeakThis.IsValid())
+		{
+			if (AGuardian* Guardian = WeakThis->GetOwnerGuardian())
+			{
+				Guardian->Destroy();
+			}
+		}
+	}, 2.0f, false);
 }
 
 void UGuardianDeadState::OnExit()

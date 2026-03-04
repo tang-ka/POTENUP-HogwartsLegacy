@@ -96,6 +96,15 @@ public:
 	UEnemyFSMComponent* GetFSMComponent() const { return FSMComponent; }
 	AActor* GetTargetActor() const { return TargetActor; }
 #pragma endregion
+
+#pragma region Combat Info : Manager에게 판단 정보 제공
+	// 공격 가능한 상태인지 (Idle 또는 Strafe 상태)
+	bool IsAttackReady() const;
+	// 현재 타겟과의 거리
+	float GetDistanceToTarget() const;
+	// 현재 타겟을 향한 시야각 (정면 기준, 도 단위)
+	float GetAngleToTarget() const;
+#pragma endregion
 	
 #pragma region Setters
 	void SetsCurrentDamage(int InDamageAmount) { CurrentDamage = InDamageAmount; }
@@ -117,6 +126,9 @@ private:
 private:
 	UPROPERTY(EditAnywhere, Category="FSMComponent")
 	TObjectPtr<UEnemyFSMComponent> FSMComponent;
+
+	// UPROPERTY(EditAnywhere, Category="FSMComponent")
+	// TObjectPtr<UEnemyFSMComponent> FSMComponentForCopy;
 
 	UPROPERTY(EditAnywhere, Category="HitBox")
 	TObjectPtr<USphereComponent> ChargeAttackHitBox;

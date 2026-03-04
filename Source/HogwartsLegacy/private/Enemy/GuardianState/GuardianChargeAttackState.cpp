@@ -23,11 +23,13 @@ void UGuardianChargeAttackState::OnEnter()
 	Super::OnEnter();
 	
 	Target = GetOwnerFSM()->GetCurrentTarget();
+	// GetOwnerFSM()->bIsAttacking = true;
 }
 
 void UGuardianChargeAttackState::OnExit()
 {
 	Super::OnExit();
+	GetOwnerFSM()->OnAttackFinished.Broadcast();
 }
 
 void UGuardianChargeAttackState::TickState(float DeltaTime)

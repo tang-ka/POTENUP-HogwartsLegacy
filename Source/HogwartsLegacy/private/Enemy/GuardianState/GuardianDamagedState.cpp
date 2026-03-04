@@ -23,7 +23,7 @@ void UGuardianDamagedState::OnExit()
 {
 	Super::OnExit();
 	
-	GetOwnerGuardian()->ResetMaterialColor();	
+	GetOwnerGuardian()->ResetMaterialColor();
 }
 
 void UGuardianDamagedState::TickState(float DeltaTime)
