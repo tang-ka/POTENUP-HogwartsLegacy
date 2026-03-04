@@ -1,4 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -25,18 +24,13 @@ class HOGWARTSLEGACY_API APlayerCharacter : public ACharacter, public IDamageabl
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	APlayerCharacter();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	
 #pragma region Components
@@ -53,31 +47,36 @@ public:
 #pragma endregion
 	
 #pragma region Inputs
-	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UPROPERTY(EditDefaultsOnly, Category=Input)
 	UInputMappingContext* IMC_Player;
-	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UPROPERTY(EditDefaultsOnly, Category=Input)
 	UInputAction* IA_LookUp;
-	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UPROPERTY(EditDefaultsOnly, Category=Input)
 	UInputAction* IA_Turn;
-	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UPROPERTY(EditDefaultsOnly, Category=Input)
 	UInputAction* IA_Move;
-	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UPROPERTY(EditDefaultsOnly, Category=Input)
 	UInputAction* IA_Run;
-	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UPROPERTY(EditDefaultsOnly, Category=Input)
 	UInputAction* IA_Jump;
-	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UPROPERTY(EditDefaultsOnly, Category=Input)
 	UInputAction* IA_Attack;
-	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UPROPERTY(EditDefaultsOnly, Category=Input)
 	UInputAction* IA_SkillSlot1;
-	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UPROPERTY(EditDefaultsOnly, Category=Input)
 	UInputAction* IA_SkillSlot2;
-	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UPROPERTY(EditDefaultsOnly, Category=Input)
 	UInputAction* IA_SkillSlot3;
-	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UPROPERTY(EditDefaultsOnly, Category=Input)
 	UInputAction* IA_SkillSlotQ;
-	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UPROPERTY(EditDefaultsOnly, Category=Input)
 	UInputAction* IA_SkillSlotR;
 #pragma endregion
+	
+	UPROPERTY(EditDefaultsOnly, Category=Animation)
+	TObjectPtr <UAnimMontage> ComboAttackMontage;
+	UPROPERTY(EditDefaultsOnly, Category=Animation)
+	TObjectPtr <UAnimInstance> AnimInstance;
 	
 #pragma region Properties
 	UPROPERTY()
@@ -194,7 +193,7 @@ private:
 	UPROPERTY()
 	int MaxHP = 100;
 	UPROPERTY()
-	float WalkSpeed = 300;
+	float WalkSpeed = 250;
 	UPROPERTY()
 	int ViewDistance = 2000;
 	UPROPERTY()

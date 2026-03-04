@@ -14,12 +14,17 @@ APlayerCharacter::APlayerCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> TempMesh(TEXT("SkeletalMesh'/Game/KHJ/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple'"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> TempMesh(TEXT("SkeletalMesh'/Game/KHJ/Characters/SM_PlayerCharacter.SM_PlayerCharacter'"));
 	if (TempMesh.Succeeded())
 	{
 		GetMesh()->SetSkeletalMesh(TempMesh.Object);
 		GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -90), FRotator(0, -90, 0));
 	}
+	// static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstance (TEXT("AnimBlueprint'/Game/KHJ/Characters/Animation/ABP_PlayerCharacter.ABP_PlayerCharacter'"));
+	// if (AnimInstance.Succeeded())
+	// {
+	// 	GetMesh()->SetAnimInstanceClass(AnimInstance.Class);
+	// }
 
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("PlayerCharacter"));
 	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
@@ -35,7 +40,7 @@ APlayerCharacter::APlayerCharacter()
 	
 	WandTipComp = CreateDefaultSubobject<USceneComponent>(TEXT("WandTip"));
 	WandTipComp->SetupAttachment(RootComponent);
-	WandTipComp->SetRelativeLocation(FVector(0, 60, 88));
+	WandTipComp->SetRelativeLocation(GetMesh()->GetSocketLocation(FName(TEXT("WandSocketTipSocket"))));
 	
 	// Levioso
 	PhysicsHandleComp = CreateDefaultSubobject<UPhysicsHandleComponent>(TEXT("PhysicsHandle"));
@@ -156,7 +161,7 @@ void APlayerCharacter::Run(const FInputActionValue& InputValue)
 {
 	static bool bRun = false;
 	bRun = !bRun;
-	WalkSpeed = bRun ? 500 : 300;
+	WalkSpeed = bRun ? 500 : 250;
 }
 
 void APlayerCharacter::InputJump(const FInputActionValue& InputValue)
@@ -240,6 +245,7 @@ void APlayerCharacter::SpellBasicAttack()
 	}
 	else
 	{
+		AnimInstance = GetMesh()->GetAnimInstance();
 		if (GetWorldTimerManager().IsTimerActive(ComboTimerHandle)) // Check Combo Timing
 		{
 			ComboCount++;
@@ -254,16 +260,24 @@ void APlayerCharacter::SpellBasicAttack()
 			ComboCount = 0;
 			bComboAttack = true;
 		}
+		
+		switch (ComboCount)
+		{
+			case 2: AnimInstance->Montage_JumpToSection(FName(TEXT("ComboAttack2")));
+			case 3: AnimInstance->Montage_JumpToSection(FName(TEXT("ComboAttack3")));
+			case 4: AnimInstance->Montage_JumpToSection(FName(TEXT("ComboAttack4")));
+			default: AnimInstance->Montage_Play(ComboAttackMontage);
+		}
 		if (AimedTarget && AimedTarget->ActorHasTag(FName("Enemy")))
 		{
 			FVector dir = AimedTarget->GetActorLocation() - this->GetActorLocation();
 			dir.Normalize();
-			attack = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetActorLocation(), dir.Rotation());
+			attack = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, WandTipComp->GetComponentLocation(), dir.Rotation());
 			attack->SetTarget(this, AimedTarget, bComboAttack);
 		}
 		else
 		{
-			attack = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetActorLocation(), GetViewRotation());
+			attack = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, WandTipComp->GetComponentLocation(), GetViewRotation());
 			attack->NoTarget();
 			ReceiveDamage_Implementation(FDamageInfo{ this, 20});
 		}
@@ -303,12 +317,12 @@ void APlayerCharacter::SpellStupefy(AStupefy* stp)
 		{
 			FVector dir = AimedTarget->GetActorLocation() - this->GetActorLocation();
 			dir.Normalize();
-			stp = GetWorld()->SpawnActor<AStupefy>(Stupefies, GetActorLocation(), dir.Rotation());
+			stp = GetWorld()->SpawnActor<AStupefy>(Stupefies, WandTipComp->GetComponentLocation(), dir.Rotation());
 			stp->SetTarget(AimedTarget);
 		}
 		else
 		{
-			stp = GetWorld()->SpawnActor<AStupefy>(Stupefies, GetActorLocation(), GetActorRotation());
+			stp = GetWorld()->SpawnActor<AStupefy>(Stupefies, WandTipComp->GetComponentLocation(), GetActorRotation());
 			stp->NoTarget();
 		}
 	}

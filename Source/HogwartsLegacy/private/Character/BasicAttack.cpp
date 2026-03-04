@@ -6,7 +6,6 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Interface/DamageableHelpers.h"
 #include "Kismet/GameplayStatics.h"
-#include "UI/EnemyHPWidget.h"
 
 
 class IDamageable;
@@ -89,8 +88,6 @@ void ABasicAttack::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* O
 		}
 		HUD->DrawDamageWidget(GetActorLocation() + FVector(0, 0, 50.f), Damage);
 		HUD->UpdateEnemyHPWidget(Target);
-		// ShowDamageWidget(GetActorLocation() + FVector(0, 0, 50.f), Damage);
-		// GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("Damage: %d"), Damage));
 	}
 	
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ExplosionComp, SweepResult.TraceStart);

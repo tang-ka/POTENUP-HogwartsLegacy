@@ -28,7 +28,6 @@ void AControllerHUD::BeginPlay()
 	Super::BeginPlay();
 	SetMiniMapWidget(MinimapWidgetClass);
 	
-	// auto Player = Cast<APlayerCharacter>(GetOwningPawn());
 	TScriptInterface<IDamageable> DamageableActor = GetOwningPawn();
 	if (DamageableActor)
 	{
