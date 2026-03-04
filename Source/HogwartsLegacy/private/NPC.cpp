@@ -20,6 +20,7 @@ void ANPC::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
     
 	Speed = GetVelocity().Size();
+	
 }
 
 void ANPC::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

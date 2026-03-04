@@ -6,6 +6,7 @@
 #include "UObject/Interface.h"
 #include "Damageable.generated.h"
 
+
 USTRUCT(BlueprintType)
 struct FDamageInfo
 {
@@ -16,6 +17,18 @@ struct FDamageInfo
 
 	UPROPERTY(BlueprintReadOnly, Category="Damage")
 	float DamageAmount{};
+};
+
+USTRUCT(BlueprintType)
+struct FDamageInfoT
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category="Damage")
+	float TTT;
+
+	UPROPERTY(BlueprintReadOnly, Category="Damage")
+	int32 test;
 };
 
 // This class does not need to be modified.
