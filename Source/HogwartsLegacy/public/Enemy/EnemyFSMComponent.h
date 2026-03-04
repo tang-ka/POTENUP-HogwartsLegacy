@@ -20,6 +20,8 @@ enum class EEnemyState : uint8
 	Damaged, Stun, Dead
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEnemyDead);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnEnemyDamaged, float, DamageAmount, float, RemainingHP);
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class HOGWARTSLEGACY_API UEnemyFSMComponent : public UActorComponent
 {
@@ -52,15 +54,29 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ChangeState(EEnemyState NewStateType);
 	
+#pragma region Request State Change
 	UFUNCTION(BlueprintCallable)
 	void FinishAttack(bool bSuccess);
+	
+	UFUNCTION(BLueprintCallable)
+	void RequestDead();
+	
+	UFUNCTION(BlueprintCallable)
+	void RequestDamaged(float DamageAmount, float RemainingHP);
+#pragma endregion
 
+	bool IsDead() const { return CurStateType == EEnemyState::Dead; }
+	
 protected:
 	UFUNCTION()
 	void Init();
 	
 	UFUNCTION()
 	void InitStates();
+	
+public:
+	FOnEnemyDead OnEnemyDead;
+	FOnEnemyDamaged OnEnemyDamaged;
 	
 private:
 	UPROPERTY()
@@ -69,16 +85,16 @@ private:
 	UPROPERTY()
 	TObjectPtr<AAIController> AIController;
 	
-	UPROPERTY(VisibleAnyWhere, Category="GuardianFSM|Target")
+	UPROPERTY(VisibleAnyWhere, Category="Target")
 	TMap<FName, TObjectPtr<AActor>> TargetMap;
 	
-	UPROPERTY(VisibleAnywhere, Category="GuardianFSM|Target")
+	UPROPERTY(VisibleAnywhere, Category="Target")
 	TObjectPtr<AActor> CurrentTarget;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UGuardianStateBase> CurState;
 	
-	UPROPERTY(Transient, VisibleAnywhere, Category="GuardianFSM|State")
+	UPROPERTY(Transient, VisibleAnywhere, Category="State")
 	EEnemyState CurStateType;
 	
 #pragma region State Instance 

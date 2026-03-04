@@ -6,30 +6,19 @@
 #include "UObject/Interface.h"
 #include "Damageable.generated.h"
 
-
 USTRUCT(BlueprintType)
 struct FDamageInfo
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadOnly, Category="Damage")
+	UPROPERTY(BlueprintReadWrite, Category="Damage")
 	TObjectPtr<AActor> DamageCauser{};
 
-	UPROPERTY(BlueprintReadOnly, Category="Damage")
-	float DamageAmount{};
+	UPROPERTY(BlueprintReadWrite, Category="Damage")
+	int DamageAmount{};
 };
 
-USTRUCT(BlueprintType)
-struct FDamageInfoT
-{
-	GENERATED_BODY()
-
-	UPROPERTY(BlueprintReadOnly, Category="Damage")
-	float TTT;
-
-	UPROPERTY(BlueprintReadOnly, Category="Damage")
-	int32 test;
-};
+// DECLARE_MULTICAST_DELEGATE_TwoParams(FOnHPChanged, int CurrentHP, int MaxHP);
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
@@ -57,8 +46,14 @@ public:
 	bool ReceiveDamage (FDamageInfo DamageInfo);
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Damage")
-	float GetHP() const;
+	int GetHP() const;
+	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Damage")
+	float GetHPPercent() const;
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Damage")
 	bool IsDead() const;
+
+	//UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Damage")
+	//FOnHPChanged& GetOnHPChangedDelegate();
 };

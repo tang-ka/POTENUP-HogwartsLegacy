@@ -12,10 +12,11 @@ void UGuardianStrafeState::OnEnter()
 {
 	Super::OnEnter();
 	
-	GetOwnerGuardian()->SetMaterialColor(FLinearColor::Red);
+	// 머터리얼의 색을 오렌지로 변경 하고 싶다.
+	GetOwnerGuardian()->SetMaterialColor(FLinearColor{255.f / 255.f, 111.f / 255.f, 0.f / 255.f});;
 	
-	GetOwnerGuardian()->GetCharacterMovement()->MaxWalkSpeed = StrafeSpeed;
-	GetOwnerFSM()->GetAIController()->MoveToActor(GetOwnerFSM()->GetCurrentTarget(), ReachDistance);
+	GetOwnerGuardian()->SetCharacterMaxWalkSpeed(StrafeSpeed);
+	GetOwnerGuardian()->MoveToActor(GetOwnerFSM()->GetCurrentTarget(), ReachDistance);
 }
 
 void UGuardianStrafeState::OnExit()
@@ -23,7 +24,7 @@ void UGuardianStrafeState::OnExit()
 	Super::OnExit();
 	GetOwnerGuardian()->ResetMaterialColor();
 	
-	GetOwnerFSM()->GetAIController()->StopMovement();
+	GetOwnerGuardian()->StopMovementImmediately();
 }
 
 void UGuardianStrafeState::TickState(float DeltaTime)
@@ -31,7 +32,7 @@ void UGuardianStrafeState::TickState(float DeltaTime)
 	Super::TickState(DeltaTime);
 	
 	// ComputeDirectionToTarget();
-	// LookAtTarget(DeltaTime);	
+	// LookAtTarget(DeltaTime);	 
 	// MoveToTarget(DeltaTime);
 }
 

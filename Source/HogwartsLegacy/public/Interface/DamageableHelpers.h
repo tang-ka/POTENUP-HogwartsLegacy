@@ -13,7 +13,7 @@ namespace DamageableHelpers
 	}
 
 	// 데미지 적용 
-	inline bool ApplyDamage(AActor* Target, AActor* Causer, float Amount)
+	inline bool ApplyDamage(AActor* Target, AActor* Causer, int Amount)
 	{
 		if (!IsDamageable(Target)) return false;
 
@@ -35,15 +35,21 @@ namespace DamageableHelpers
 	}
 
 	// 조회 계열도 같이 감싸두면 호출부가 더 깨끗해짐
-	inline float GetHP(const UObject* Target, float DefaultValue = 0.f)
+	inline int GetHP(const UObject* Target, int DefaultValue = 0.f)
 	{
-		if (!IsDamageable(Target)) return DefaultValue;
+		if (!IsDamageable(Target))
+		{
+			return DefaultValue;
+		}
 		return IDamageable::Execute_GetHP(const_cast<UObject*>(Target));
 	}
 
 	inline bool IsDead(const UObject* Target, bool DefaultValue = false)
 	{
-		if (!IsDamageable(Target)) return DefaultValue;
+		if (!IsDamageable(Target))
+		{
+			return DefaultValue;
+		}
 		return IDamageable::Execute_IsDead(const_cast<UObject*>(Target));
 	}
 }

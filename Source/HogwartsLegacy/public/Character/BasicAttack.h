@@ -6,8 +6,10 @@
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
 #include "NiagaraSystem.h"
-#include "NiagaraComponent.h"
+#include "UI/ControllerHUD.h"
 #include "BasicAttack.generated.h"
+
+class AControllerHUD;
 
 UCLASS()
 class HOGWARTSLEGACY_API ABasicAttack : public AActor
@@ -25,15 +27,30 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	void SetTarget(AActor* Actor);
+	
+	UPROPERTY()
+	AActor* Target;
+	UPROPERTY()
+	bool ComboAttack;
+	UPROPERTY()
+	TObjectPtr <AActor> Causer;
+	UFUNCTION()
+	void SetTarget(AActor* InCauser, AActor* InTarget, bool combo);
+	UFUNCTION()
 	void NoTarget();
-
+	UPROPERTY()
+	AControllerHUD* HUD;
+	
 	UPROPERTY(VisibleAnywhere, Category=Collision)
 	USphereComponent* CollisionComp;
 	UPROPERTY(VisibleAnywhere, Category=Niagara)
 	UNiagaraComponent* NiagaraComp;
-	UPROPERTY(VisibleAnywhere, Category=physics)
-	float PhysicsForce = 300;
+	UPROPERTY(VisibleAnywhere, Category=Niagara)
+	UNiagaraSystem* ExplosionComp;
+	UPROPERTY(VisibleAnywhere, Category=Physics)
+	float PhysicsForce = 20;
+	UPROPERTY()
+	USoundBase* SpellSound;
 	UFUNCTION()
 	void OnHit(
 		UPrimitiveComponent* HitComponent,
@@ -52,44 +69,61 @@ public:
 		const FHitResult& SweepResult
 		);
 
+	UPROPERTY()
 	FVector TargetLocation;
-	const float Speed = 2000;
-	const float Distance = 2000;
-	float Duration = 0;
+	UPROPERTY()
+	float Speed = 2000;
+	UPROPERTY()
+	float Distance = 2000;
+	// UPROPERTY(EditAnywhere)
+	// TSubclassOf <class UDamageIndicatorWidget> DamageWidgetClass;
+
+	UFUNCTION()
+	float GetBasicDamage() const { return BaseDamage; }
+	UFUNCTION()
+	float GetThirdDamage() const { return ThirdDamage; }
+
+
+private:
 	
-	// FVector MidPoint;
-	// FVector CurvedPoint;
-	// const float MinCurve = 0.2;
-	// const float MaxCurve = 0.4;
-	// const float MinRadius = 150;
-	// const float MaxRadius = 300;
-	// const float MinAngle = 0;
-	// const float MaxAngle = 180;
-	// bool bAfterBeginPlay = false;
+	UPROPERTY()
+	float BaseDamage = 3;
+	UPROPERTY()
+	float ThirdDamage = 23;
 	
-	// UFUNCTION()
-	// void MidPointCalculation(
-	// 	FVector InTargetLocation,
-	// 	float InMinCurve,
-	// 	float InMaxCurve,
-	// 	FVector& MidPoint
-	// 	);
-	//
-	// UFUNCTION()
-	// void CurveControlPoint(
-	// 	FVector InMidPoint,
-	// 	FVector InTargetLocation,
-	// 	float InMinRadius,
-	// 	float InMaxRadius,
-	// 	float InMinAngle,
-	// 	float InMaxAngle, 
-	// 	FVector& CurvedPoint
-	// 	);
-	//
-	// UFUNCTION()
-	// void Move(
-	// 	FVector InTargetLocation,
-	// 	FVector InCurvedPoint,
-	// 	float InSpeed
-	// 	);
+	 // FVector MidPoint;
+	 // FVector CurvedPoint;
+	 // const float MinCurve = 0.2;
+	 // const float MaxCurve = 0.4;
+	 // const float MinRadius = 150;
+	 // const float MaxRadius = 300;
+	 // const float MinAngle = 0;
+	 // const float MaxAngle = 180;
+	 // bool bAfterBeginPlay = false;
+	 //
+	 // UFUNCTION()
+	 // void MidPointCalculation(
+	 // 	FVector InTargetLocation,
+	 // 	float InMinCurve,
+	 // 	float InMaxCurve,
+	 // 	FVector& MidPoint
+	 // 	);
+	 //
+	 // UFUNCTION()
+	 // void CurveControlPoint(
+	 // 	FVector InMidPoint,
+	 // 	FVector InTargetLocation,
+	 // 	float InMinRadius,
+	 // 	float InMaxRadius,
+	 // 	float InMinAngle,
+	 // 	float InMaxAngle, 
+	 // 	FVector& CurvedPoint
+	 // 	);
+	 //
+	 // UFUNCTION()
+	 // void Move(
+	 // 	FVector InTargetLocation,
+	 // 	FVector InCurvedPoint,
+	 // 	float InSpeed
+	 // 	);
 };
