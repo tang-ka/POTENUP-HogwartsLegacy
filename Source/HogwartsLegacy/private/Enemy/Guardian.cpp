@@ -242,7 +242,7 @@ int AGuardian::GetHP_Implementation() const
 
 float AGuardian::GetHPPercent_Implementation() const
 {
-	return static_cast<float>(GetCurrentHP()) / MaxHP;
+	return static_cast<float>(GetCurrentHP()) / static_cast<float>(MaxHP);
 }
 
 bool AGuardian::IsDead_Implementation() const

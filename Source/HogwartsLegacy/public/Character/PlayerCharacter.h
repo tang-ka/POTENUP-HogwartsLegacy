@@ -1,4 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -13,6 +12,7 @@
 #include <Interface/Damageable.h>
 #include "PlayerCharacter.generated.h"
 
+class AControllerHUD;
 class USpringArmComponent;
 class UCameraComponent;
 class USceneComponent;
@@ -24,18 +24,13 @@ class HOGWARTSLEGACY_API APlayerCharacter : public ACharacter, public IDamageabl
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	APlayerCharacter();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	
 #pragma region Components
@@ -46,41 +41,58 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* WandTipComp;
 	UPROPERTY(VisibleAnywhere)
+	USkeletalMeshComponent* Wand;
+	UPROPERTY(VisibleAnywhere)
 	UPhysicsHandleComponent* PhysicsHandleComp;
+	UPROPERTY()
+	AControllerHUD* HUD;
 #pragma endregion
 	
 #pragma region Inputs
-	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UPROPERTY(EditDefaultsOnly, Category=Input)
 	UInputMappingContext* IMC_Player;
-	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UPROPERTY(EditDefaultsOnly, Category=Input)
 	UInputAction* IA_LookUp;
-	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UPROPERTY(EditDefaultsOnly, Category=Input)
 	UInputAction* IA_Turn;
-	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UPROPERTY(EditDefaultsOnly, Category=Input)
 	UInputAction* IA_Move;
-	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UPROPERTY(EditDefaultsOnly, Category=Input)
 	UInputAction* IA_Run;
-	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UPROPERTY(EditDefaultsOnly, Category=Input)
 	UInputAction* IA_Jump;
-	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UPROPERTY(EditDefaultsOnly, Category=Input)
 	UInputAction* IA_Attack;
-	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UPROPERTY(EditDefaultsOnly, Category=Input)
 	UInputAction* IA_SkillSlot1;
-	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UPROPERTY(EditDefaultsOnly, Category=Input)
 	UInputAction* IA_SkillSlot2;
-	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UPROPERTY(EditDefaultsOnly, Category=Input)
 	UInputAction* IA_SkillSlot3;
-	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UPROPERTY(EditDefaultsOnly, Category=Input)
 	UInputAction* IA_SkillSlotQ;
-	UPROPERTY(EditDefaultsOnly, Category="Input")
+	UPROPERTY(EditDefaultsOnly, Category=Input)
 	UInputAction* IA_SkillSlotR;
 #pragma endregion
+	
+#pragma region Animation
+	UPROPERTY(EditDefaultsOnly, Category=Animation)
+	TObjectPtr <UAnimMontage> ComboAttackMontage;
+	UPROPERTY(EditDefaultsOnly, Category=Animation)
+	TObjectPtr <UAnimMontage> ProtegoMontage;
+	UPROPERTY(EditDefaultsOnly, Category=Animation)
+	TObjectPtr <UAnimMontage> StupefyMontage;
+	UPROPERTY(EditDefaultsOnly, Category=Animation)
+	TObjectPtr <UAnimInstance> AnimInstance;
+#pragma endregion	
 	
 #pragma region Properties
 	UPROPERTY()
 	FVector WalkDirection;
 	UPROPERTY()
-	bool bCanAttack = false;
+	bool bCanAttack = true;
+	UPROPERTY()
+	bool bCanMove = true;
 	UPROPERTY()
 	int ComboCount = 0;
 	UPROPERTY()
@@ -125,13 +137,9 @@ public:
 	UPROPERTY()
 	TArray<AActor*> ActorToIgnore;
 	UPROPERTY()
-	TObjectPtr <AActor> AimedTarget;
+	AActor* AimedTarget;
 	UPROPERTY()
 	TObjectPtr <AActor> LastCachedObj;
-	UPROPERTY()
-	TObjectPtr <UMaterialInterface> OutlineMat;
-	UPROPERTY()
-	TObjectPtr <UMaterialInterface> ShineMat;
 #pragma endregion
 	
 #pragma region Functions
@@ -152,15 +160,22 @@ public:
 	UFUNCTION()
 	void SpellBasicAttack();
 	UFUNCTION()
-	void SpellProtego(AProtego* prt);
+	void SpellProtego();
 	UFUNCTION()
-	void SpellStupefy(AStupefy* stp);
+	void SpellStupefy();
 	UFUNCTION()
 	void SpellLumos(USceneComponent* WandTip);
 	UFUNCTION()
 	void SpellLevioso(UPrimitiveComponent* TargetComp, FVector Location, FRotator Rotation);
 	UFUNCTION()
 	void SpellDescendo();
+	
+	UFUNCTION()
+	void SpawnBasicAttack();
+	UFUNCTION()
+	void SpawnProtego();
+	UFUNCTION()
+	void SpawnStupefy();
 	
 	UFUNCTION()
 	void PlayerMove();
@@ -195,7 +210,7 @@ private:
 	UPROPERTY()
 	int MaxHP = 100;
 	UPROPERTY()
-	float WalkSpeed = 300;
+	float WalkSpeed = 250;
 	UPROPERTY()
 	int ViewDistance = 2000;
 	UPROPERTY()

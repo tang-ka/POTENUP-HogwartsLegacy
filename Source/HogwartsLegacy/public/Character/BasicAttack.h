@@ -72,24 +72,13 @@ public:
 	UPROPERTY()
 	FVector TargetLocation;
 	UPROPERTY()
-	float Speed = 2000;
+	float Speed = 2500;
 	UPROPERTY()
 	float Distance = 2000;
-	// UPROPERTY(EditAnywhere)
-	// TSubclassOf <class UDamageIndicatorWidget> DamageWidgetClass;
-
-	UFUNCTION()
-	float GetBasicDamage() const { return BaseDamage; }
-	UFUNCTION()
-	float GetThirdDamage() const { return ThirdDamage; }
-
-
-private:
 	
 	UPROPERTY()
-	float BaseDamage = 3;
-	UPROPERTY()
-	float ThirdDamage = 23;
+	int Damage = 3;
+	
 	
 	 // FVector MidPoint;
 	 // FVector CurvedPoint;

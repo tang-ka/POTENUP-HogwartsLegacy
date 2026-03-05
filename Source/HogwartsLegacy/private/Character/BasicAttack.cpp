@@ -65,8 +65,11 @@ void ABasicAttack::Tick(float DeltaTime)
 void ABasicAttack::SetTarget(AActor* causer, AActor* target, bool combo)
 {
 	Target = target;
-	TargetLocation = target->GetActorLocation() + UKismetMathLibrary::MakeVector(0,0,40);
-	ComboAttack = combo;
+	TargetLocation = target->GetActorLocation() + FVector(0,0,40);
+	if (combo)
+	{
+		Damage = 23;
+	}
 }
 
 void ABasicAttack::NoTarget()
@@ -80,11 +83,12 @@ void ABasicAttack::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* O
 {
 	if (!DamageableHelpers::IsDead(Target))
 	{
-		int Damage = ComboAttack ? GetThirdDamage() : GetBasicDamage();
 		DamageableHelpers::ApplyDamage(Target, Causer, Damage);
-		HUD->DrawDamageWidget(GetActorLocation() + FVector(0, 0, 50.f), Damage);
-		// ShowDamageWidget(GetActorLocation() + FVector(0, 0, 50.f), Damage);
-		// GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("Damage: %d"), Damage));
+		if (IsValid(HUD))
+		{
+			HUD->DrawDamageWidget(GetActorLocation() + FVector(0, 0, 50.f), Damage);
+			HUD->UpdateEnemyHPWidget(Target);
+		}
 	}
 	
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ExplosionComp, SweepResult.TraceStart);
