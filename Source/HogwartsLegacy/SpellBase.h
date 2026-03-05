@@ -35,4 +35,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spell Stats")
 	float SpellSpeed = 3000.0f;
+
+
 };
