@@ -82,7 +82,7 @@ private:
 
 	// 공격자 선택 주기 (초)
 	UPROPERTY()
-	float AttackSelectInterval{10.f};
+	float AttackSelectInterval{5.f};
 	
 	TSubclassOf<AGuardian> GuardianClass;;
 	

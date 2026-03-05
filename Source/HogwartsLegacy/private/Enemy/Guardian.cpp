@@ -324,7 +324,6 @@ FVector2D AGuardian::GetAnimWalkDirection()
 	FVector LocalVelocity = GetActorRotation().UnrotateVector(Velocity);
 	LocalVelocity.Z = 0.f;
 	LocalVelocity.Normalize();
-	PRINT_LOG(TEXT("Current Velocity: %s"), *LocalVelocity.ToString());
 	
 	WalkDirection.Y = LocalVelocity.X;
 	WalkDirection.X = LocalVelocity.Y;
