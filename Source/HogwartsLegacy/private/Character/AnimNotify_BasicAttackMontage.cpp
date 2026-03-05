@@ -4,16 +4,32 @@
 #include "Character/AnimNotify_BasicAttackMontage.h"
 #include "Character/PlayerCharacter.h"
 
-void UAnimNotify_BasicAttackMontage::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
+void UAnimNotify_BasicAttackMontage::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
-	Super::Notify(MeshComp, Animation);
-	if (MeshComp && MeshComp->GetOwner())
+	Super::Notify(MeshComp, Animation, EventReference);
+	
+	APlayerCharacter* Player = Cast<APlayerCharacter>(MeshComp->GetOwner());
+	
+	if (Player)
 	{
-		APlayerCharacter* Player = Cast<APlayerCharacter>(MeshComp->GetOwner());
-		if (Player)
+		UAnimMontage* PlayingMontage = Cast<UAnimMontage>(Animation);
+		if (MeshComp->GetOwner())
 		{
-			Player->SpawnBasicAttack();
-			Player->bCanMove = true;
+			if (PlayingMontage->GetName().Contains(TEXT("Atk")))
+			{
+				Player->SpawnBasicAttack();
+				Player->bCanMove = true;
+			}
+			if (PlayingMontage->GetName().Contains(TEXT("Protego")))
+			{
+				Player->SpawnProtego();
+				Player->bCanMove = true;
+			}
+			if (PlayingMontage->GetName().Contains(TEXT("Stupefy")))
+			{
+				Player->SpawnStupefy();
+				Player->bCanMove = true;
+			}
 		}
 	}
 }

@@ -7,9 +7,11 @@
 #include "ControllerHUD.generated.h"
 
 class UMinimapWidget;
+class USkillSlotWidget;
 class UPlayerHPWidget;
 class UEnemyHPWidget;
 class UDamageIndicatorWidget;
+class UGameoverWidget;
 /**
  * 
  */
@@ -28,13 +30,19 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf <UMinimapWidget> MinimapWidgetClass;
 	UPROPERTY(EditAnywhere)
+	TSubclassOf <USkillSlotWidget> SkillSlotWidgetClass;
+	UPROPERTY(EditAnywhere)
 	TSubclassOf <UPlayerHPWidget> PlayerHPWidgetClass;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf <UEnemyHPWidget> EnemyHPWidgetClass;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf <UDamageIndicatorWidget> DamageWidgetClass;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf <UGameoverWidget> GameoverWidgetClass;
 	UPROPERTY()
 	UMinimapWidget* MinimapWidget;
+	UPROPERTY()
+	USkillSlotWidget* SkillSlotWidget;
 	UPROPERTY()
 	UPlayerHPWidget* PlayerHPWidget;
 	UPROPERTY()
@@ -45,9 +53,17 @@ public:
 	TObjectPtr <UMaterialInterface> OutlineMat;
 	UPROPERTY()
 	TObjectPtr <UMaterialInterface> ShineMat;
+	UPROPERTY()
+	UGameoverWidget* GameoverWidget;
+	UPROPERTY()
+	APlayerController* PC;
 	
 	UFUNCTION(BlueprintCallable)
 	void SetMiniMapWidget(TSubclassOf<UUserWidget> NewWidget);
+	UFUNCTION(BlueprintCallable)
+	void SetSkillSlotWidget(TSubclassOf<UUserWidget> NewWidget);
+	UFUNCTION(BlueprintCallable)
+	void UpdateSkillSlotWidget(int Key, const FString& Skill);
 	UFUNCTION(BlueprintCallable)
 	void SetPlayerHPWidget(TSubclassOf<UUserWidget> NewWidget, TScriptInterface<IDamageable> Player);
 	UFUNCTION(BlueprintCallable)
@@ -60,4 +76,8 @@ public:
 	void OverlayMatOnAimCaptured(AActor* Object, AActor* CachedObj, AActor*& Aimed);
 	UFUNCTION(BlueprintCallable)
 	void DrawDamageWidget(FVector WorldLocation, int DamageAmount);
+	UFUNCTION(BlueprintCallable)
+	void Gameover();
+	
+	
 };

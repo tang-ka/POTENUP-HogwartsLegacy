@@ -37,8 +37,10 @@ public:
 	UPROPERTY(EditAnywhere, Category=Niagara)
 	UNiagaraComponent* SpawnedNiagara;
 	UPROPERTY()
-	USceneComponent* Caster;
+	USkeletalMeshComponent* Caster;
+	UPROPERTY()
+	USkeletalMeshSocket const* CasterSocket;
 	
 	UFUNCTION()
-	void SetLocation(USceneComponent* WandTip);
+	void SetLocation(USkeletalMeshComponent* Mesh, USkeletalMeshSocket const* WandTip);
 };

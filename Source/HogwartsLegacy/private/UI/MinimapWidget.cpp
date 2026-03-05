@@ -18,10 +18,10 @@ void UMinimapWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 	
-	if (MinimapCanvas)
-	{
-		MinimapCanvas->SetRenderTransformPivot(FVector2D(0, 1));
-	}
+	// if (MinimapCanvas)
+	// {
+	// 	MinimapCanvas->SetRenderTransformPivot(FVector2D(0, 1));
+	// }
 	
 	if (MinimapTrim && PlayerMarker)
 	{

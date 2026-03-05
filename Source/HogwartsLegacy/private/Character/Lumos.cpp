@@ -3,6 +3,7 @@
 
 #include "Character/Lumos.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Engine/SkeletalMeshSocket.h"
 
 
 // Sets default values
@@ -52,8 +53,8 @@ void ALumos::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	SetActorLocation(Caster->GetComponentLocation());
-	SpawnedNiagara->SetWorldLocation(Caster->GetComponentLocation());
+	SetActorLocation(CasterSocket->GetSocketLocation(Caster));
+	SpawnedNiagara->SetWorldLocation(CasterSocket->GetSocketLocation(Caster));
 }
 
 void ALumos::BeginDestroy()
@@ -62,8 +63,9 @@ void ALumos::BeginDestroy()
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), StartNiagara, this->GetActorLocation());
 }
 
-void ALumos::SetLocation(USceneComponent* WandTip)
+void ALumos::SetLocation(USkeletalMeshComponent* Mesh, USkeletalMeshSocket const* WandTip)
 {
-	Caster = WandTip;
+	Caster = Mesh;
+	CasterSocket = WandTip;
 }
 

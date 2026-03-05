@@ -41,6 +41,8 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* WandTipComp;
 	UPROPERTY(VisibleAnywhere)
+	USkeletalMeshComponent* Wand;
+	UPROPERTY(VisibleAnywhere)
 	UPhysicsHandleComponent* PhysicsHandleComp;
 	UPROPERTY()
 	AControllerHUD* HUD;
@@ -73,10 +75,16 @@ public:
 	UInputAction* IA_SkillSlotR;
 #pragma endregion
 	
+#pragma region Animation
 	UPROPERTY(EditDefaultsOnly, Category=Animation)
 	TObjectPtr <UAnimMontage> ComboAttackMontage;
 	UPROPERTY(EditDefaultsOnly, Category=Animation)
+	TObjectPtr <UAnimMontage> ProtegoMontage;
+	UPROPERTY(EditDefaultsOnly, Category=Animation)
+	TObjectPtr <UAnimMontage> StupefyMontage;
+	UPROPERTY(EditDefaultsOnly, Category=Animation)
 	TObjectPtr <UAnimInstance> AnimInstance;
+#pragma endregion	
 	
 #pragma region Properties
 	UPROPERTY()
@@ -152,9 +160,9 @@ public:
 	UFUNCTION()
 	void SpellBasicAttack();
 	UFUNCTION()
-	void SpellProtego(AProtego* prt);
+	void SpellProtego();
 	UFUNCTION()
-	void SpellStupefy(AStupefy* stp);
+	void SpellStupefy();
 	UFUNCTION()
 	void SpellLumos(USceneComponent* WandTip);
 	UFUNCTION()
@@ -164,6 +172,10 @@ public:
 	
 	UFUNCTION()
 	void SpawnBasicAttack();
+	UFUNCTION()
+	void SpawnProtego();
+	UFUNCTION()
+	void SpawnStupefy();
 	
 	UFUNCTION()
 	void PlayerMove();

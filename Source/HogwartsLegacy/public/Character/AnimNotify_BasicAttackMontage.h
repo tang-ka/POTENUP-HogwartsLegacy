@@ -14,5 +14,5 @@ class HOGWARTSLEGACY_API UAnimNotify_BasicAttackMontage : public UAnimNotify_Pla
 {
 	GENERATED_BODY()
 	
-	void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
+	void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
 };

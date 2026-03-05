@@ -2,11 +2,12 @@
 
 
 #include "UI/ControllerHUD.h"
-#include "Kismet/GameplayStatics.h"
 #include "UI/MinimapWidget.h"
+#include "UI/SkillSlotWidget.h"
 #include "UI/PlayerHPWidget.h"
 #include "UI/EnemyHPWidget.h"
 #include "UI/DamageIndicatorWidget.h"
+#include "UI/GameoverWidget.h"
 #include "Blueprint/UserWidget.h"
 
 AControllerHUD::AControllerHUD()
@@ -27,6 +28,9 @@ void AControllerHUD::BeginPlay()
 {
 	Super::BeginPlay();
 	SetMiniMapWidget(MinimapWidgetClass);
+	SetSkillSlotWidget(SkillSlotWidgetClass);
+	
+	PC = GetWorld()->GetFirstPlayerController();
 	
 	TScriptInterface<IDamageable> DamageableActor = GetOwningPawn();
 	if (DamageableActor)
@@ -79,29 +83,36 @@ void AControllerHUD::OverlayMatOnAimCaptured(AActor* Object, AActor* CachedObj, 
 
 void AControllerHUD::SetMiniMapWidget(TSubclassOf<UUserWidget> NewWidget)
 {
-	if (MinimapWidget != nullptr)
-	{
-		MinimapWidget->RemoveFromParent();
-		MinimapWidget = nullptr;
-	}
-	if (NewWidget != nullptr)
+	if (NewWidget)
 	{
 		MinimapWidget = CreateWidget<UMinimapWidget>(GetWorld(), NewWidget);
-		if (MinimapWidget != nullptr)
+		if (MinimapWidget)
 		{
 			MinimapWidget->AddToViewport();
 		}
 	}
 }
 
+void AControllerHUD::SetSkillSlotWidget(TSubclassOf<UUserWidget> NewWidget)
+{
+	if (NewWidget)
+	{
+		SkillSlotWidget = CreateWidget<USkillSlotWidget>(GetWorld(), NewWidget);
+		if (SkillSlotWidget)
+		{
+			SkillSlotWidget->AddToViewport();
+		}
+	}
+}
+
+void AControllerHUD::UpdateSkillSlotWidget(int Key, const FString& Skill)
+{
+	SkillSlotWidget->UpdateSkillCoolTime(Key, Skill);
+}
+
 void AControllerHUD::SetPlayerHPWidget(TSubclassOf<UUserWidget> NewWidget, TScriptInterface<IDamageable> Player)
 {
-	if (PlayerHPWidget != nullptr)
-	{
-		PlayerHPWidget->RemoveFromParent();
-		PlayerHPWidget = nullptr;
-	}
-	if (NewWidget != nullptr)
+	if (NewWidget)
 	{
 		PlayerHPWidget = CreateWidget<UPlayerHPWidget>(GetWorld(), PlayerHPWidgetClass);
 		if (PlayerHPWidget)
@@ -121,12 +132,7 @@ void AControllerHUD::UpdatePlayerHPWidget(float NewPercent)
 
 void AControllerHUD::SetEnemyHPWidget(TSubclassOf<UUserWidget> NewWidget, float NewPercent)
 {
-	if (EnemyHPWidget != nullptr)
-	{
-		EnemyHPWidget->RemoveFromParent();
-		EnemyHPWidget = nullptr;
-	}
-	if (NewWidget != nullptr)
+	if (NewWidget)
 	{
 		EnemyHPWidget = CreateWidget<UEnemyHPWidget>(GetWorld(), EnemyHPWidgetClass);
 		if (EnemyHPWidget)
@@ -158,10 +164,23 @@ void AControllerHUD::DrawDamageWidget(FVector WorldLocation, int DamageAmount)
 		
 		FVector2D ScreenLocation;
 		
-		APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+		// PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+		
 		if (PC && PC->ProjectWorldLocationToScreen(WorldLocation, ScreenLocation))
 		{
 			DamageWidget->SetPositionInViewport(ScreenLocation);
 		}
+	}
+}
+
+void AControllerHUD::Gameover()
+{
+	GameoverWidget = CreateWidget<UGameoverWidget>(GetWorld(), GameoverWidgetClass);
+	if (GameoverWidget)
+	{
+		GameoverWidget->AddToViewport();
+		PC->SetPause(true);
+		PC->SetInputMode(FInputModeUIOnly());
+		PC->SetShowMouseCursor(true);
 	}
 }

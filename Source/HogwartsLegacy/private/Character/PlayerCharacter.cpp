@@ -8,6 +8,7 @@
 #include "Character/Stupefy.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "UI/SkillSlotWidget.h"
 
 
 APlayerCharacter::APlayerCharacter()
@@ -20,6 +21,11 @@ APlayerCharacter::APlayerCharacter()
 		GetMesh()->SetSkeletalMesh(TempMesh.Object);
 		GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -90), FRotator(0, -90, 0));
 	}
+	// static ConstructorHelpers::FObjectFinder<USkeletalMesh> WandMesh(TEXT("/Game/KHJ/Meshes/PlayerWand.PlayerWand"));
+	// if (WandMesh.Succeeded())
+	// {
+	// 	Wand->SetSkeletalMeshAsset(WandMesh.Object);
+	// }
 	// static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstance (TEXT("AnimBlueprint'/Game/KHJ/Characters/Animation/ABP_PlayerCharacter.ABP_PlayerCharacter'"));
 	// if (AnimInstance.Succeeded())
 	// {
@@ -40,8 +46,8 @@ APlayerCharacter::APlayerCharacter()
 	
 	WandTipComp = CreateDefaultSubobject<USceneComponent>(TEXT("WandTip"));
 	WandTipComp->SetupAttachment(RootComponent);
-	WandTipComp->SetRelativeLocation(GetMesh()->GetSocketLocation(FName(TEXT("WandSocketTipSocket"))));
-	
+	WandTipComp->SetRelativeLocation(GetMesh()->GetBoneLocation(FName(TEXT("WandSocketTip"))));
+
 	// Levioso
 	PhysicsHandleComp = CreateDefaultSubobject<UPhysicsHandleComponent>(TEXT("PhysicsHandle"));
 	PhysicsHandleComp->LinearDamping = 200.0f; // 높을수록 덜 출렁임
@@ -52,7 +58,6 @@ APlayerCharacter::APlayerCharacter()
 	
 }
 
-// Called when the game starts or when spawned
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -60,6 +65,9 @@ void APlayerCharacter::BeginPlay()
 	APlayerController* PC = Cast<APlayerController>(Controller);
 	if (PC)
 	{
+		PC->SetPause(false);
+		PC->SetInputMode(FInputModeGameOnly());
+		PC->SetShowMouseCursor(false);
 		UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer());
 		if (Subsystem)
 		{
@@ -88,6 +96,7 @@ void APlayerCharacter::BeginPlay()
 		}
 	}
 	
+	// Wand->AttachToComponent(WandTipComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName(TEXT("WandSocketTip")));
 	AnimInstance = GetMesh()->GetAnimInstance();
 	HUD = Cast<AControllerHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
 	UGameplayStatics::GetAllActorsWithTag(GetWorld(), TEXT("Level"), ActorToIgnore);
@@ -95,7 +104,6 @@ void APlayerCharacter::BeginPlay()
 	AimCaptureParams.AddIgnoredActor(this);
 }
 
-// Called every frame
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -109,7 +117,6 @@ void APlayerCharacter::Tick(float DeltaTime)
 	
 	if (bIsDoingLevioso && PhysicsHandleComp->GrabbedComponent)
 	{
-		// 1. 기본 목표 위치 계산 (카메라 앞)
 		FVector TargetLocation = GetPawnViewLocation() + (GetViewRotation().Vector() * LeviosoHoldDistance);
 		
 		LeviosoFloatTimer += DeltaTime * LeviosoFloatSpeed;
@@ -170,7 +177,10 @@ void APlayerCharacter::Run(const FInputActionValue& InputValue)
 
 void APlayerCharacter::InputJump(const FInputActionValue& InputValue)
 {
-	Jump();
+	if (bCanMove)
+	{
+		Jump();
+	}
 }
 
 void APlayerCharacter::PlayerMove()
@@ -224,12 +234,12 @@ void APlayerCharacter::SkillSlot3(const FInputActionValue& InputValue)
 
 void APlayerCharacter::SkillSlotQ(const FInputActionValue& InputValue)
 {
-	SpellProtego(protego);
+	SpellProtego();
 }
 
 void APlayerCharacter::SkillSlotQLongClick(const FInputActionValue& InputValue)
 {
-	SpellStupefy(stupefy);
+	SpellStupefy();
 }
 
 
@@ -247,52 +257,49 @@ void APlayerCharacter::SpellBasicAttack()
 	{
 		return;
 	}
+	if (GetWorldTimerManager().IsTimerActive(ComboTimerHandle))
+	{
+		ComboCount++;
+		GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Blue, FString::Printf(TEXT("ComboCount: %d"), ComboCount));
+	}
 	else
 	{
-		if (GetWorldTimerManager().IsTimerActive(ComboTimerHandle)) // Check Combo Timing
-		{
-			ComboCount++;
-		}
-		else
-		{
-			ComboCount = 0;
-		}
-	
-		if (ComboCount >= 4) // Check Whether Is This ComboAttack
-		{
-			ComboCount = 0;
-			bComboAttack = true;
-		}
-		
-		if (!AnimInstance->Montage_IsPlaying(ComboAttackMontage))
-		{
-			bCanMove = false;
-			PlayAnimMontage(ComboAttackMontage, 1.0f, FName(*FString::Printf(TEXT("ComboAttack%d"), ComboCount)));
-			// switch (ComboCount)
-			// {
-			// case 2: AnimInstance->Montage_JumpToSection(FName(TEXT("ComboAttack2")));
-			// case 3: AnimInstance->Montage_JumpToSection(FName(TEXT("ComboAttack3")));
-			// case 4: AnimInstance->Montage_JumpToSection(FName(TEXT("ComboAttack4")));
-			// default: AnimInstance->Montage_Play(ComboAttackMontage);
-			// }
-		}
-		else
-		{
-			// 이미 재생 중이면 해당 섹션으로 바로 점프
-			AnimInstance->Montage_JumpToSection(FName(*FString::Printf(TEXT("ComboAttack%d"), ComboCount)), ComboAttackMontage);
-		}
-		
-
+		ComboCount = 0;
 	}
-	GetWorldTimerManager().SetTimer(ComboTimerHandle,[this](){this->ComboCount=0;}, 1.0f, false);
-	bComboAttack = false;
+
+	if (ComboCount >= 4)
+	{
+		bComboAttack = true;
+	}
+
+	if (!AnimInstance->Montage_IsPlaying(ComboAttackMontage))
+	{
+		bCanMove = false;
+		PlayAnimMontage(ComboAttackMontage, 1.0f, FName(*FString::Printf(TEXT("ComboCount%d"), ComboCount)));
+	}
+	else
+	{
+		bCanMove = false;
+		AnimInstance->Montage_JumpToSection(FName(*FString::Printf(TEXT("ComboCount%d"), ComboCount)), ComboAttackMontage);
+	}
+	
+	if (bComboAttack)
+	{
+		ComboCount = 0;
+		bComboAttack = false;
+	}
+	GetWorldTimerManager().SetTimer(ComboTimerHandle,[this](){this->ComboCount=0;}, 2.0f, false);
 }
 
-void APlayerCharacter::SpellProtego(AProtego* prt)
+void APlayerCharacter::SpellProtego()
 {
 	if (bCanAttack)
 	{
-		prt = GetWorld()->SpawnActor<AProtego>(Protegos, GetActorLocation(), GetActorRotation());
+		if (!AnimInstance->Montage_IsPlaying(ProtegoMontage))
+		{
+			bCanMove = false;
+			PlayAnimMontage(ProtegoMontage);
+		}
 		// GetWorld()->GetWorldSettings()->SetTimeDilation(0.5f);
 	}
 }
@@ -302,8 +309,9 @@ void APlayerCharacter::SpellLumos(USceneComponent* WandTip)
 {
 	if (!IsValid(lumos))
 	{
-		lumos = GetWorld()->SpawnActor<ALumos>(Lumoses, WandTip->GetComponentLocation(), WandTipComp->GetComponentRotation());
-		lumos->SetLocation(WandTip);
+		HUD->UpdateSkillSlotWidget(1, TEXT("Lumos"));
+		lumos = GetWorld()->SpawnActor<ALumos>(Lumoses, GetMesh()->GetBoneLocation(FName(TEXT("WandSocketTip"))), WandTipComp->GetComponentRotation());
+		lumos->SetLocation(GetMesh(), GetMesh()->GetSocketByName(FName(TEXT("WandTipSocket"))));
 	}
 	else
 	{
@@ -311,24 +319,13 @@ void APlayerCharacter::SpellLumos(USceneComponent* WandTip)
 	}
 }
 
-void APlayerCharacter::SpellStupefy(AStupefy* stp)
+void APlayerCharacter::SpellStupefy()
 {
 	if (bCanAttack)
 	{
-		if (AimedTarget && AimedTarget->ActorHasTag(FName("Enemy")))
-		{
-			FVector dir = AimedTarget->GetActorLocation() - this->GetActorLocation();
-			dir.Normalize();
-			stp = GetWorld()->SpawnActor<AStupefy>(Stupefies, WandTipComp->GetComponentLocation(), dir.Rotation());
-			stp->SetTarget(AimedTarget);
-		}
-		else
-		{
-			stp = GetWorld()->SpawnActor<AStupefy>(Stupefies, WandTipComp->GetComponentLocation(), GetActorRotation());
-			stp->NoTarget();
-		}
+		bCanMove = false;
+		PlayAnimMontage(StupefyMontage);
 	}
-	
 }
 
 void APlayerCharacter::SpellLevioso(UPrimitiveComponent* TargetComp, FVector Location, FRotator Rotation)
@@ -360,14 +357,35 @@ void APlayerCharacter::SpawnBasicAttack()
 	{
 		FVector dir = AimedTarget->GetActorLocation() - this->GetActorLocation();
 		dir.Normalize();
-		attack = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, WandTipComp->GetComponentLocation(), dir.Rotation());
+		attack = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetMesh()->GetBoneLocation(FName(TEXT("WandSocketTip"))), dir.Rotation());
 		attack->SetTarget(this, AimedTarget, bComboAttack);
 	}
 	else
 	{
-		attack = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, WandTipComp->GetComponentLocation(), GetViewRotation());
+		attack = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetMesh()->GetBoneLocation(FName(TEXT("WandSocketTip"))), GetViewRotation());
 		attack->NoTarget();
-		ReceiveDamage_Implementation(FDamageInfo{ this, 20});
+		ReceiveDamage_Implementation(FDamageInfo{this, 20});
+	}
+}
+
+void APlayerCharacter::SpawnProtego()
+{
+	protego = GetWorld()->SpawnActor<AProtego>(Protegos, GetActorLocation(), GetActorRotation());
+}
+
+void APlayerCharacter::SpawnStupefy()
+{
+	if (AimedTarget && AimedTarget->ActorHasTag(FName("Enemy")))
+	{
+		FVector dir = AimedTarget->GetActorLocation() - this->GetActorLocation();
+		dir.Normalize();
+		stupefy = GetWorld()->SpawnActor<AStupefy>(Stupefies, GetMesh()->GetBoneLocation(FName(TEXT("WandSocketTip"))), dir.Rotation());
+		stupefy->SetTarget(AimedTarget);
+	}
+	else
+	{
+		stupefy = GetWorld()->SpawnActor<AStupefy>(Stupefies, GetMesh()->GetBoneLocation(FName(TEXT("WandSocketTip"))), GetActorRotation());
+		stupefy->NoTarget();
 	}
 }
 
@@ -378,7 +396,12 @@ bool APlayerCharacter::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
 		return false;
 	}
 	int NewHP = GetCurrentHP() - DamageInfo.DamageAmount;
-	SetCurrentHP(NewHP = NewHP <= 0 ? 0 : NewHP);
+	if (NewHP <= 0)
+	{
+		NewHP = 0;
+		HUD->Gameover();
+	}
+	SetCurrentHP(NewHP);
 	HUD->UpdatePlayerHPWidget(GetHPPercent_Implementation());
 	return true;
 }
