@@ -311,3 +311,24 @@ float AGuardian::GetAngleToTarget() const
 	return FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(Dot, -1.f, 1.f)));
 }
 
+FVector2D AGuardian::GetAnimWalkDirection()
+{
+	FVector Velocity = GetVelocity();
+	
+	if (Velocity.IsNearlyZero())
+	{
+		WalkDirection = FVector2D::ZeroVector;
+		return WalkDirection;
+	}
+	
+	FVector LocalVelocity = GetActorRotation().UnrotateVector(Velocity);
+	LocalVelocity.Z = 0.f;
+	LocalVelocity.Normalize();
+	PRINT_LOG(TEXT("Current Velocity: %s"), *LocalVelocity.ToString());
+	
+	WalkDirection.Y = LocalVelocity.X;
+	WalkDirection.X = LocalVelocity.Y;
+	
+	return WalkDirection;
+}
+

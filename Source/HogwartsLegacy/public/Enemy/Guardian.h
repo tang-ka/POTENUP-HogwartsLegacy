@@ -51,8 +51,6 @@ public:
 	                               AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	                               int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 #pragma endregion
-	
-	
 
 #pragma region Movement
 	UFUNCTION(BlueprintCallable)
@@ -76,7 +74,6 @@ public:
 	void SetActiveBashAttackHitBox(bool bIsActivate) const;
 #pragma endregion
 
-public:
 #pragma region IDamageable
 	virtual bool ReceiveDamage_Implementation(FDamageInfo DamageInfo) override;
 	virtual int GetHP_Implementation() const override;
@@ -84,7 +81,6 @@ public:
 	virtual bool IsDead_Implementation() const override;
 #pragma endregion
 
-public:
 #pragma region Test
 	void SetMaterialColor(FLinearColor Color);
 	void ResetMaterialColor();
@@ -109,10 +105,16 @@ public:
 #pragma region Setters
 	void SetsCurrentDamage(int InDamageAmount) { CurrentDamage = InDamageAmount; }
 #pragma endregion
+
+	FVector2D GetAnimWalkDirection();
+	
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Anim")
+	FVector2D WalkDirection{};
 	
 private:
 	void InitHP();
-
+	
 private:
 	UPROPERTY(VisibleAnywhere, Category="Stats")
 	int32 HP{};

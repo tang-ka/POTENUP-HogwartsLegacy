@@ -108,6 +108,7 @@ void UEnemyFSMComponent::ChangeState(EEnemyState NewStateType)
 	// 2. Switch to the new state
 	CurState = GetStateByType(NewStateType);
 	CurStateType = NewStateType;
+	OnStateChanged.Broadcast(CurStateType);
 	
 	// 3. Enter the new state
 	CurState->OnEnter();

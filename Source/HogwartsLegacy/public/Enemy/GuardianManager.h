@@ -69,7 +69,7 @@ private:
 	int32 Phase1GuardianCount{15};
 	
 	UPROPERTY()
-	int32 MaxAliveCount{5};
+	int32 MaxAliveCount{1};
 	
 	UPROPERTY()
 	int32 MaxSpawnCountPerRequest{2};
@@ -82,7 +82,7 @@ private:
 
 	// 공격자 선택 주기 (초)
 	UPROPERTY()
-	float AttackSelectInterval{1.5f};
+	float AttackSelectInterval{10.f};
 	
 	TSubclassOf<AGuardian> GuardianClass;;
 	
