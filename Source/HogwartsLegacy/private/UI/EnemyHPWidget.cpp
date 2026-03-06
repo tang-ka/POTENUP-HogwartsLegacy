@@ -5,5 +5,8 @@
 
 void UEnemyHPWidget::UpdateHPBar(float NewPercent)
 {
-	HPBar->SetPercent(NewPercent);
+	if (HPBar)
+	{
+		HPBar->SetPercent(NewPercent);
+	}
 }

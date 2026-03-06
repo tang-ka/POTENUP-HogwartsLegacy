@@ -214,7 +214,7 @@ private:
 	UPROPERTY()
 	int ViewDistance = 2000;
 	UPROPERTY()
-	float ViewSphereRadius = 125;
+	float ViewSphereRadius = 150;
 #pragma endregion
 
 };

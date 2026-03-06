@@ -8,7 +8,6 @@
 #include "Character/Stupefy.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "UI/SkillSlotWidget.h"
 
 
 APlayerCharacter::APlayerCharacter()
@@ -197,14 +196,14 @@ void APlayerCharacter::CheckCanAttack(bool& Check)
 
 void APlayerCharacter::AimCapture()
 {
-	FVector Start;
-	FRotator Rot;
 	FHitResult HitOut;
 	
-	GetController()->GetPlayerViewPoint(Start, Rot);
-	FVector End = Rot.Vector() * ViewDistance;
+	FVector Start = PlayerCameraComp->GetComponentLocation();
+	FVector End = PlayerCameraComp->GetComponentRotation().Vector() * ViewDistance;
 	
-	GetWorld()->SweepSingleByProfile(HitOut, Start, End, FQuat::Identity, "PlayerTrace", FCollisionShape::MakeSphere(ViewSphereRadius), AimCaptureParams);
+	GetWorld()->SweepSingleByProfile(HitOut,
+		Start, End, FQuat::Identity, "PlayerTrace",
+		FCollisionShape::MakeSphere(ViewSphereRadius), AimCaptureParams);
 	
 	TObjectPtr<AActor> Obj = HitOut.GetActor();
 	HUD->OverlayMatOnAimCaptured(Obj, LastCachedObj, AimedTarget);
@@ -260,7 +259,7 @@ void APlayerCharacter::SpellBasicAttack()
 	if (GetWorldTimerManager().IsTimerActive(ComboTimerHandle))
 	{
 		ComboCount++;
-		GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Blue, FString::Printf(TEXT("ComboCount: %d"), ComboCount));
+		// GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Blue, FString::Printf(TEXT("ComboCount: %d"), ComboCount));
 	}
 	else
 	{
@@ -275,19 +274,15 @@ void APlayerCharacter::SpellBasicAttack()
 	if (!AnimInstance->Montage_IsPlaying(ComboAttackMontage))
 	{
 		bCanMove = false;
-		PlayAnimMontage(ComboAttackMontage, 1.0f, FName(*FString::Printf(TEXT("ComboCount%d"), ComboCount)));
+		PlayAnimMontage(ComboAttackMontage, 1.0f, FName(FString::Printf(TEXT("ComboCount%d"), ComboCount)));
 	}
 	else
 	{
 		bCanMove = false;
-		AnimInstance->Montage_JumpToSection(FName(*FString::Printf(TEXT("ComboCount%d"), ComboCount)), ComboAttackMontage);
+		AnimInstance->Montage_JumpToSection(FName(FString::Printf(TEXT("ComboCount%d"), ComboCount)), ComboAttackMontage);
 	}
 	
-	if (bComboAttack)
-	{
-		ComboCount = 0;
-		bComboAttack = false;
-	}
+	
 	GetWorldTimerManager().SetTimer(ComboTimerHandle,[this](){this->ComboCount=0;}, 2.0f, false);
 }
 
@@ -365,6 +360,11 @@ void APlayerCharacter::SpawnBasicAttack()
 		attack = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetMesh()->GetBoneLocation(FName(TEXT("WandSocketTip"))), GetViewRotation());
 		attack->NoTarget();
 		ReceiveDamage_Implementation(FDamageInfo{this, 20});
+	}
+	if (bComboAttack)
+	{
+		ComboCount = 0;
+		bComboAttack = false;
 	}
 }
 
