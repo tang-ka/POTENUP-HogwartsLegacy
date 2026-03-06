@@ -3,6 +3,7 @@
 #include "Character/BasicAttack.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "Enemy/Guardian.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Interface/DamageableHelpers.h"
 #include "Kismet/GameplayStatics.h"
@@ -80,7 +81,7 @@ void ABasicAttack::NoTarget()
 void ABasicAttack::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (!DamageableHelpers::IsDead(Target))
+	if (Target && Target->IsValidLowLevel() && !DamageableHelpers::IsDead(Target))
 	{
 		DamageableHelpers::ApplyDamage(Target, Causer, Damage);
 		if (IsValid(HUD))
