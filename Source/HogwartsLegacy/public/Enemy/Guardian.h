@@ -120,7 +120,7 @@ private:
 	int32 HP{};
 
 	UPROPERTY(VisibleAnywhere, Category="Stats")
-	int32 MaxHP{150};
+	int32 MaxHP{100};
 	
 	UPROPERTY(EditAnywhere, Category="Stats")
 	int CurrentDamage{20};
@@ -142,4 +142,5 @@ private:
 	TObjectPtr<AActor> TargetActor;
 
 	FLinearColor DefaultColor;
+	int32 StrongAttackThreshold{20};
 };

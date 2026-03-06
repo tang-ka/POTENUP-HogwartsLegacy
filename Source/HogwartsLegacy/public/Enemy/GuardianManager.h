@@ -66,10 +66,10 @@ private:
 
 	// 페이즈1에 죽여야 하는 Guardian 수
 	UPROPERTY()
-	int32 Phase1GuardianCount{15};
+	int32 Phase1GuardianCount{5};
 	
 	UPROPERTY()
-	int32 MaxAliveCount{1};
+	int32 MaxAliveCount{5};
 	
 	UPROPERTY()
 	int32 MaxSpawnCountPerRequest{2};

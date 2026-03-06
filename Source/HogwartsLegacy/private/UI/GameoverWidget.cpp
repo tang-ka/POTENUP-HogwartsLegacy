@@ -7,6 +7,9 @@
 void UGameoverWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+	
+	TryAgainButton->OnClicked.AddDynamic(this, &UGameoverWidget::OnTryAgain);
+	QuitButton->OnClicked.AddDynamic(this, &UGameoverWidget::OnQuit);
 }
 
 void UGameoverWidget::OnTryAgain()

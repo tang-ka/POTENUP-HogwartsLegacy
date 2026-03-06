@@ -24,10 +24,15 @@ protected:
 	UImage* GameoverImage;
 	UPROPERTY(EditAnywhere, meta=(BindWidget))
 	UButton* TryAgainButton;
+	UPROPERTY(EditAnywhere, meta=(BindWidget))
+	UButton* QuitButton;
 	
 public:
-	void NativeConstruct() override;
-	void OnTryAgain();
-	void OnQuit();
+	virtual void NativeConstruct() override;
 	
+	UFUNCTION()
+	void OnTryAgain();
+	
+	UFUNCTION()
+	void OnQuit();
 };

@@ -33,3 +33,8 @@ void UGuardianAnim::HandleStateChanged(EEnemyState NewState)
 {
 	GuardianState = NewState;
 }
+
+void UGuardianAnim::PlayBasicDamagedMontage()
+{
+	Montage_Play(BasicDamagedMontage);
+}

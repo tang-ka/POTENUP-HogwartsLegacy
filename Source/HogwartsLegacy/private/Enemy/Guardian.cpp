@@ -3,6 +3,7 @@
 #include "Enemy/Guardian.h"
 
 #include "AIController.h"
+#include "GuardianAnim.h"
 #include "HogwartsLegacy.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -220,7 +221,15 @@ void AGuardian::SetActiveBashAttackHitBox(bool bIsActivate) const
 
 bool AGuardian::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
 {
-	HP -= DamageInfo.DamageAmount;
+	if (FSMComponent->IsDead())
+	{
+		return false;
+	}
+	
+	int32 DamageAmount = DamageInfo.DamageAmount;
+	// DamageAmount = 50;
+	
+	HP -= DamageAmount;
 	if (HP <= 0)
 	{
 		HP = 0;
@@ -228,8 +237,17 @@ bool AGuardian::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
 	}
 	else
 	{
-		// FSMComponent->RequestDamaged(DamageInfo.DamageAmount, HP);;
-		FSMComponent->RequestDamaged(50, HP);;
+		if (DamageAmount < StrongAttackThreshold)
+		{
+			if (auto* Anim = Cast<UGuardianAnim>(GetMesh()->GetAnimInstance()))
+			{
+				Anim->PlayBasicDamagedMontage();
+			}
+		}
+		else
+		{
+			FSMComponent->RequestDamaged(DamageAmount, HP);;
+		}
 	}
 
 	return true;
@@ -320,6 +338,7 @@ FVector2D AGuardian::GetAnimWalkDirection()
 		WalkDirection = FVector2D::ZeroVector;
 		return WalkDirection;
 	}
+	
 	
 	FVector LocalVelocity = GetActorRotation().UnrotateVector(Velocity);
 	LocalVelocity.Z = 0.f;

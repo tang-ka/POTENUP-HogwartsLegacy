@@ -8,6 +8,7 @@
 #include "Enemy/Guardian.h"
 #include "Enemy/EnemySpawnPoint.h"
 #include "Enemy/GuardianSettings.h"
+#include "UI/ControllerHUD.h"
 
 void SpawnPointGenerator::Generate(UWorld* World, TArray<TObjectPtr<AEnemySpawnPoint>>& OutSpawnPoints) const
 {
@@ -179,9 +180,10 @@ void UGuardianManager::StartCheckTick()
 void UGuardianManager::CheckTick()
 {
 	// 살아 있는 Guardian 수가 MaxAliceCount보다 적으면 Spawn 요청
-	if (GetCurrentAliveCount() < MaxAliveCount)
+	int MaxCount = FMath::Min(MaxAliveCount, Phase1GuardianCount);
+	if (GetCurrentAliveCount() < MaxCount)
 	{
-		RequestSpawnGuardian(MaxAliveCount - GetCurrentAliveCount());
+		RequestSpawnGuardian(MaxCount - GetCurrentAliveCount());
 	}
 }
 
@@ -269,6 +271,9 @@ void UGuardianManager::SpawnGuardian(const FTransform& InSpawnTransform)
 			if (Phase1GuardianCount <= 0)
 			{
 				Disable();
+				// HUD를 불러오고 싶다.
+				auto* HUD = Cast<AControllerHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
+				HUD->Gameover();
 			}
 		});
 	}

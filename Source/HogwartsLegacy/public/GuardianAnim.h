@@ -21,6 +21,7 @@ public:
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 	
 	void HandleStateChanged(EEnemyState NewState);
+	void PlayBasicDamagedMontage();
 	
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation")
@@ -31,4 +32,8 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation")
 	TObjectPtr<AGuardian> OwningGuardian;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation")
+	TObjectPtr<UAnimMontage> BasicDamagedMontage;
+	
 };
