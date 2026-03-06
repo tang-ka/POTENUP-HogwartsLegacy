@@ -359,7 +359,6 @@ void APlayerCharacter::SpawnBasicAttack()
 	{
 		attack = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetMesh()->GetBoneLocation(FName(TEXT("WandSocketTip"))), GetViewRotation());
 		attack->NoTarget();
-		ReceiveDamage_Implementation(FDamageInfo{this, 20});
 	}
 	if (bComboAttack)
 	{
@@ -391,7 +390,7 @@ void APlayerCharacter::SpawnStupefy()
 
 bool APlayerCharacter::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
 {
-	if (protego)
+	if (IsValid(protego))
 	{
 		return false;
 	}

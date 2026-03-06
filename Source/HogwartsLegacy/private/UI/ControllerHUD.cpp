@@ -145,7 +145,10 @@ void AControllerHUD::SetEnemyHPWidget(TSubclassOf<UUserWidget> NewWidget, float 
 
 void AControllerHUD::UpdateEnemyHPWidget(AActor* Object)
 {
-	EnemyHPWidget->UpdateHPBar(IDamageable::Execute_GetHPPercent(Object));
+	if (EnemyHPWidget)
+	{
+		EnemyHPWidget->UpdateHPBar(IDamageable::Execute_GetHPPercent(Object));
+	}
 }
 
 void AControllerHUD::DrawDamageWidget(FVector WorldLocation, int DamageAmount)

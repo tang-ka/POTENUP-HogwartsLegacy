@@ -114,8 +114,8 @@ void AGuardian::OnChargeAttackHitBoxOverlap(UPrimitiveComponent* OverlappedCompo
 	bool bIsDamageApplied = DamageableHelpers::ApplyDamage(OtherActor, this, 20);
 
 	SetActiveChargeAttackHitBox(false);
-	// FSMComponent->FinishAttack(bIsDamageApplied);
-	FSMComponent->FinishAttack(false);
+	FSMComponent->FinishAttack(bIsDamageApplied);
+	// FSMComponent->FinishAttack(false);
 }
 
 void AGuardian::ExecuteStumble(float StumbleStrength)
@@ -152,7 +152,7 @@ void AGuardian::OnBashAttackHitBoxOverlap(UPrimitiveComponent* OverlappedCompone
 	StopMovementImmediately();
 	GetWorldTimerManager().ClearTimer(BashAttackTimerHandle);
 	SetActiveBashAttackHitBox(false);
-	FSMComponent->FinishAttack(true); // Bash 공격은 항상 성공으로 간주 (Stumble 상태로 가지 않음)
+	FSMComponent->FinishAttack(bIsDamageApplied); // Bash 공격은 항상 성공으로 간주 (Stumble 상태로 가지 않음)
 }
 
 void AGuardian::SetCharacterMaxWalkSpeed(float InMaxWalkSpeed) const

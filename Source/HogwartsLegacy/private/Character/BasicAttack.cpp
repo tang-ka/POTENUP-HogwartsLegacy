@@ -40,7 +40,6 @@ ABasicAttack::ABasicAttack()
 	
 	Tags.Add(FName("Spell"));
 	InitialLifeSpan = 2.5f;
-	
 }
 
 void ABasicAttack::BeginPlay()
@@ -107,8 +106,6 @@ void ABasicAttack::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ExplosionComp, Hit.TraceStart);
 	Destroy();
 }
-
-
 
 //
 // void ABasicAttack::MidPointCalculation(FVector InTargetLocation, float InMinCurve, float InMaxCurve, FVector& InMidPoint)
