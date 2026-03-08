@@ -147,6 +147,10 @@ void AControllerHUD::UpdateEnemyHPWidget(AActor* Object)
 {
 	if (EnemyHPWidget)
 	{
+		if (!Object)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("111111111111111"));
+		}
 		EnemyHPWidget->UpdateHPBar(IDamageable::Execute_GetHPPercent(Object));
 	}
 }
