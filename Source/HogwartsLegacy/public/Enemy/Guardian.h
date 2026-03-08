@@ -8,6 +8,7 @@
 #include "Interface/Damageable.h"
 #include "Guardian.generated.h"
 
+class UGuardianShatterComponent;
 class UBoxComponent;
 class USphereComponent;
 class UEnemyFSMComponent;
@@ -89,7 +90,10 @@ public:
 #pragma region Getters
 	int GetCurrentHP() const { return HP; }
 	float GetCurrentHPPercent() const { return static_cast<float>(GetCurrentHP()) / MaxHP; }
+	UFUNCTION(BlueprintCallable)
 	UEnemyFSMComponent* GetFSMComponent() const { return FSMComponent; }
+	UFUNCTION(BlueprintCallable)
+	UGuardianShatterComponent* GetShatterComponent() const { return ShatterComponent; }
 	AActor* GetTargetActor() const { return TargetActor; }
 #pragma endregion
 
@@ -131,6 +135,9 @@ private:
 
 	// UPROPERTY(EditAnywhere, Category="FSMComponent")
 	// TObjectPtr<UEnemyFSMComponent> FSMComponentForCopy;
+	
+	UPROPERTY(EditAnywhere, Category="ShatterComponent")
+	TObjectPtr<UGuardianShatterComponent> ShatterComponent;
 
 	UPROPERTY(EditAnywhere, Category="HitBox")
 	TObjectPtr<USphereComponent> ChargeAttackHitBox;

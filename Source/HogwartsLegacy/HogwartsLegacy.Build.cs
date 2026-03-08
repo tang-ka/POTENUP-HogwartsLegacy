@@ -19,7 +19,8 @@ public class HogwartsLegacy : ModuleRules
 			"AIModule",
 			"NavigationSystem",
 			"UMG",
-			"DeveloperSettings"
+			"DeveloperSettings",
+			"ProceduralMeshComponent"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]

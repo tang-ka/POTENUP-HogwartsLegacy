@@ -4,6 +4,7 @@
 
 #include "AIController.h"
 #include "GuardianAnim.h"
+#include "GuardianShatterComponent.h"
 #include "HogwartsLegacy.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -31,6 +32,7 @@ AGuardian::AGuardian()
 	
 	FSMComponent = CreateDefaultSubobject<UEnemyFSMComponent>(TEXT("FSMComponent"));
 	// FSMComponentForCopy = CreateDefaultSubobject<UEnemyFSMComponent>(TEXT("FSMComponent"));
+	ShatterComponent = CreateDefaultSubobject<UGuardianShatterComponent>(TEXT("ShatterComponent"));
 
 	ChargeAttackHitBox = CreateDefaultSubobject<USphereComponent>(TEXT("ChargeAttackHitBox"));
 	ChargeAttackHitBox->SetupAttachment(GetCapsuleComponent()/*, FName("RightHandSocket")*/);
