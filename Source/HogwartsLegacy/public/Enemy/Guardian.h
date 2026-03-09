@@ -130,13 +130,13 @@ private:
 	int CurrentDamage{20};
 
 private:
-	UPROPERTY(EditAnywhere, Category="FSMComponent")
+	UPROPERTY(VisibleAnywhere, Category="FSMComponent")
 	TObjectPtr<UEnemyFSMComponent> FSMComponent;
 
 	// UPROPERTY(EditAnywhere, Category="FSMComponent")
 	// TObjectPtr<UEnemyFSMComponent> FSMComponentForCopy;
 	
-	UPROPERTY(EditAnywhere, Category="ShatterComponent")
+	UPROPERTY(VisibleAnywhere, Category="ShatterComponent")
 	TObjectPtr<UGuardianShatterComponent> ShatterComponent;
 
 	UPROPERTY(EditAnywhere, Category="HitBox")

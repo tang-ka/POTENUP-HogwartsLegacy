@@ -30,9 +30,9 @@ AGuardian::AGuardian()
 		GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -88), FRotator(0, -90, 0));
 	}
 	
+	ShatterComponent = CreateDefaultSubobject<UGuardianShatterComponent>(TEXT("ShatterComponent"));
 	FSMComponent = CreateDefaultSubobject<UEnemyFSMComponent>(TEXT("FSMComponent"));
 	// FSMComponentForCopy = CreateDefaultSubobject<UEnemyFSMComponent>(TEXT("FSMComponent"));
-	ShatterComponent = CreateDefaultSubobject<UGuardianShatterComponent>(TEXT("ShatterComponent"));
 
 	ChargeAttackHitBox = CreateDefaultSubobject<USphereComponent>(TEXT("ChargeAttackHitBox"));
 	ChargeAttackHitBox->SetupAttachment(GetCapsuleComponent()/*, FName("RightHandSocket")*/);

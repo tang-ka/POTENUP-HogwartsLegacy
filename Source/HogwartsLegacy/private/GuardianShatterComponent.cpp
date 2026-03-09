@@ -2,13 +2,12 @@
 
 #include "GuardianShatterComponent.h"
 
+#include "GuardianChunk.h"
 #include "HogwartsLegacy.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/Character.h"
-#include "../Plugins/Runtime/ProceduralMeshComponent/Source/ProceduralMeshComponent/Public/ProceduralMeshComponent.h"
 #include "Rendering/SkeletalMeshLODRenderData.h"
-#include "Rendering/SkeletalMeshRenderData.h"
-#include "SkeletalRenderPublic.h"
+#include "Rendering/SkeletalMeshRenderData.h"is as
 
 UGuardianShatterComponent::UGuardianShatterComponent()
 {
@@ -65,132 +64,128 @@ bool UGuardianShatterComponent::EnsureSourceMesh()
 	return MeshComp && Mesh;
 }
 
-UProceduralMeshComponent* UGuardianShatterComponent::GetOrCreateProceduralMesh()
+// ---------------------------------------------------------------------------
+// 본 계층 분류:
+//   각 스켈레톤 본에 대해, 자기 자신부터 루트까지 부모를 타고 올라가면서
+//   ShatterBoneNames 중 하나를 처음 만나면 그 그룹에 소속시킨다.
+//   예) ShatterBoneNames = { Spine, Neck }
+//       Neck의 자식 Head → Head에서 올라감 → Neck 발견 → Neck 그룹(인덱스 1)
+//       Spine의 자식 Spine1 → Spine1에서 올라감 → Spine 발견 → Spine 그룹(인덱스 0)
+// ---------------------------------------------------------------------------
+void UGuardianShatterComponent::BuildBoneToGroupMap(TArray<int32>& OutBoneIndexToGroup) const
 {
-	// 이미 생성했다면 그대로 반환
-	if (ProceduralMeshComp)
+	const FReferenceSkeleton& RefSkeleton = Mesh->GetRefSkeleton();
+	const int32 NumBones = RefSkeleton.GetNum();
+
+	// ShatterBoneNames → 스켈레톤 본 인덱스 룩업 (빠른 검색용)
+	TMap<int32, int32> ShatterBoneIndexToGroupIndex;
+	for (int32 GroupIdx = 0; GroupIdx < ShatterBoneNames.Num(); ++GroupIdx)
 	{
-		return ProceduralMeshComp;
+		const int32 BoneIdx = RefSkeleton.FindBoneIndex(ShatterBoneNames[GroupIdx]);
+		if (BoneIdx != INDEX_NONE)
+		{
+			ShatterBoneIndexToGroupIndex.Add(BoneIdx, GroupIdx);
+		}
+		else
+		{
+			PRINT_LOG(TEXT("ShatterBone '%s' not found in skeleton"), *ShatterBoneNames[GroupIdx].ToString());
+		}
 	}
 
-	// 생성해야 하는데 Source Mesh가 없으면 nullptr 반환 (실패)
-	if (!EnsureSourceMesh())
+	OutBoneIndexToGroup.SetNumUninitialized(NumBones);
+
+	for (int32 BoneIdx = 0; BoneIdx < NumBones; ++BoneIdx)
 	{
-		return nullptr;
+		int32 CurrentIdx = BoneIdx;
+		int32 FoundGroup = INDEX_NONE;
+
+		// 자기 자신부터 루트까지 부모를 타고 올라간다
+		while (CurrentIdx != INDEX_NONE)
+		{
+			if (const int32* GroupPtr = ShatterBoneIndexToGroupIndex.Find(CurrentIdx))
+			{
+				FoundGroup = *GroupPtr;
+				break;
+			}
+			CurrentIdx = RefSkeleton.GetParentIndex(CurrentIdx);
+		}
+
+		OutBoneIndexToGroup[BoneIdx] = FoundGroup;
 	}
-
-	AActor* Owner = GetOwner();
-
-	ProceduralMeshComp = NewObject<UProceduralMeshComponent>(Owner, TEXT("GuardianProceduralMesh"));
-	if (!ProceduralMeshComp)
-	{
-		PRINT_LOG(TEXT("Failed to create ProceduralMeshComponent"));
-		return nullptr;
-	}
-
-	Owner->AddInstanceComponent(ProceduralMeshComp);
-	ProceduralMeshComp->RegisterComponent();
-	ProceduralMeshComp->AttachToComponent(Owner->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-	ProceduralMeshComp->SetRelativeTransform(MeshComp->GetRelativeTransform());
-	ProceduralMeshComp->SetCollisionEnabled(MeshComp->GetCollisionEnabled());
-	ProceduralMeshComp->SetCollisionProfileName(MeshComp->GetCollisionProfileName());
-	ProceduralMeshComp->SetCollisionObjectType(MeshComp->GetCollisionObjectType());
-	ProceduralMeshComp->SetCanEverAffectNavigation(false);
-	ProceduralMeshComp->SetCastShadow(MeshComp->CastShadow);
-	ProceduralMeshComp->bUseComplexAsSimpleCollision = true;
-	ProceduralMeshComp->SetVisibility(false, true);
-
-	return ProceduralMeshComp;
 }
 
-void UGuardianShatterComponent::CopySkeletalMeshToProceduralMesh(UProceduralMeshComponent* InProceduralMeshComponent)
+// ---------------------------------------------------------------------------
+// 버텍스 분류:
+//   각 버텍스의 스킨 웨이트를 읽어, 가장 큰 웨이트를 가진 본의 그룹으로 분류.
+//   SkinWeightVertexBuffer의 본 인덱스는 섹션 로컬이므로
+//   FSkelMeshRenderSection::BoneMap으로 전역 본 인덱스로 변환 후 분류.
+// ---------------------------------------------------------------------------
+void UGuardianShatterComponent::ClassifyVerticesByBoneGroup(
+	const TArray<int32>& InBoneIndexToGroup, TArray<int32>& OutVertexToGroup) const
 {
-	if (!InProceduralMeshComponent || !EnsureSourceMesh())
-	{
-		return;
-	}
-	
 	constexpr int32 LODIndex = 0;
-	const FSkeletalMeshRenderData* RenderData = MeshComp->GetSkeletalMeshRenderData();	
-	
+	const FSkeletalMeshRenderData* RenderData = MeshComp->GetSkeletalMeshRenderData();
 	if (!RenderData || !RenderData->LODRenderData.IsValidIndex(LODIndex))
 	{
-		PRINT_LOG(TEXT("SkeletalMeshRenderData is invalid"));
 		return;
 	}
-	
+
 	const FSkeletalMeshLODRenderData& LODData = RenderData->LODRenderData[LODIndex];
-	const FStaticMeshVertexBuffer& StaticMeshVertexBuffer = LODData.StaticVertexBuffers.StaticMeshVertexBuffer;
-
-	TArray<FFinalSkinVertex> SkinnedVertices;
-	MeshComp->GetCPUSkinnedVertices(SkinnedVertices, LODIndex);
-
-	const int32 NumVertices = SkinnedVertices.Num();
-	if (NumVertices <= 0)
+	const FSkinWeightVertexBuffer* SkinWeightBuffer = LODData.GetSkinWeightVertexBuffer();
+	if (!SkinWeightBuffer)
 	{
-		PRINT_LOG(TEXT("Failed to read CPU skinned vertices. Check SkeletalMesh CPU access / skinning settings."));
+		PRINT_LOG(TEXT("SkinWeightBuffer is NULL"));
 		return;
 	}
 
-	if (NumVertices != LODData.GetNumVertices())
+	const int32 TotalVertices = LODData.GetNumVertices();
+	const uint32 MaxInfluences = SkinWeightBuffer->GetMaxBoneInfluences();
+
+	OutVertexToGroup.SetNumUninitialized(TotalVertices);
+
+	for (int32 SectionIdx = 0; SectionIdx < LODData.RenderSections.Num(); ++SectionIdx)
 	{
-		PRINT_LOG(TEXT("Skinned vertex count mismatch. Skinned: %d, RenderData: %d"), NumVertices, LODData.GetNumVertices());
-		return;
-	}
+		const FSkelMeshRenderSection& Section = LODData.RenderSections[SectionIdx];
+		const TArray<FBoneIndexType>& BoneMap = Section.BoneMap;
 
-	TArray<FVector> Vertices;
-	TArray<FVector> Normals;
-	TArray<FVector2D> UV0;
-	TArray<FColor> VertexColors;
-	TArray<FProcMeshTangent> Tangents;
-	Vertices.Reserve(NumVertices);
-	Normals.Reserve(NumVertices);
-	UV0.Reserve(NumVertices);
-	VertexColors.Reserve(NumVertices);
-	Tangents.Reserve(NumVertices);
-
-	for (int32 VertexIndex = 0; VertexIndex < NumVertices; ++VertexIndex)
-	{
-		const FFinalSkinVertex& SkinnedVertex = SkinnedVertices[VertexIndex];
-		
-		const FVector3f& Position = SkinnedVertex.Position;
-		const FVector3f Normal = SkinnedVertex.TangentZ.ToFVector3f();
-		const FVector3f TangentX = SkinnedVertex.TangentX.ToFVector3f();
-		const FVector2f UV = StaticMeshVertexBuffer.GetVertexUV(VertexIndex, 0);
-
-		Vertices.Add(FVector(Position));
-		Normals.Add(FVector(Normal));
-		UV0.Add(FVector2D(UV));
-		VertexColors.Add(FColor::White);
-		Tangents.Add(FProcMeshTangent(FVector(TangentX), false));
-	}
-
-	FMultiSizeIndexContainerData IndicesData;
-	LODData.MultiSizeIndexContainer.GetIndexBuffer(IndicesData.Indices);
-
-	InProceduralMeshComponent->ClearAllMeshSections();
-
-	for (int32 SectionIndex = 0; SectionIndex < LODData.RenderSections.Num(); ++SectionIndex)
-	{
-		const FSkelMeshRenderSection& RenderSection = LODData.RenderSections[SectionIndex];
-		TArray<int32> Triangles;
-		Triangles.Reserve(RenderSection.NumTriangles * 3);
-
-		for (uint32 TriangleIndex = 0; TriangleIndex < RenderSection.NumTriangles * 3; ++TriangleIndex)
+		for (uint32 LocalVertIdx = 0; LocalVertIdx < Section.NumVertices; ++LocalVertIdx)
 		{
-			Triangles.Add(IndicesData.Indices[RenderSection.BaseIndex + TriangleIndex]);
-		}
+			const int32 GlobalVertIdx = Section.BaseVertexIndex + LocalVertIdx;
 
-		InProceduralMeshComponent->CreateMeshSection(SectionIndex, Vertices, Triangles, Normals, UV0, VertexColors,
-		                                            Tangents, true);
+			uint16 BestWeight = 0;
+			int32 BestGroup = INDEX_NONE;
 
-		if (MeshComp->GetNumMaterials() > RenderSection.MaterialIndex)
-		{
-			InProceduralMeshComponent->SetMaterial(SectionIndex, MeshComp->GetMaterial(RenderSection.MaterialIndex));
+			for (uint32 InflIdx = 0; InflIdx < MaxInfluences; ++InflIdx)
+			{
+				const uint16 Weight = SkinWeightBuffer->GetBoneWeight(GlobalVertIdx, InflIdx);
+				if (Weight == 0)
+				{
+					break;
+				}
+
+				if (Weight > BestWeight)
+				{
+					// SkinWeightBuffer의 본 인덱스는 섹션-로컬 → BoneMap으로 전역 변환
+					const uint32 SectionLocalBoneIdx = SkinWeightBuffer->GetBoneIndex(GlobalVertIdx, InflIdx);
+					const int32 SkeletonBoneIdx = (SectionLocalBoneIdx < static_cast<uint32>(BoneMap.Num()))
+						                              ? BoneMap[SectionLocalBoneIdx]
+						                              : INDEX_NONE;
+
+					if (SkeletonBoneIdx != INDEX_NONE && SkeletonBoneIdx < InBoneIndexToGroup.Num())
+					{
+						const int32 Group = InBoneIndexToGroup[SkeletonBoneIdx];
+						if (Group != INDEX_NONE)
+						{
+							BestWeight = Weight;
+							BestGroup = Group;
+						}
+					}
+				}
+			}
+
+			OutVertexToGroup[GlobalVertIdx] = BestGroup;
 		}
 	}
-
-	InProceduralMeshComponent->SetVisibility(true, true);
 }
 
 void UGuardianShatterComponent::TriggerShatter()
@@ -200,19 +195,62 @@ void UGuardianShatterComponent::TriggerShatter()
 		return;
 	}
 
-	// ProceduralMeshComponent이 이미 생성되어 있다면 그대로 사용, 아니라면 새로 생성
-	UProceduralMeshComponent* LocalProceduralMeshComp = GetOrCreateProceduralMesh();
-	if (!LocalProceduralMeshComp)
+	if (!EnsureSourceMesh())
 	{
 		return;
 	}
 
-	// ProceduralMeshComponent에 SkeletalMesh의 데이터를 복사한다 (최소한 LOD0)
-	CopySkeletalMeshToProceduralMesh(LocalProceduralMeshComp);
+	if (ShatterBoneNames.Num() == 0)
+	{
+		PRINT_LOG(TEXT("ShatterBoneNames is empty"));
+		return;
+	}
 
-	//
+	// 1) 본 → 그룹 맵 구축
+	TArray<int32> BoneIndexToGroup;
+	BuildBoneToGroupMap(BoneIndexToGroup);
+
+	// 2) 버텍스 → 그룹 분류
+	TArray<int32> VertexToGroup;
+	ClassifyVerticesByBoneGroup(BoneIndexToGroup, VertexToGroup);
+
+	// 3) 그룹별 버텍스 인덱스 수집
+	const int32 NumGroups = ShatterBoneNames.Num();
+	TArray<TSet<int32>> GroupVertexSets;
+	GroupVertexSets.SetNum(NumGroups);
+
+	for (int32 VertIdx = 0; VertIdx < VertexToGroup.Num(); ++VertIdx)
+	{
+		const int32 Group = VertexToGroup[VertIdx];
+		if (Group != INDEX_NONE && Group < NumGroups)
+		{
+			GroupVertexSets[Group].Add(VertIdx);
+		}
+	}
+
+	// 4) 그룹별 GuardianChunk 스폰
+	const FTransform OwnerTransform = GetOwner()->GetActorTransform();
+	for (int32 GroupIdx = 0; GroupIdx < NumGroups; ++GroupIdx)
+	{
+		if (GroupVertexSets[GroupIdx].Num() == 0)
+		{
+			PRINT_LOG(TEXT("Group '%s' has no vertices"), *ShatterBoneNames[GroupIdx].ToString());
+			continue;
+		}
+
+		AGuardianChunk* Chunk = GetWorld()->SpawnActor<AGuardianChunk>(
+			AGuardianChunk::StaticClass(), OwnerTransform);
+		if (!Chunk)
+		{
+			PRINT_LOG(TEXT("Failed to spawn GuardianChunk for group '%s'"), *ShatterBoneNames[GroupIdx].ToString());
+			continue;
+		}
+
+		Chunk->InitializeChunk(MeshComp, GroupVertexSets[GroupIdx]);
+	}
+
+	// 5) 원본 메시 숨기기
 	MeshComp->SetVisibility(false, true);
 	MeshComp->SetHiddenInGame(true, true);
-	LocalProceduralMeshComp->SetHiddenInGame(false, true);
 	bIsShattered = true;
 }
