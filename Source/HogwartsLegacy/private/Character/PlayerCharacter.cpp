@@ -20,19 +20,10 @@ APlayerCharacter::APlayerCharacter()
 		GetMesh()->SetSkeletalMesh(TempMesh.Object);
 		GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -90), FRotator(0, -90, 0));
 	}
-	// static ConstructorHelpers::FObjectFinder<USkeletalMesh> WandMesh(TEXT("/Game/KHJ/Meshes/PlayerWand.PlayerWand"));
-	// if (WandMesh.Succeeded())
-	// {
-	// 	Wand->SetSkeletalMeshAsset(WandMesh.Object);
-	// }
-	// static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstance (TEXT("AnimBlueprint'/Game/KHJ/Characters/Animation/ABP_PlayerCharacter.ABP_PlayerCharacter'"));
-	// if (AnimInstance.Succeeded())
-	// {
-	// 	GetMesh()->SetAnimInstanceClass(AnimInstance.Class);
-	// }
 
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("PlayerCharacter"));
 	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
+	GetCharacterMovement()->MaxWalkSpeed = 500.0f;
 	CameraArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraArm"));
 	CameraArmComp->SetupAttachment(RootComponent);
 	CameraArmComp->SetRelativeLocation(FVector(0, 125, 60));

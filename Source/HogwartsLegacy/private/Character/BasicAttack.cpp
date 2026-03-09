@@ -3,7 +3,6 @@
 #include "Character/BasicAttack.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
-#include "Enemy/Guardian.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Interface/DamageableHelpers.h"
 #include "Kismet/GameplayStatics.h"
