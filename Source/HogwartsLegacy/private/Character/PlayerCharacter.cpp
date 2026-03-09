@@ -105,6 +105,14 @@ void APlayerCharacter::Tick(float DeltaTime)
 	CheckCanAttack(bCanAttack);
 	AimCapture();
 	
+	if (AnimInstance)
+	{
+		if (!AnimInstance->IsAnyMontagePlaying())
+		{
+			bCanMove = true;
+		}
+	}
+	
 	if (bIsDoingLevioso && PhysicsHandleComp->GrabbedComponent)
 	{
 		FVector TargetLocation = GetPawnViewLocation() + (GetViewRotation().Vector() * LeviosoHoldDistance);
@@ -176,6 +184,10 @@ void APlayerCharacter::InputJump(const FInputActionValue& InputValue)
 void APlayerCharacter::PlayerMove()
 {
 	WalkDirection = FTransform(GetControlRotation()).TransformVector(WalkDirection);
+	if (AnimInstance)
+	{
+		AnimInstance->StopAllMontages(0.5f);
+	}
 	AddMovementInput(WalkDirection);
 	WalkDirection = FVector::ZeroVector;
 }
@@ -189,8 +201,8 @@ void APlayerCharacter::AimCapture()
 {
 	FHitResult HitOut;
 	
-	FVector Start = PlayerCameraComp->GetComponentLocation();
-	FVector End = PlayerCameraComp->GetComponentRotation().Vector() * ViewDistance;
+	FVector Start = GetActorLocation(); // PlayerCameraComp->GetComponentLocation();
+	FVector End = GetActorRotation().Vector() * ViewDistance; // PlayerCameraComp->GetComponentRotation().Vector() * ViewDistance;
 	
 	GetWorld()->SweepSingleByProfile(HitOut,
 		Start, End, FQuat::Identity, "PlayerTrace",
@@ -273,8 +285,12 @@ void APlayerCharacter::SpellBasicAttack()
 		AnimInstance->Montage_JumpToSection(FName(FString::Printf(TEXT("ComboCount%d"), ComboCount)), ComboAttackMontage);
 	}
 	
-	
 	GetWorldTimerManager().SetTimer(ComboTimerHandle,[this](){this->ComboCount=0;}, 2.0f, false);
+}
+
+void APlayerCharacter::CheckCombo()
+{
+	bCanMove = true;
 }
 
 void APlayerCharacter::SpellProtego()

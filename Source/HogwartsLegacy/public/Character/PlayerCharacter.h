@@ -160,6 +160,8 @@ public:
 	UFUNCTION()
 	void SpellBasicAttack();
 	UFUNCTION()
+	void CheckCombo();
+	UFUNCTION()
 	void SpellProtego();
 	UFUNCTION()
 	void SpellStupefy();

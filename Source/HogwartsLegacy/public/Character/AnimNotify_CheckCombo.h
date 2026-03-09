@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AnimNotifies/AnimNotify_PlayMontageNotify.h"
-#include "AnimNotify_BasicAttackMontage.generated.h"
+#include "Animation/AnimNotifies/AnimNotify.h"
+#include "AnimNotify_CheckCombo.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class HOGWARTSLEGACY_API UAnimNotify_BasicAttackMontage : public UAnimNotify_PlayMontageNotify
+class HOGWARTSLEGACY_API UAnimNotify_CheckCombo : public UAnimNotify
 {
 	GENERATED_BODY()
 	
