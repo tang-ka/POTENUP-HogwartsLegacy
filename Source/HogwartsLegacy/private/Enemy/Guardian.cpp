@@ -3,6 +3,7 @@
 #include "Enemy/Guardian.h"
 
 #include "AIController.h"
+#include "GuardianAnim.h"
 #include "HogwartsLegacy.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -29,6 +30,7 @@ AGuardian::AGuardian()
 	}
 	
 	FSMComponent = CreateDefaultSubobject<UEnemyFSMComponent>(TEXT("FSMComponent"));
+	// FSMComponentForCopy = CreateDefaultSubobject<UEnemyFSMComponent>(TEXT("FSMComponent"));
 
 	ChargeAttackHitBox = CreateDefaultSubobject<USphereComponent>(TEXT("ChargeAttackHitBox"));
 	ChargeAttackHitBox->SetupAttachment(GetCapsuleComponent()/*, FName("RightHandSocket")*/);
@@ -41,6 +43,9 @@ AGuardian::AGuardian()
 	// 메쉬 충돌은 끄고 싶다.
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Enemy"));
+
+	// AI 컨트롤러 자동 빙의 설정: 스폰된 경우에도 AIController가 할당되도록 함
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 	
 	SetActiveChargeAttackHitBox(false);
 	SetActiveBashAttackHitBox(false);
@@ -51,9 +56,12 @@ AGuardian::AGuardian()
 void AGuardian::BeginPlay()
 {
 	Super::BeginPlay();
-
+	// FSMComponent = FSMComponentForCopy;
+	if (!FSMComponent)
+	{
+		PRINT_LOG(TEXT("FSMComponent is NULL"));
+	}
 	DefaultColor = GetMesh()->CreateAndSetMaterialInstanceDynamic(0)->K2_GetVectorParameterValue("Paint Tint");
-
 	InitHP();
 
 	ChargeAttackHitBox->OnComponentBeginOverlap.AddDynamic(this, &AGuardian::OnChargeAttackHitBoxOverlap);
@@ -106,8 +114,8 @@ void AGuardian::OnChargeAttackHitBoxOverlap(UPrimitiveComponent* OverlappedCompo
 	bool bIsDamageApplied = DamageableHelpers::ApplyDamage(OtherActor, this, 20);
 
 	SetActiveChargeAttackHitBox(false);
-	// FSMComponent->FinishAttack(bIsDamageApplied);
-	FSMComponent->FinishAttack(false);
+	FSMComponent->FinishAttack(bIsDamageApplied);
+	// FSMComponent->FinishAttack(false);
 }
 
 void AGuardian::ExecuteStumble(float StumbleStrength)
@@ -144,7 +152,7 @@ void AGuardian::OnBashAttackHitBoxOverlap(UPrimitiveComponent* OverlappedCompone
 	StopMovementImmediately();
 	GetWorldTimerManager().ClearTimer(BashAttackTimerHandle);
 	SetActiveBashAttackHitBox(false);
-	FSMComponent->FinishAttack(true); // Bash 공격은 항상 성공으로 간주 (Stumble 상태로 가지 않음)
+	FSMComponent->FinishAttack(bIsDamageApplied); // Bash 공격은 항상 성공으로 간주 (Stumble 상태로 가지 않음)
 }
 
 void AGuardian::SetCharacterMaxWalkSpeed(float InMaxWalkSpeed) const
@@ -213,7 +221,15 @@ void AGuardian::SetActiveBashAttackHitBox(bool bIsActivate) const
 
 bool AGuardian::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
 {
-	HP -= DamageInfo.DamageAmount;
+	if (FSMComponent->IsDead())
+	{
+		return false;
+	}
+	
+	int32 DamageAmount = DamageInfo.DamageAmount;
+	// DamageAmount = 50;
+	
+	HP -= DamageAmount;
 	if (HP <= 0)
 	{
 		HP = 0;
@@ -221,7 +237,17 @@ bool AGuardian::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
 	}
 	else
 	{
-		FSMComponent->RequestDamaged(DamageInfo.DamageAmount, HP);;
+		if (DamageAmount < StrongAttackThreshold)
+		{
+			if (auto* Anim = Cast<UGuardianAnim>(GetMesh()->GetAnimInstance()))
+			{
+				Anim->PlayBasicDamagedMontage();
+			}
+		}
+		else
+		{
+			FSMComponent->RequestDamaged(DamageAmount, HP);;
+		}
 	}
 
 	return true;
@@ -234,7 +260,7 @@ int AGuardian::GetHP_Implementation() const
 
 float AGuardian::GetHPPercent_Implementation() const
 {
-	return static_cast<float>(GetCurrentHP()) / MaxHP;
+	return static_cast<float>(GetCurrentHP()) / static_cast<float>(MaxHP);
 }
 
 bool AGuardian::IsDead_Implementation() const
@@ -259,3 +285,68 @@ void AGuardian::InitHP()
 {
 	HP = MaxHP;
 }
+
+// ============================================================
+// Combat Info — Manager에게 판단 정보 제공
+// ============================================================
+
+bool AGuardian::IsAttackReady() const
+{
+	if (!FSMComponent)
+	{
+		return false;
+	}
+	
+	const EEnemyState State = FSMComponent->GetCurrentStateType();
+	return State == EEnemyState::Strafe;
+}
+
+float AGuardian::GetDistanceToTarget() const
+{
+	const AActor* Target = FSMComponent ? FSMComponent->GetCurrentTarget() : nullptr;
+	if (!Target)
+	{
+		return TNumericLimits<float>::Max();
+	}
+	
+	return FVector::Dist(GetActorLocation(), Target->GetActorLocation());
+}
+
+float AGuardian::GetAngleToTarget() const
+{
+	const AActor* Target = FSMComponent ? FSMComponent->GetCurrentTarget() : nullptr;
+	if (!Target)
+	{
+		return 180.f;
+	}
+	
+	const FVector Forward = GetActorForwardVector();
+	FVector ToTarget = Target->GetActorLocation() - GetActorLocation();
+	ToTarget.Z = 0.f;
+	ToTarget.Normalize();
+	
+	const float Dot = FVector::DotProduct(Forward, ToTarget);
+	return FMath::RadiansToDegrees(FMath::Acos(FMath::Clamp(Dot, -1.f, 1.f)));
+}
+
+FVector2D AGuardian::GetAnimWalkDirection()
+{
+	FVector Velocity = GetVelocity();
+	
+	if (Velocity.IsNearlyZero())
+	{
+		WalkDirection = FVector2D::ZeroVector;
+		return WalkDirection;
+	}
+	
+	
+	FVector LocalVelocity = GetActorRotation().UnrotateVector(Velocity);
+	LocalVelocity.Z = 0.f;
+	LocalVelocity.Normalize();
+	
+	WalkDirection.Y = LocalVelocity.X;
+	WalkDirection.X = LocalVelocity.Y;
+	
+	return WalkDirection;
+}
+

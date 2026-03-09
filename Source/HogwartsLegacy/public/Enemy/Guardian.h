@@ -51,8 +51,6 @@ public:
 	                               AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	                               int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 #pragma endregion
-	
-	
 
 #pragma region Movement
 	UFUNCTION(BlueprintCallable)
@@ -76,7 +74,6 @@ public:
 	void SetActiveBashAttackHitBox(bool bIsActivate) const;
 #pragma endregion
 
-public:
 #pragma region IDamageable
 	virtual bool ReceiveDamage_Implementation(FDamageInfo DamageInfo) override;
 	virtual int GetHP_Implementation() const override;
@@ -84,7 +81,6 @@ public:
 	virtual bool IsDead_Implementation() const override;
 #pragma endregion
 
-public:
 #pragma region Test
 	void SetMaterialColor(FLinearColor Color);
 	void ResetMaterialColor();
@@ -96,20 +92,35 @@ public:
 	UEnemyFSMComponent* GetFSMComponent() const { return FSMComponent; }
 	AActor* GetTargetActor() const { return TargetActor; }
 #pragma endregion
+
+#pragma region Combat Info : Manager에게 판단 정보 제공
+	// 공격 가능한 상태인지 (Idle 또는 Strafe 상태)
+	bool IsAttackReady() const;
+	// 현재 타겟과의 거리
+	float GetDistanceToTarget() const;
+	// 현재 타겟을 향한 시야각 (정면 기준, 도 단위)
+	float GetAngleToTarget() const;
+#pragma endregion
 	
 #pragma region Setters
 	void SetsCurrentDamage(int InDamageAmount) { CurrentDamage = InDamageAmount; }
 #pragma endregion
+
+	FVector2D GetAnimWalkDirection();
+	
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Anim")
+	FVector2D WalkDirection{};
 	
 private:
 	void InitHP();
-
+	
 private:
 	UPROPERTY(VisibleAnywhere, Category="Stats")
 	int32 HP{};
 
 	UPROPERTY(VisibleAnywhere, Category="Stats")
-	int32 MaxHP{150};
+	int32 MaxHP{100};
 	
 	UPROPERTY(EditAnywhere, Category="Stats")
 	int CurrentDamage{20};
@@ -117,6 +128,9 @@ private:
 private:
 	UPROPERTY(EditAnywhere, Category="FSMComponent")
 	TObjectPtr<UEnemyFSMComponent> FSMComponent;
+
+	// UPROPERTY(EditAnywhere, Category="FSMComponent")
+	// TObjectPtr<UEnemyFSMComponent> FSMComponentForCopy;
 
 	UPROPERTY(EditAnywhere, Category="HitBox")
 	TObjectPtr<USphereComponent> ChargeAttackHitBox;
@@ -128,4 +142,5 @@ private:
 	TObjectPtr<AActor> TargetActor;
 
 	FLinearColor DefaultColor;
+	int32 StrongAttackThreshold{20};
 };

@@ -19,11 +19,13 @@ void UGuardianBashAttackState::OnEnter()
 	Super::OnEnter();
 	
 	Target = GetOwnerFSM()->GetCurrentTarget();
+	// GetOwnerFSM()->bIsAttacking = true;
 }
 
 void UGuardianBashAttackState::OnExit()
 {
 	Super::OnExit();
+	GetOwnerFSM()->OnAttackFinished.Broadcast();
 }
 
 void UGuardianBashAttackState::TickState(float DeltaTime)

@@ -3,6 +3,7 @@
 #include "Enemy/GuardianState/GuardianNonCombatState.h"
 #include "Enemy/EnemyFSMComponent.h"
 #include "Enemy/Guardian.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 void UGuardianSleepState::OnEnter()
 {
@@ -17,8 +18,18 @@ void UGuardianSleepState::OnExit()
 void UGuardianSleepState::TickState(float DeltaTime)
 {
 	Super::TickState(DeltaTime);
-
-	// UE_LOG(LogTemp, Warning, TEXT("Guardian is sleeping."));
+	
+	if (GetOwnerGuardian()->GetCharacterMovement()->IsFalling())
+	{
+	}
+	else
+	{
+		FTimerHandle AwakeTimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(AwakeTimerHandle, [this]()
+		{
+			GetOwnerFSM()->ChangeState(EEnemyState::Idle);
+		}, 1.f, false);
+	}
 }
 
 // ----------------------------------------------

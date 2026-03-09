@@ -1,4 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -8,9 +7,11 @@
 #include "ControllerHUD.generated.h"
 
 class UMinimapWidget;
+class USkillSlotWidget;
 class UPlayerHPWidget;
 class UEnemyHPWidget;
 class UDamageIndicatorWidget;
+class UGameoverWidget;
 /**
  * 
  */
@@ -25,17 +26,23 @@ protected:
 	AControllerHUD();
 	virtual void BeginPlay() override;
 	
-private:
+public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf <UMinimapWidget> MinimapWidgetClass;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf <USkillSlotWidget> SkillSlotWidgetClass;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf <UPlayerHPWidget> PlayerHPWidgetClass;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf <UEnemyHPWidget> EnemyHPWidgetClass;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf <UDamageIndicatorWidget> DamageWidgetClass;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf <UGameoverWidget> GameoverWidgetClass;
 	UPROPERTY()
 	UMinimapWidget* MinimapWidget;
+	UPROPERTY()
+	USkillSlotWidget* SkillSlotWidget;
 	UPROPERTY()
 	UPlayerHPWidget* PlayerHPWidget;
 	UPROPERTY()
@@ -46,21 +53,31 @@ private:
 	TObjectPtr <UMaterialInterface> OutlineMat;
 	UPROPERTY()
 	TObjectPtr <UMaterialInterface> ShineMat;
-	UFUNCTION()
-	void OverlayMatOnAimCaptured(AActor* Object, AActor* CachedObj);
+	UPROPERTY()
+	UGameoverWidget* GameoverWidget;
+	UPROPERTY()
+	APlayerController* PC;
 	
-public:
 	UFUNCTION(BlueprintCallable)
 	void SetMiniMapWidget(TSubclassOf<UUserWidget> NewWidget);
 	UFUNCTION(BlueprintCallable)
+	void SetSkillSlotWidget(TSubclassOf<UUserWidget> NewWidget);
+	UFUNCTION(BlueprintCallable)
+	void UpdateSkillSlotWidget(int Key, const FString& Skill);
+	UFUNCTION(BlueprintCallable)
 	void SetPlayerHPWidget(TSubclassOf<UUserWidget> NewWidget, TScriptInterface<IDamageable> Player);
 	UFUNCTION(BlueprintCallable)
+	void UpdatePlayerHPWidget(float NewPercent);
+	UFUNCTION(BlueprintCallable)
 	void SetEnemyHPWidget(TSubclassOf<UUserWidget> NewWidget, float NewPercent);
-	//UFUNCTION(BlueprintCallable)
-	//FOnDamaged OnDamaged;
+	UFUNCTION(BlueprintCallable)
+	void UpdateEnemyHPWidget(AActor* Object);
+	UFUNCTION(BlueprintCallable)
+	void OverlayMatOnAimCaptured(AActor* Object, AActor* CachedObj, AActor*& Aimed);
 	UFUNCTION(BlueprintCallable)
 	void DrawDamageWidget(FVector WorldLocation, int DamageAmount);
+	UFUNCTION(BlueprintCallable)
+	void Gameover();
 	
-	// ShowDamageWidgetDelegate;
-	// TSharedRef <FOnDamaged> OnDamaged(new FOnDamaged());
+	
 };

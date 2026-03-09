@@ -1,4 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -26,10 +25,9 @@ protected:
 	
 public:
 	void InitializeHPBar(TScriptInterface<IDamageable> InTarget);
-	void UpdateHPBar(int CurrentHP, int MaxHP);
+	void UpdateHPBar(float NewPercent);
 	
 private:
 	float CurrentHPPercent = 1.0f;
-	
 	
 };

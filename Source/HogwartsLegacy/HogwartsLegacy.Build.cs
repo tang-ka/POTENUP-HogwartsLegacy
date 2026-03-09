@@ -18,7 +18,8 @@ public class HogwartsLegacy : ModuleRules
 			"Niagara",
 			"AIModule",
 			"NavigationSystem",
-			"UMG"
+			"UMG",
+			"DeveloperSettings"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]

@@ -2,11 +2,12 @@
 
 
 #include "UI/ControllerHUD.h"
-#include "Kismet/GameplayStatics.h"
 #include "UI/MinimapWidget.h"
+#include "UI/SkillSlotWidget.h"
 #include "UI/PlayerHPWidget.h"
 #include "UI/EnemyHPWidget.h"
 #include "UI/DamageIndicatorWidget.h"
+#include "UI/GameoverWidget.h"
 #include "Blueprint/UserWidget.h"
 
 AControllerHUD::AControllerHUD()
@@ -21,15 +22,16 @@ AControllerHUD::AControllerHUD()
 	{
 		ShineMat = TempMat2.Object;
 	}
-	// OnDamaged.AddDynamic(this, &AControllerHUD::DrawDamageWidget);
 }
 
 void AControllerHUD::BeginPlay()
 {
 	Super::BeginPlay();
 	SetMiniMapWidget(MinimapWidgetClass);
+	SetSkillSlotWidget(SkillSlotWidgetClass);
 	
-	// auto Player = Cast<APlayerCharacter>(GetOwningPawn());
+	PC = GetWorld()->GetFirstPlayerController();
+	
 	TScriptInterface<IDamageable> DamageableActor = GetOwningPawn();
 	if (DamageableActor)
 	{
@@ -38,15 +40,20 @@ void AControllerHUD::BeginPlay()
 }
 
 
-void AControllerHUD::OverlayMatOnAimCaptured(AActor* Object, AActor* CachedObj)
+void AControllerHUD::OverlayMatOnAimCaptured(AActor* Object, AActor* CachedObj, AActor*& Aimed)
 {
 	if (Object != CachedObj)
 	{
 		if (IsValid(CachedObj))
 		{
+			Aimed = nullptr;
 			if (CachedObj->ActorHasTag(FName("Enemy")))
 			{
 				CachedObj->FindComponentByClass<USkeletalMeshComponent>()->SetOverlayMaterial(nullptr);
+			}
+			if (EnemyHPWidget)
+			{
+				EnemyHPWidget->RemoveFromParent();
 			}
 			if (CachedObj->ActorHasTag(FName("Item")))
 			{
@@ -55,10 +62,16 @@ void AControllerHUD::OverlayMatOnAimCaptured(AActor* Object, AActor* CachedObj)
 		}
 		if (IsValid(Object))
 		{
-			// GEngine->AddOnScreenDebugMessage(3, 1.0f, FColor::Green, Obj->GetName());
+			Aimed = nullptr;
 			if (Object->ActorHasTag(FName("Enemy")))
 			{
 				Object->FindComponentByClass<USkeletalMeshComponent>()->SetOverlayMaterial(OutlineMat);
+				SetEnemyHPWidget(EnemyHPWidgetClass, IDamageable::Execute_GetHPPercent(Object));
+				Aimed = Object;
+			}
+			else if (EnemyHPWidget)
+			{
+				EnemyHPWidget->RemoveFromParent();
 			}
 			if (Object->ActorHasTag(FName("Item")))
 			{
@@ -70,35 +83,40 @@ void AControllerHUD::OverlayMatOnAimCaptured(AActor* Object, AActor* CachedObj)
 
 void AControllerHUD::SetMiniMapWidget(TSubclassOf<UUserWidget> NewWidget)
 {
-	if (MinimapWidget != nullptr)
-	{
-		MinimapWidget->RemoveFromParent(); // RemoveFromViewport()
-		MinimapWidget = nullptr;
-	}
-	if (NewWidget != nullptr)
+	if (NewWidget)
 	{
 		MinimapWidget = CreateWidget<UMinimapWidget>(GetWorld(), NewWidget);
-		if (MinimapWidget != nullptr)
+		if (MinimapWidget)
 		{
 			MinimapWidget->AddToViewport();
 		}
 	}
 }
 
+void AControllerHUD::SetSkillSlotWidget(TSubclassOf<UUserWidget> NewWidget)
+{
+	if (NewWidget)
+	{
+		SkillSlotWidget = CreateWidget<USkillSlotWidget>(GetWorld(), NewWidget);
+		if (SkillSlotWidget)
+		{
+			SkillSlotWidget->AddToViewport();
+		}
+	}
+}
+
+void AControllerHUD::UpdateSkillSlotWidget(int Key, const FString& Skill)
+{
+	SkillSlotWidget->UpdateSkillCoolTime(Key, Skill);
+}
+
 void AControllerHUD::SetPlayerHPWidget(TSubclassOf<UUserWidget> NewWidget, TScriptInterface<IDamageable> Player)
 {
-	if (PlayerHPWidget != nullptr)
-	{
-		PlayerHPWidget->RemoveFromParent();
-		PlayerHPWidget = nullptr;
-	}
-	if (NewWidget != nullptr)
+	if (NewWidget)
 	{
 		PlayerHPWidget = CreateWidget<UPlayerHPWidget>(GetWorld(), PlayerHPWidgetClass);
 		if (PlayerHPWidget)
 		{
-			// float Percent = Player->GetHP_Implementation() / Player->GetMaxHP_Implementation();
-			// GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Green, FString::FromInt(Percent));
 			PlayerHPWidget->InitializeHPBar(Player);
 			PlayerHPWidget->AddToViewport();
 			
@@ -107,22 +125,33 @@ void AControllerHUD::SetPlayerHPWidget(TSubclassOf<UUserWidget> NewWidget, TScri
 	}
 }
 
+void AControllerHUD::UpdatePlayerHPWidget(float NewPercent)
+{
+	PlayerHPWidget->UpdateHPBar(NewPercent);
+}
+
 void AControllerHUD::SetEnemyHPWidget(TSubclassOf<UUserWidget> NewWidget, float NewPercent)
 {
-	if (EnemyHPWidget != nullptr)
-	{
-		EnemyHPWidget->RemoveFromParent();
-		EnemyHPWidget = nullptr;
-	}
-	if (NewWidget != nullptr)
+	if (NewWidget)
 	{
 		EnemyHPWidget = CreateWidget<UEnemyHPWidget>(GetWorld(), EnemyHPWidgetClass);
 		if (EnemyHPWidget)
 		{
 			EnemyHPWidget->UpdateHPBar(NewPercent);
 			EnemyHPWidget->AddToViewport();
-			// EnemyHPWidget->SetVisibility(ESlateVisibility::Collapsed);
 		}
+	}
+}
+
+void AControllerHUD::UpdateEnemyHPWidget(AActor* Object)
+{
+	if (EnemyHPWidget)
+	{
+		if (!Object)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("111111111111111"));
+		}
+		EnemyHPWidget->UpdateHPBar(IDamageable::Execute_GetHPPercent(Object));
 	}
 }
 
@@ -142,10 +171,23 @@ void AControllerHUD::DrawDamageWidget(FVector WorldLocation, int DamageAmount)
 		
 		FVector2D ScreenLocation;
 		
-		APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+		// PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+		
 		if (PC && PC->ProjectWorldLocationToScreen(WorldLocation, ScreenLocation))
 		{
 			DamageWidget->SetPositionInViewport(ScreenLocation);
 		}
+	}
+}
+
+void AControllerHUD::Gameover()
+{
+	GameoverWidget = CreateWidget<UGameoverWidget>(GetWorld(), GameoverWidgetClass);
+	if (GameoverWidget)
+	{
+		GameoverWidget->AddToViewport();
+		PC->SetPause(true);
+		PC->SetInputMode(FInputModeUIOnly());
+		PC->SetShowMouseCursor(true);
 	}
 }

@@ -10,7 +10,7 @@ class AGuardian;
 class AAIController;
 class UGuardianStateBase;
 
-UENUM()
+UENUM(BlueprintType)
 enum class EEnemyState : uint8
 {
 	Sleep, Idle,
@@ -20,12 +20,18 @@ enum class EEnemyState : uint8
 	Damaged, Stun, Dead
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEnemyDead);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnEnemyDamaged, float, DamageAmount, float, RemainingHP);
+DECLARE_MULTICAST_DELEGATE(FOnEnemyDead);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnChangeState, EEnemyState);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnEnemyDamaged, float, float);
+DECLARE_MULTICAST_DELEGATE(FOnAttackFinished);
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class HOGWARTSLEGACY_API UEnemyFSMComponent : public UActorComponent
 {
 	GENERATED_BODY()
+	
+	friend class UGuardianStateBase;
+	friend class UGuardianBashAttackState;
+	friend class UGuardianChargeAttackState;
 
 public:	
 	UEnemyFSMComponent();
@@ -56,6 +62,9 @@ public:
 	
 #pragma region Request State Change
 	UFUNCTION(BlueprintCallable)
+	void RequestAttack();
+	
+	UFUNCTION(BlueprintCallable)
 	void FinishAttack(bool bSuccess);
 	
 	UFUNCTION(BLueprintCallable)
@@ -76,7 +85,9 @@ protected:
 	
 public:
 	FOnEnemyDead OnEnemyDead;
+	FOnChangeState OnStateChanged;
 	FOnEnemyDamaged OnEnemyDamaged;
+	FOnAttackFinished OnAttackFinished;
 	
 private:
 	UPROPERTY()

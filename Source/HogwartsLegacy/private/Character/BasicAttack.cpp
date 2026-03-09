@@ -3,6 +3,7 @@
 #include "Character/BasicAttack.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "Enemy/Guardian.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Interface/DamageableHelpers.h"
 #include "Kismet/GameplayStatics.h"
@@ -40,7 +41,6 @@ ABasicAttack::ABasicAttack()
 	
 	Tags.Add(FName("Spell"));
 	InitialLifeSpan = 2.5f;
-	
 }
 
 void ABasicAttack::BeginPlay()
@@ -65,8 +65,11 @@ void ABasicAttack::Tick(float DeltaTime)
 void ABasicAttack::SetTarget(AActor* causer, AActor* target, bool combo)
 {
 	Target = target;
-	TargetLocation = target->GetActorLocation() + UKismetMathLibrary::MakeVector(0,0,40);
-	ComboAttack = combo;
+	TargetLocation = target->GetActorLocation() + FVector(0,0,40);
+	if (combo)
+	{
+		Damage = 23;
+	}
 }
 
 void ABasicAttack::NoTarget()
@@ -78,13 +81,14 @@ void ABasicAttack::NoTarget()
 void ABasicAttack::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (!DamageableHelpers::IsDead(Target))
+	if (Target && Target->IsValidLowLevel() && !DamageableHelpers::IsDead(Target))
 	{
-		int Damage = ComboAttack ? GetThirdDamage() : GetBasicDamage();
 		DamageableHelpers::ApplyDamage(Target, Causer, Damage);
-		HUD->DrawDamageWidget(GetActorLocation() + FVector(0, 0, 50.f), Damage);
-		// ShowDamageWidget(GetActorLocation() + FVector(0, 0, 50.f), Damage);
-		// GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Red, FString::Printf(TEXT("Damage: %d"), Damage));
+		if (IsValid(HUD))
+		{
+			HUD->DrawDamageWidget(GetActorLocation() + FVector(0, 0, 50.f), Damage);
+			HUD->UpdateEnemyHPWidget(Target);
+		}
 	}
 	
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ExplosionComp, SweepResult.TraceStart);
@@ -103,8 +107,6 @@ void ABasicAttack::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ExplosionComp, Hit.TraceStart);
 	Destroy();
 }
-
-
 
 //
 // void ABasicAttack::MidPointCalculation(FVector InTargetLocation, float InMinCurve, float InMaxCurve, FVector& InMidPoint)
