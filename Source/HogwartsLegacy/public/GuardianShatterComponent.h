@@ -20,11 +20,9 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-public:	
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
 public:
 	void InitializeShatter();
+	
 	UFUNCTION(BlueprintCallable)
 	void TriggerShatter();
 	
@@ -45,6 +43,18 @@ private:
 	 */
 	void ClassifyVerticesByBoneGroup(const TArray<int32>& InBoneIndexToGroup, TArray<int32>& OutVertexToGroup) const;
 
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Shatter)
+	TObjectPtr<UMaterialInterface> CapMaterial;
+
+	/** 폭발 힘의 세기 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Shatter)
+	float ExplosionStrength = 0.5f;
+
+	/** 폭발 반경 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Shatter)
+	float ExplosionRadius = 10.f;
+	
 private:
 	UPROPERTY()
 	TObjectPtr<USkeletalMeshComponent> MeshComp{};
@@ -54,7 +64,11 @@ private:
 	
 	/** 분리할 본 이름 배열. 배열 순서대로 계층 우선순위가 결정된다. (예: Spine, Neck → Spine 그룹, Neck 그룹) */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Shatter, meta=(AllowPrivateAccess=true))
-	TArray<FName> ShatterBoneNames;
+	TArray<FName> ShatterBoneGroup;
 	
 	bool bIsShattered{false};
+	
+	TArray<int32> BoneIndexToGroup;
+	TArray<int32> VertexToGroup;
+	TArray<TSet<int32>> GroupVertexSets;
 };
