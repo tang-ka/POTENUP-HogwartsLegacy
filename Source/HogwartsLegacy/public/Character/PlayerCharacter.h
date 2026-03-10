@@ -16,6 +16,8 @@ class AControllerHUD;
 class USpringArmComponent;
 class UCameraComponent;
 class USceneComponent;
+class UNiagaraSystem;
+class UNiagaraComponent;
 class UPhysicsHandleComponent;
 
 UCLASS()
@@ -44,6 +46,8 @@ public:
 	USkeletalMeshComponent* Wand;
 	UPROPERTY(VisibleAnywhere)
 	UPhysicsHandleComponent* PhysicsHandleComp;
+	UPROPERTY(VisibleAnywhere)
+	TSubclassOf<UCameraShakeBase> HitCameraShakeClass;
 	UPROPERTY()
 	AControllerHUD* HUD;
 #pragma endregion
@@ -83,7 +87,15 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category=Animation)
 	TObjectPtr <UAnimMontage> StupefyMontage;
 	UPROPERTY(EditDefaultsOnly, Category=Animation)
+	TObjectPtr <UAnimMontage> HitMontage;
+	UPROPERTY(EditDefaultsOnly, Category=Animation)
+	TObjectPtr <UAnimMontage> DeathMontage;
+	UPROPERTY(EditDefaultsOnly, Category=Animation)
 	TObjectPtr <UAnimInstance> AnimInstance;
+	UPROPERTY(EditAnywhere)
+	UNiagaraSystem* MagicCircle;
+	UPROPERTY(EditAnywhere)
+	UNiagaraComponent* MacgicRing;
 #pragma endregion	
 	
 #pragma region Properties
@@ -158,7 +170,11 @@ public:
 	void SkillSlotR(const FInputActionValue& InputValue);
 	
 	UFUNCTION()
+	void AboutToBeAttacked(bool bActive);
+	UFUNCTION()
 	void SpellBasicAttack();
+	UFUNCTION()
+	void CheckCombo();
 	UFUNCTION()
 	void SpellProtego();
 	UFUNCTION()
