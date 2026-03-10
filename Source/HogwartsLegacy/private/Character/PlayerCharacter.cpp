@@ -2,11 +2,14 @@
 
 #include "Character/PlayerCharacter.h"
 #include <GameFramework/CharacterMovementComponent.h>
+
+#include "NiagaraFunctionLibrary.h"
 #include "Character/BasicAttack.h"
 #include "Character/Lumos.h"
 #include "Character/Protego.h"
 #include "Character/Stupefy.h"
 #include "Components/CapsuleComponent.h"
+#include "Enemy/GuardianManager.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -125,7 +128,6 @@ void APlayerCharacter::Tick(float DeltaTime)
 	}
 }
 
-// Called to bind functionality to input
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -170,7 +172,7 @@ void APlayerCharacter::Run(const FInputActionValue& InputValue)
 {
 	static bool bRun = false;
 	bRun = !bRun;
-	WalkSpeed = bRun ? 500 : 250;
+	WalkSpeed = bRun ? 600 : 300;
 }
 
 void APlayerCharacter::InputJump(const FInputActionValue& InputValue)
@@ -213,7 +215,6 @@ void APlayerCharacter::AimCapture()
 	LastCachedObj = Obj;
 }
 
-
 void APlayerCharacter::SkillMouseL(const FInputActionValue& InputValue)
 {
 	SpellBasicAttack();
@@ -226,6 +227,7 @@ void APlayerCharacter::SkillSlot1(const FInputActionValue& InputValue)
 
 void APlayerCharacter::SkillSlot2(const FInputActionValue& InputValue)
 {
+	AboutToBeAttacked(true);
 	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill 2"));
 }
 
@@ -244,14 +246,23 @@ void APlayerCharacter::SkillSlotQLongClick(const FInputActionValue& InputValue)
 	SpellStupefy();
 }
 
-
 void APlayerCharacter::SkillSlotR(const FInputActionValue& InputValue)
 {
 	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill R"));
 }
 
-
-
+void APlayerCharacter::AboutToBeAttacked(bool bActive)
+{
+	if (bActive)
+	{
+		MacgicRing = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), MagicCircle, GetActorLocation() + FVector(0, 0, 80.f), GetActorRotation(), FVector(0.4f));
+	}
+	else
+	{
+		
+	}
+	// GetWorld()->GetSubsystem<UGuardianManager>()->
+}
 
 void APlayerCharacter::SpellBasicAttack()
 {
@@ -299,6 +310,10 @@ void APlayerCharacter::SpellProtego()
 	{
 		if (!AnimInstance->Montage_IsPlaying(ProtegoMontage))
 		{
+			if (MacgicRing)
+			{
+				MacgicRing->Deactivate();
+			}
 			bCanMove = false;
 			PlayAnimMontage(ProtegoMontage);
 		}
@@ -395,17 +410,24 @@ void APlayerCharacter::SpawnStupefy()
 	}
 }
 
+
+
 bool APlayerCharacter::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
 {
 	if (IsValid(protego))
 	{
 		return false;
 	}
-	int NewHP = GetCurrentHP() - DamageInfo.DamageAmount;
+	int NewHP = GetCurrentHP() - DamageInfo.DamageAmount * 8;
 	if (NewHP <= 0)
 	{
 		NewHP = 0;
-		HUD->Gameover();
+		PlayAnimMontage(DeathMontage);
+	}
+	else
+	{
+		PlayAnimMontage(HitMontage);
+		
 	}
 	SetCurrentHP(NewHP);
 	HUD->UpdatePlayerHPWidget(GetHPPercent_Implementation());
@@ -425,4 +447,5 @@ float APlayerCharacter::GetHPPercent_Implementation() const
 bool APlayerCharacter::IsDead_Implementation() const
 {
 	return GetCurrentHP() <= 0;
+	
 }
