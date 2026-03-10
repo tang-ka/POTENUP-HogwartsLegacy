@@ -22,6 +22,16 @@ AGuardianChunk::AGuardianChunk()
 void AGuardianChunk::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	//  1초 뒤에 자체 제거 타이머 시작 (람다 함수)
+	TWeakObjectPtr<AGuardianChunk> WeakThis(this);
+	GetWorldTimerManager().SetTimer(LifeTimer, [WeakThis]()
+	{
+		if (WeakThis.IsValid())
+		{
+			WeakThis->Destroy();
+		}
+	}, 1.f, false);
 }
 
 void AGuardianChunk::Tick(float DeltaTime)
@@ -359,11 +369,12 @@ void AGuardianChunk::BuildCapSections(const TArray<FVector>& InVertices, const T
 				}
 
 				// 유의미한 크기 미만의 구멍은 무시 (단위: cm²)
-				constexpr float MinCapArea = 10.f;
+				constexpr float MinCapArea = 200.f;
 				if (LoopArea < MinCapArea)
 				{
 					continue;
 				}
+				PRINT_LOG(TEXT("Loop with %d vertices, Area: %.2f cm²"), CurrentLoop.Num(), LoopArea);
 
 				// 5. 캡 섹션 데이터 생성
 				FChunkMeshBuildResult::FCapSectionData CapData;
@@ -432,17 +443,17 @@ void AGuardianChunk::ApplyMeshBuildResult(const FChunkMeshBuildResult& Result)
 	}
 
 	// 캡 섹션 적용
-	// for (const FChunkMeshBuildResult::FCapSectionData& CapData : Result.CapSections)
-	// {
-	// 	ProcMeshComp->CreateMeshSection(SectionIndex, CapData.Vertices, CapData.Triangles,
-	// 	                                CapData.Normals, CapData.UVs, CapData.Colors, CapData.Tangents, true);
-	//
-	// 	if (CapMaterial)
-	// 	{
-	// 		ProcMeshComp->SetMaterial(SectionIndex, CapMaterial);
-	// 	}
-	// 	++SectionIndex;
-	// }
+	for (const FChunkMeshBuildResult::FCapSectionData& CapData : Result.CapSections)
+	{
+		ProcMeshComp->CreateMeshSection(SectionIndex, CapData.Vertices, CapData.Triangles,
+		                                CapData.Normals, CapData.UVs, CapData.Colors, CapData.Tangents, true);
+	
+		if (CapMaterial)
+		{
+			ProcMeshComp->SetMaterial(SectionIndex, CapMaterial);
+		}
+		++SectionIndex;
+	}
 
 	// 물리 충돌체 생성용 버텍스 캐시
 	CachedVertices = Result.Vertices;

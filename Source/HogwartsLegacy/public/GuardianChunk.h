@@ -145,6 +145,9 @@ private:
 	/** 소스 머티리얼 캐시 (비동기 완료 후 게임 스레드에서 적용) */
 	UPROPERTY()
 	TArray<TObjectPtr<UMaterialInterface>> CachedMaterials;
+
+	UPROPERTY()
+	FTimerHandle LifeTimer;
 	
 	/** 물리 충돌체 생성에 사용할 버텍스 캐시 */
 	TArray<FVector> CachedVertices;

@@ -305,8 +305,8 @@ void UGuardianShatterComponent::TriggerShatter()
 		}
 
 		// 메시 적용(CreateMeshSection)도 Chunk별로 프레임 분산
-		const int32 ApplyDelay = SpawnedChunks.Num();
-		Chunk->InitializeChunk(MeshComp, GroupVertexSets[GroupIdx], CapMaterial, ApplyDelay);
+		const int32 ApplyDelay = SpawnedChunks.Num() + 1;
+		Chunk->InitializeChunk(MeshComp, GroupVertexSets[GroupIdx], CapMaterial, 1);
 		SpawnedChunks.Add(Chunk);
 	}
 
