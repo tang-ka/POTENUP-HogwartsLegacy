@@ -2,6 +2,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "UI/ControllerHUD.h"
 
 ASpellBase::ASpellBase()
 {
@@ -45,6 +46,12 @@ void ASpellBase::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 			this,
 			UDamageType::StaticClass()
 		);
+
+		AControllerHUD* HUD = Cast<AControllerHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
+		if (HUD)
+		{
+			HUD->DrawDamageWidget(OtherActor->GetActorLocation(), BaseDamage);
+		}
 
 		Destroy();
 	}
