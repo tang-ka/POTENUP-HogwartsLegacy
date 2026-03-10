@@ -28,8 +28,8 @@ AGuardian::AGuardian()
 		GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -88), FRotator(0, -90, 0));
 	}
 	
-	ShatterComponent = CreateDefaultSubobject<UGuardianShatterComponent>(TEXT("ShatterComponent"));
 	FSMComponent = CreateDefaultSubobject<UEnemyFSMComponent>(TEXT("FSMComponent"));
+	ShatterComponent = CreateDefaultSubobject<UGuardianShatterComponent>(TEXT("ShatterComponent"));
 	// FSMComponentForCopy = CreateDefaultSubobject<UEnemyFSMComponent>(TEXT("FSMComponent"));
 	
 	ChargeAttackHitBox = CreateDefaultSubobject<USphereComponent>(TEXT("ChargeAttackHitBox"));
@@ -70,6 +70,14 @@ void AGuardian::BeginPlay()
 	Tags.Add(FName("Enemy"));
 }
 
+void AGuardian::Destroyed()
+{
+	Super::Destroyed();
+	
+	GetWorldTimerManager().ClearTimer(AttackTimerHandle);
+	GetWorldTimerManager().ClearTimer(BashAttackTimerHandle);
+}
+
 void AGuardian::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -99,8 +107,7 @@ void AGuardian::SnapToAttackLocation(const AActor* InTarget, const float AttackR
 void AGuardian::ExecuteMeleeAttack()
 {
 	SetActiveChargeAttackHitBox(true);
-
-	FTimerHandle AttackTimerHandle;
+	
 	GetWorld()->GetTimerManager().SetTimer(AttackTimerHandle, FTimerDelegate::CreateLambda([this]()
 	{
 		SetActiveChargeAttackHitBox(false);
@@ -227,7 +234,7 @@ bool AGuardian::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
 	}
 	
 	int32 DamageAmount = DamageInfo.DamageAmount;
-	// DamageAmount = 50;
+	DamageAmount = 50;
 	
 	HP -= DamageAmount;
 	if (HP <= 0)

@@ -23,7 +23,7 @@ public:
 
 public:
 	virtual void BeginPlay() override;
-
+	virtual void Destroyed() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -31,6 +31,7 @@ public:
 #pragma region Charge Attack
 	void ExecuteChargeToTarget(AActor* InTarget, const float ChargeStrength);
 	void SnapToAttackLocation(const AActor* InTarget, const float AttackRange);
+	FTimerHandle AttackTimerHandle;
 	void ExecuteMeleeAttack();
 
 	UFUNCTION()

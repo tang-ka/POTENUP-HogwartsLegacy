@@ -1,4 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Character/Stupefy.h"
@@ -9,10 +8,9 @@
 #include "Kismet/KismetMathLibrary.h"
 
 
-// Sets default values
+
 AStupefy::AStupefy()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComp"));
@@ -43,14 +41,12 @@ AStupefy::AStupefy()
 	InitialLifeSpan = 2.5f;
 }
 
-// Called when the game starts or when spawned
 void AStupefy::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
-// Called every frame
 void AStupefy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -72,8 +68,11 @@ void AStupefy::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Other
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	auto gd = Cast<AGuardian>(OtherActor); // temp
-	gd->GetFSMComponent()->ChangeState(EEnemyState::Stun); // temp
 	
-	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ExplosionComp, SweepResult.TraceStart);
-	Destroy();
+	if (gd && gd->IsValidLowLevel())
+	{
+		gd->GetFSMComponent()->ChangeState(EEnemyState::Stun); // temp
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ExplosionComp, SweepResult.TraceStart);
+		Destroy();
+	}
 }
