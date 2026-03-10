@@ -109,7 +109,7 @@ public:
 	UPROPERTY()
 	bool bComboAttack;
 	UPROPERTY()
-	FTimerHandle ComboTimerHandle;
+	bool bCanComboInput = false;
 
 	UPROPERTY(EditDefaultsOnly, Category=Spell)
 	TSubclassOf <class ALumos> Lumoses;
@@ -130,18 +130,6 @@ public:
 	TSubclassOf <class AStupefy> Stupefies;
 	UPROPERTY()
 	AStupefy* stupefy;
-	
-	// UPROPERTY(EditDefaultsOnly, Category=Spell)
-	// float LeviosoGrabDistance = 500.f;
-	// UPROPERTY(EditDefaultsOnly, Category=Spell)
-	// float LeviosoHoldDistance = 300.f;
-	// float LeviosoFloatTimer = 0.f;
-	// UPROPERTY(EditDefaultsOnly, Category=Spell)
-	// float LeviosoFloatAmplitude = 10.f;
-	// UPROPERTY(EditDefaultsOnly, Category=Spell)
-	// float LeviosoFloatSpeed = 2.f;
-	// bool bCanUseLevioso = false;
-	// bool bIsDoingLevioso = false;
 	
 	FCollisionQueryParams AimCaptureParams;
 	UPROPERTY()

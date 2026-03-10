@@ -63,12 +63,15 @@ void ABasicAttack::Tick(float DeltaTime)
 
 void ABasicAttack::SetTarget(AActor* causer, AActor* target, bool combo)
 {
-	Target = target;
-	TargetLocation = target->GetActorLocation() + FVector(0,0,40);
-	if (combo)
-	{
-		Damage = 23;
-	}
+    if (!IsValid(target)) return;  // null 가드 추가
+
+    Causer = causer;  // Causer도 함께 설정 (OnOverlap에서 사용)
+    Target = target;
+    TargetLocation = target->GetActorLocation() + FVector(0, 0, 40);
+    if (combo)
+    {
+        Damage = 23;
+    }
 }
 
 void ABasicAttack::NoTarget()
@@ -106,29 +109,3 @@ void ABasicAttack::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ExplosionComp, Hit.TraceStart);
 	Destroy();
 }
-
-//
-// void ABasicAttack::MidPointCalculation(FVector InTargetLocation, float InMinCurve, float InMaxCurve, FVector& InMidPoint)
-// {
-// 	FVector	p = InTargetLocation - GetActorLocation();
-// 	float Dist = UKismetMathLibrary::RandomFloatInRange(InMinCurve, InMaxCurve);
-// 	InMidPoint = Dist * p + GetActorLocation();
-// }
-//
-// void ABasicAttack::CurveControlPoint(FVector InMidPoint, FVector InTargetLocation,
-// 	float InMinRadius, float InMaxRadius, float InMinAngle, float InMaxAngle, FVector& InCurvedPoint)
-// {
-// 	float p = UKismetMathLibrary::RandomFloatInRange(InMinRadius, InMaxRadius);
-// 	float k = UKismetMathLibrary::RandomFloatInRange(InMinAngle, InMaxAngle);
-// 	const FRotator Rot = UKismetMathLibrary::FindLookAtRotation(InMidPoint, InTargetLocation);
-// 	FVector x, y, z;
-// 	UKismetMathLibrary::BreakRotIntoAxes(Rot, x, y, z);
-// 	CurvedPoint = InMidPoint + UKismetMathLibrary::RotateAngleAxis(y*p, k, x);
-// }
-//
-// void ABasicAttack::Move(FVector InTargetLocation, FVector InCurvedPoint, float InSpeed)
-// {
-// 	float Time = GetWorld()->GetTimeSeconds();
-// 	InCurvedPoint = UKismetMathLibrary::VInterpTo_Constant(InCurvedPoint, InTargetLocation, Time, InSpeed);
-// 	SetActorLocation(UKismetMathLibrary::VInterpTo_Constant(GetActorLocation(), InCurvedPoint, Time, InSpeed));
-// }

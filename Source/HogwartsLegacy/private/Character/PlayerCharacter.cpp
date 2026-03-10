@@ -56,13 +56,6 @@ APlayerCharacter::APlayerCharacter()
 	
 	MagicRing->SetVisibility(false);
 	
-	// Levioso
-	// PhysicsHandleComp = CreateDefaultSubobject<UPhysicsHandleComponent>(TEXT("PhysicsHandle"));
-	// PhysicsHandleComp->LinearDamping = 200.0f; // 높을수록 덜 출렁임
-	// PhysicsHandleComp->LinearStiffness = 1500.0f; // 잡는 힘의 강도
-	// PhysicsHandleComp->InterpolationSpeed = 10.0f; // 추적 속도 (천천히 따라오게 조절)
-	
-	
 	bUseControllerRotationYaw = true;
 	
 }
@@ -125,18 +118,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 	CheckCanAttack(bCanAttack);
 	CheckCanMove(bCanMove);
 	AimCapture();
-
-
-	// if (bIsDoingLevioso && PhysicsHandleComp->GrabbedComponent)
-	// {
-	// 	FVector TargetLocation = GetPawnViewLocation() + (GetViewRotation().Vector() * LeviosoHoldDistance);
-	// 	
-	// 	LeviosoFloatTimer += DeltaTime * LeviosoFloatSpeed;
-	// 	float ZOffset = FMath::Sin(LeviosoFloatTimer) * LeviosoFloatAmplitude;
-	// 	TargetLocation.Z += ZOffset;
-	// 	
-	// 	PhysicsHandleComp->SetTargetLocationAndRotation(TargetLocation, GetViewRotation());
-	// }
+	
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -288,20 +270,26 @@ void APlayerCharacter::SpellBasicAttack()
 	{
 		return;
 	}
-	if (GetWorldTimerManager().IsTimerActive(ComboTimerHandle))
+
+	// 콤보 입력 창이 열려있을 때만 콤보 카운트 증가
+	if (bCanComboInput)
 	{
 		ComboCount++;
-		// GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Blue, FString::Printf(TEXT("ComboCount: %d"), ComboCount));
 	}
 	else
 	{
 		ComboCount = 0;
 	}
 
+	// 4번째 공격마다 콤보 공격으로 처리
 	if (ComboCount >= 4)
 	{
 		bComboAttack = true;
+		ComboCount = 0;
 	}
+
+	// 콤보 입력 창 닫기 (AnimNotify_CheckCombo가 다시 열어줌)
+	bCanComboInput = false;
 
 	if (!AnimInstance->Montage_IsPlaying(ComboAttackMontage))
 	{
@@ -313,12 +301,12 @@ void APlayerCharacter::SpellBasicAttack()
 		bCanMove = false;
 		AnimInstance->Montage_JumpToSection(FName(FString::Printf(TEXT("ComboCount%d"), ComboCount)), ComboAttackMontage);
 	}
-	
-	GetWorldTimerManager().SetTimer(ComboTimerHandle,[this](){this->ComboCount=0;}, 2.0f, false);
 }
 
 void APlayerCharacter::CheckCombo()
 {
+	// AnimNotify_CheckCombo 호출 시: 콤보 입력 창 열기
+	bCanComboInput = true;
 	bCanMove = true;
 }
 
@@ -362,29 +350,6 @@ void APlayerCharacter::SpellStupefy()
 		PlayAnimMontage(StupefyMontage);
 	}
 }
-
-// void APlayerCharacter::SpellLevioso(UPrimitiveComponent* TargetComp, FVector Location, FRotator Rotation)
-// {
-// 	if (!bCanAttack)
-// 	{
-// 		return;
-// 	}
-// 	if (TargetComp && TargetComp->IsSimulatingPhysics())
-// 	{
-// 		if (bIsDoingLevioso && PhysicsHandleComp->GrabbedComponent)
-// 		{
-// 			PhysicsHandleComp->ReleaseComponent();
-// 			bIsDoingLevioso = false;
-// 			LeviosoFloatTimer = 0.f;
-// 		}
-// 		PhysicsHandleComp->GrabComponentAtLocationWithRotation(TargetComp, NAME_None, Location, Rotation);
-// 		bIsDoingLevioso = true;
-// 	}
-// }
-//
-// void APlayerCharacter::SpellDescendo()
-// {
-// }
 
 void APlayerCharacter::SpawnBasicAttack()
 {
@@ -435,16 +400,15 @@ bool APlayerCharacter::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
 		return false;
 	}
 	int NewHP = GetCurrentHP() - DamageInfo.DamageAmount;
-	PlayAnimMontage(HitMontage);
-	// if (NewHP <= 0)
-	// {
-	// 	NewHP = 0;
-	// 	PlayAnimMontage(DeathMontage);
-	// }
-	// else
-	// {
-	// 	PlayAnimMontage(HitMontage);
-	// }
+	if (NewHP <= 0)
+	{
+		NewHP = 0;
+		PlayAnimMontage(DeathMontage);
+	}
+	else
+	{
+		PlayAnimMontage(HitMontage);
+	}
 	SetCurrentHP(NewHP);
 	HUD->UpdatePlayerHPWidget(GetHPPercent_Implementation());
 	return true;

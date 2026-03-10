@@ -78,41 +78,5 @@ public:
 	
 	UPROPERTY()
 	int Damage = 3;
-	
-	
-	 // FVector MidPoint;
-	 // FVector CurvedPoint;
-	 // const float MinCurve = 0.2;
-	 // const float MaxCurve = 0.4;
-	 // const float MinRadius = 150;
-	 // const float MaxRadius = 300;
-	 // const float MinAngle = 0;
-	 // const float MaxAngle = 180;
-	 // bool bAfterBeginPlay = false;
-	 //
-	 // UFUNCTION()
-	 // void MidPointCalculation(
-	 // 	FVector InTargetLocation,
-	 // 	float InMinCurve,
-	 // 	float InMaxCurve,
-	 // 	FVector& MidPoint
-	 // 	);
-	 //
-	 // UFUNCTION()
-	 // void CurveControlPoint(
-	 // 	FVector InMidPoint,
-	 // 	FVector InTargetLocation,
-	 // 	float InMinRadius,
-	 // 	float InMaxRadius,
-	 // 	float InMinAngle,
-	 // 	float InMaxAngle, 
-	 // 	FVector& CurvedPoint
-	 // 	);
-	 //
-	 // UFUNCTION()
-	 // void Move(
-	 // 	FVector InTargetLocation,
-	 // 	FVector InCurvedPoint,
-	 // 	float InSpeed
-	 // 	);
+
 };
