@@ -5,16 +5,6 @@
 #include "Enemy/Guardian.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
-void UGuardianSleepState::OnEnter()
-{
-	Super::OnEnter();
-}
-
-void UGuardianSleepState::OnExit()
-{
-	Super::OnExit();
-}
-
 void UGuardianSleepState::TickState(float DeltaTime)
 {
 	Super::TickState(DeltaTime);
@@ -41,14 +31,14 @@ void UGuardianIdleState::OnEnter()
 	
 	DecideTarget();
 	
-	GetOwnerGuardian()->SetMaterialColor(FLinearColor::Yellow);
+	// GetOwnerGuardian()->SetMaterialColor(FLinearColor::Yellow);
 }
 
-void UGuardianIdleState::OnExit()
-{
-	Super::OnExit();
-	GetOwnerGuardian()->ResetMaterialColor();
-}
+// void UGuardianIdleState::OnExit()
+// {
+// 	Super::OnExit();
+// 	GetOwnerGuardian()->ResetMaterialColor();
+// }
 
 void UGuardianIdleState::TickState(float DeltaTime)
 {

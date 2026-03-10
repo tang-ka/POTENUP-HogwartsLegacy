@@ -3,6 +3,7 @@
 
 #include "Enemy/GuardianState/GuardianBashAttackState.h"
 
+#include "Character/PlayerCharacter.h"
 #include "Enemy/EnemyFSMComponent.h"
 #include "Enemy/Guardian.h"
 
@@ -19,7 +20,8 @@ void UGuardianBashAttackState::OnEnter()
 	Super::OnEnter();
 	
 	Target = GetOwnerFSM()->GetCurrentTarget();
-	// GetOwnerFSM()->bIsAttacking = true;
+	auto* P = Cast<APlayerCharacter>(Target);
+	P->AboutToBeAttacked(true);
 }
 
 void UGuardianBashAttackState::OnExit()
@@ -42,6 +44,8 @@ void UGuardianBashAttackState::TickState(float DeltaTime)
 	}
 	else
 	{
+		auto* P = Cast<APlayerCharacter>(Target);
+		P->AboutToBeAttacked(false);
 		BashAttack();
 		bIsBashing = true;
 	}

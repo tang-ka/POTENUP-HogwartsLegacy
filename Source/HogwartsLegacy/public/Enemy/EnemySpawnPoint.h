@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "EnemySpawnPoint.generated.h"
 
+class USphereComponent;
 class UArrowComponent;
 
 UCLASS()
@@ -24,11 +25,39 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	bool IsSafeToSpawn();
+	bool IsSafeToSpawn() const;
+	FTransform GetSafeSpawnPoint() const;
 	
+	// UFUNCTION()
+	// void OnSphereBeginOverlap(
+	// 	UPrimitiveComponent* OverlappedComponent,
+	// 	AActor* OtherActor,
+	// 	UPrimitiveComponent* OtherComp,
+	// 	int32 OtherBodyIndex,
+	// 	bool bFromSweep,
+	// 	const FHitResult& SweepResult
+	// );
+	//
+	// UFUNCTION()
+	// void OnSphereEndOverlap(
+	// 	UPrimitiveComponent* OverlappedComponent,
+	// 	AActor* OtherActor,
+	// 	UPrimitiveComponent* OtherComp,
+	// 	int32 OtherBodyIndex
+	// );
+	
+public:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USceneComponent> RootComp;
 	
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UArrowComponent> ArrowComp;
+	
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USphereComponent> SpawnCheckSphere;
+	
+	bool IsSafe{true};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadwrite)
+	float SphereTraceRadius{500.f};
 };

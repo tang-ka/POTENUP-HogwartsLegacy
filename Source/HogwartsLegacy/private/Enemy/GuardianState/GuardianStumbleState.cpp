@@ -17,7 +17,7 @@ void UGuardianStumbleState::OnEnter()
 {
 	Super::OnEnter();
 	
-	GetOwnerGuardian()->SetMaterialColor(FLinearColor::Blue);
+	// GetOwnerGuardian()->SetMaterialColor(FLinearColor::Blue);
 	
 	GetOwnerGuardian()->ExecuteStumble(StumbleStrength);
 	
@@ -32,11 +32,6 @@ void UGuardianStumbleState::OnExit()
 {
 	Super::OnExit();
 	
-	GetOwnerGuardian()->ResetMaterialColor();
+	// GetOwnerGuardian()->ResetMaterialColor();
 	GetWorld()->GetTimerManager().ClearTimer(StumbleTimerHandle);
-}
-
-void UGuardianStumbleState::TickState(float DeltaTime)
-{
-	Super::TickState(DeltaTime);
 }

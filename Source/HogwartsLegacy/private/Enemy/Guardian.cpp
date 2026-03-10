@@ -275,18 +275,18 @@ bool AGuardian::IsDead_Implementation() const
 	return FSMComponent->IsDead();
 }
 
-void AGuardian::SetMaterialColor(FLinearColor Color)
-{
-	USkeletalMeshComponent* MeshComp = GetMesh();
-	UMaterialInstanceDynamic* MID = MeshComp->CreateAndSetMaterialInstanceDynamic(0);
-
-	MID->SetVectorParameterValue("Paint Tint", Color);
-}
-
-void AGuardian::ResetMaterialColor()
-{
-	SetMaterialColor(DefaultColor);
-}
+// void AGuardian::SetMaterialColor(FLinearColor Color)
+// {
+// 	USkeletalMeshComponent* MeshComp = GetMesh();
+// 	UMaterialInstanceDynamic* MID = MeshComp->CreateAndSetMaterialInstanceDynamic(0);
+//
+// 	MID->SetVectorParameterValue("Paint Tint", Color);
+// }
+//
+// void AGuardian::ResetMaterialColor()
+// {
+// 	SetMaterialColor(DefaultColor);
+// }
 
 void AGuardian::InitHP()
 {

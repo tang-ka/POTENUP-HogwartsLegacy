@@ -19,7 +19,6 @@ public:
 	
 	virtual void OnEnter() override;
 	virtual void OnExit() override;
-	virtual void TickState(float DeltaTime) override;
 	
 private:
 	void ComputeDirectionToTarget();
