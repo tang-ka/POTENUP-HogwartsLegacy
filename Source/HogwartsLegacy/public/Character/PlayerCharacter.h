@@ -40,6 +40,8 @@ public:
 	USpringArmComponent* CameraArmComp;
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* PlayerCameraComp;
+	UPROPERTY(EditAnywhere)
+	UStaticMeshComponent* MagicRing;
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* WandTipComp;
 	UPROPERTY(VisibleAnywhere)
@@ -92,10 +94,7 @@ public:
 	TObjectPtr <UAnimMontage> DeathMontage;
 	UPROPERTY(EditDefaultsOnly, Category=Animation)
 	TObjectPtr <UAnimInstance> AnimInstance;
-	UPROPERTY(EditAnywhere)
-	UNiagaraSystem* MagicCircle;
-	UPROPERTY(EditAnywhere)
-	UNiagaraComponent* MacgicRing;
+	
 #pragma endregion	
 	
 #pragma region Properties
@@ -132,18 +131,17 @@ public:
 	UPROPERTY()
 	AStupefy* stupefy;
 	
-	UPROPERTY(EditDefaultsOnly, Category=Spell)
-	float LeviosoGrabDistance = 500.f;
-	UPROPERTY(EditDefaultsOnly, Category=Spell)
-	float LeviosoHoldDistance = 300.f;
-	
-	float LeviosoFloatTimer = 0.f;
-	UPROPERTY(EditDefaultsOnly, Category=Spell)
-	float LeviosoFloatAmplitude = 10.f;
-	UPROPERTY(EditDefaultsOnly, Category=Spell)
-	float LeviosoFloatSpeed = 2.f;
-	bool bCanUseLevioso = false;
-	bool bIsDoingLevioso = false;
+	// UPROPERTY(EditDefaultsOnly, Category=Spell)
+	// float LeviosoGrabDistance = 500.f;
+	// UPROPERTY(EditDefaultsOnly, Category=Spell)
+	// float LeviosoHoldDistance = 300.f;
+	// float LeviosoFloatTimer = 0.f;
+	// UPROPERTY(EditDefaultsOnly, Category=Spell)
+	// float LeviosoFloatAmplitude = 10.f;
+	// UPROPERTY(EditDefaultsOnly, Category=Spell)
+	// float LeviosoFloatSpeed = 2.f;
+	// bool bCanUseLevioso = false;
+	// bool bIsDoingLevioso = false;
 	
 	FCollisionQueryParams AimCaptureParams;
 	UPROPERTY()
@@ -181,10 +179,10 @@ public:
 	void SpellStupefy();
 	UFUNCTION()
 	void SpellLumos(USceneComponent* WandTip);
-	UFUNCTION()
-	void SpellLevioso(UPrimitiveComponent* TargetComp, FVector Location, FRotator Rotation);
-	UFUNCTION()
-	void SpellDescendo();
+	// UFUNCTION()
+	// void SpellLevioso(UPrimitiveComponent* TargetComp, FVector Location, FRotator Rotation);
+	// UFUNCTION()
+	// void SpellDescendo();
 	
 	UFUNCTION()
 	void SpawnBasicAttack();
@@ -197,6 +195,9 @@ public:
 	void PlayerMove();
 	UFUNCTION()
 	void CheckCanAttack(bool& Check);
+	UFUNCTION()
+	void CheckCanMove(bool& Check);
+	
 	UFUNCTION()
 	void AimCapture();
 	UFUNCTION()
@@ -215,8 +216,6 @@ public:
 	virtual float GetHPPercent_Implementation() const override;
 	UFUNCTION()
 	virtual bool IsDead_Implementation() const override;
-	//FOnHPChanged HPChangedDelegate;
-	//virtual FOnHPChanged& GetOnHPChangedDelegate() override { return HPChangedDelegate; };
 #pragma endregion
 
 #pragma region Privates
