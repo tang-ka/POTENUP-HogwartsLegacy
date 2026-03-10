@@ -24,28 +24,32 @@ public:
 protected:
     virtual void BeginPlay() override;
 
-public: 
+public:
     virtual void Tick(float DeltaTime) override;
     virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-    
+
+    // --- 상태 ---
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|State")
     ENPCState CurrentState = ENPCState::Idle;
 
     UFUNCTION(BlueprintCallable, Category = "AI|State")
     void SetNPCState(ENPCState NewState);
 
+    // --- 스탯 ---
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
     float MovementSpeed = 450.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
-    float BaseDamage = 20.0f;
-    
+    float BaseDamage = 1000.0f;
+
+    // --- Follow ---
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Support AI")
     class ACharacter* PlayerRef;
-    
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
-    float FollowDistance = 80.0f;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
+    float FollowDistance = 150.0f;
+
+    // --- Combat ---
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Combat")
     float DetectionRadius = 800.0f;
 
@@ -53,23 +57,43 @@ public:
     AActor* TargetEnemy;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Combat")
-    float AttackRange = 250.0f;
+    float AttackRange = 300.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Combat")
     bool bCanAttack = true;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Combat")
-    float AttackCooldown = 2.0f;
-    
+    float AttackCooldown = 5.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Combat")
+    FName EnemyTag = "Enemy";
+
+    // ★ 추가: 발사할 스펠 클래스
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Combat")
+    TSubclassOf<class ASpellBase> SpellClass;
+
     UFUNCTION(BlueprintCallable, Category = "AI")
     void ClearTargetEnemy();
 
-    virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+    virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
+                             class AController* EventInstigator, AActor* DamageCauser) override;
 
-    // --- 애니메이션용 변수 ---
+    // --- 애니메이션용 ---
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
     float Speed;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
     bool bIsCombat;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
+    bool bIsAttacking;
+
+private:
+    void UpdateFollow(float DeltaTime);
+    void UpdateCombat(float DeltaTime);
+    AActor* FindNearestEnemy();
+    void TryAttack();
+    void ResetAttackCooldown();
+
+    FTimerHandle AttackCooldownTimer;
 };
