@@ -7,7 +7,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/Character.h"
 #include "Rendering/SkeletalMeshLODRenderData.h"
-#include "Rendering/SkeletalMeshRenderData.h"is as
+#include "Rendering/SkeletalMeshRenderData.h"
 
 UGuardianShatterComponent::UGuardianShatterComponent()
 {

@@ -6,13 +6,11 @@
 #include "GuardianAnim.h"
 #include "GuardianShatterComponent.h"
 #include "HogwartsLegacy.h"
-#include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "Enemy/EnemyFSMComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Interface/DamageableHelpers.h"
-#include "Rendering/RenderCommandPipes.h"
 
 // Sets default values
 AGuardian::AGuardian()
@@ -33,7 +31,7 @@ AGuardian::AGuardian()
 	ShatterComponent = CreateDefaultSubobject<UGuardianShatterComponent>(TEXT("ShatterComponent"));
 	FSMComponent = CreateDefaultSubobject<UEnemyFSMComponent>(TEXT("FSMComponent"));
 	// FSMComponentForCopy = CreateDefaultSubobject<UEnemyFSMComponent>(TEXT("FSMComponent"));
-
+	
 	ChargeAttackHitBox = CreateDefaultSubobject<USphereComponent>(TEXT("ChargeAttackHitBox"));
 	ChargeAttackHitBox->SetupAttachment(GetCapsuleComponent()/*, FName("RightHandSocket")*/);
 	ChargeAttackHitBox->SetSphereRadius(250.f);
