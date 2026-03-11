@@ -56,7 +56,10 @@ void AStupefy::Tick(float DeltaTime)
 
 void AStupefy::SetTarget(AActor* target)
 {
-	TargetLocation = target->GetActorLocation() + UKismetMathLibrary::MakeVector(0,0,40);
+	if (IsValid(target))
+	{
+		TargetLocation = target->GetActorLocation() + UKismetMathLibrary::MakeVector(0,0,40);
+	}
 }
 
 void AStupefy::NoTarget()
