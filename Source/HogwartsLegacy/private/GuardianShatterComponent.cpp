@@ -11,6 +11,7 @@
 #include "Rendering/SkeletalMeshLODRenderData.h"
 #include "Rendering/SkeletalMeshRenderData.h"
 #include "SkeletalRenderPublic.h"
+#include "Kismet/GameplayStatics.h"
 #include "ProfilingDebugging/CPUProfilerTrace.h"
 
 UGuardianShatterComponent::UGuardianShatterComponent()
@@ -314,6 +315,8 @@ void UGuardianShatterComponent::TriggerShatter()
 	MeshComp->SetHiddenInGame(true, true);
 	bIsShattered = true;
 
+	UGameplayStatics::PlaySoundAtLocation(this, ShatterSound, ExplosionCenter);
+	
 	// 6) 각 Chunk에 순차적 지연 프레임을 부여하여 프레임당 1개씩 물리 활성화
 	//    (Convex Hull 쿠킹 비용을 분산시켜 스파이크 방지)
 	//    Guardian이 Destroy되어도 Chunk는 독립 Actor이므로 자체 Tick에서 안전하게 처리됨

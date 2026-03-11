@@ -73,6 +73,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Shatter)
 	float ExplosionRadius = 10.f;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Shatter)
+	TObjectPtr<USoundBase> ShatterSound;
+
 private:
 	UPROPERTY()
 	TObjectPtr<USkeletalMeshComponent> MeshComp{};
