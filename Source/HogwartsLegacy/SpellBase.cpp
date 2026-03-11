@@ -1,8 +1,7 @@
 #include "SpellBase.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
-#include "UI/ControllerHUD.h"
-#include "Interface/Damageable.h"
+#include "Kismet/GameplayStatics.h"
 
 ASpellBase::ASpellBase()
 {
@@ -34,24 +33,18 @@ void ASpellBase::Tick(float DeltaTime)
 }
 
 void ASpellBase::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
-				   UPrimitiveComponent* OtherComp, FVector NormalImpulse,
-				   const FHitResult& Hit)
+						UPrimitiveComponent* OtherComp, FVector NormalImpulse,
+						const FHitResult& Hit)
 {
 	if (OtherActor && OtherActor != this && OtherActor != SpellOwner)
 	{
-		if (OtherActor->Implements<UDamageable>())
-		{
-			FDamageInfo DamageInfo;
-			DamageInfo.DamageCauser = this;
-			DamageInfo.DamageAmount = (int)BaseDamage;
-			IDamageable::Execute_ReceiveDamage(OtherActor, DamageInfo);
-		}
-
-		AControllerHUD* HUD = Cast<AControllerHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
-		if (HUD)
-		{
-			HUD->DrawDamageWidget(OtherActor->GetActorLocation(), BaseDamage);
-		}
+		UGameplayStatics::ApplyDamage(
+			OtherActor,
+			BaseDamage,
+			nullptr,
+			this,
+			UDamageType::StaticClass()
+		);
 
 		Destroy();
 	}

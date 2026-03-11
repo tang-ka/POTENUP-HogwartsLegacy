@@ -22,10 +22,6 @@ void ANPC::BeginPlay()
 
     PlayerRef = Cast<ACharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
     GetCharacterMovement()->MaxWalkSpeed = MovementSpeed;
-    
-    GetCharacterMovement()->BrakingDecelerationWalking = 2048.0f;
-    GetCharacterMovement()->GroundFriction = 8.0f;
-    GetCharacterMovement()->MaxAcceleration = 512.0f;
 
     if (PlayerRef)
     {
@@ -108,7 +104,7 @@ void ANPC::UpdateCombat(float DeltaTime)
         AIC->StopMovement();
         TryAttack();
     }
-    else if (!bIsAttacking) // 공격 중엔 이동 안 함
+    else
     {
         AIC->MoveToActor(TargetEnemy, AttackRange * 0.8f);
     }
@@ -160,13 +156,6 @@ void ANPC::TryAttack()
     bCanAttack = false;
     bIsAttacking = true;
 
-    // 공격 중 이동 완전 차단
-    if (AAIController* AIC = Cast<AAIController>(GetController()))
-    {
-        AIC->StopMovement();
-    }
-    GetCharacterMovement()->DisableMovement();
-
     if (SpellClass)
     {
         FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 50.0f;
@@ -197,9 +186,6 @@ void ANPC::ResetAttackCooldown()
 {
     bCanAttack = true;
     bIsAttacking = false;
-
-    // 이동 다시 허용
-    GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 }
 
 void ANPC::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -223,9 +209,6 @@ void ANPC::ClearTargetEnemy()
         AIC->ClearFocus(EAIFocusPriority::Gameplay);
     }
 
-    // 이동 모드 혹시 꺼져있을 경우 대비해서 복구
-    GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-
     CurrentState = ENPCState::Idle;
 }
 
@@ -236,11 +219,7 @@ float ANPC::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEven
 
     if (DamageCauser != nullptr)
     {
-        // 기존 타겟이 없을 때만 타겟 변경
-        if (!TargetEnemy || !IsValid(TargetEnemy))
-        {
-            TargetEnemy = DamageCauser;
-        }
+        TargetEnemy = DamageCauser;
         bIsCombat = true;
     }
 
