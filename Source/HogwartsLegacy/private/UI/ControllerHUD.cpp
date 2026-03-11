@@ -119,8 +119,6 @@ void AControllerHUD::SetPlayerHPWidget(TSubclassOf<UUserWidget> NewWidget, TScri
 		{
 			PlayerHPWidget->InitializeHPBar(Player);
 			PlayerHPWidget->AddToViewport();
-			
-			// EnemyHPWidget->SetVisibility(ESlateVisibility::Collapsed);
 		}
 	}
 }
@@ -147,10 +145,6 @@ void AControllerHUD::UpdateEnemyHPWidget(AActor* Object)
 {
 	if (EnemyHPWidget)
 	{
-		if (!Object)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("111111111111111"));
-		}
 		EnemyHPWidget->UpdateHPBar(IDamageable::Execute_GetHPPercent(Object));
 	}
 }
@@ -170,8 +164,6 @@ void AControllerHUD::DrawDamageWidget(FVector WorldLocation, int DamageAmount)
 		DamageWidget->AddToViewport();
 		
 		FVector2D ScreenLocation;
-		
-		// PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 		
 		if (PC && PC->ProjectWorldLocationToScreen(WorldLocation, ScreenLocation))
 		{

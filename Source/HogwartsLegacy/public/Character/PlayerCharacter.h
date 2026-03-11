@@ -88,7 +88,6 @@ public:
 	TObjectPtr <UAnimMontage> DeathMontage;
 	UPROPERTY(EditDefaultsOnly, Category=Animation)
 	TObjectPtr <UAnimInstance> AnimInstance;
-	
 #pragma endregion	
 	
 #pragma region Properties
@@ -104,6 +103,8 @@ public:
 	bool bComboAttack;
 	UPROPERTY()
 	bool bCanComboInput = false;
+	UPROPERTY()
+	bool bGodMode = false;
 
 	UPROPERTY(EditDefaultsOnly, Category=Spell)
 	TSubclassOf <class ALumos> Lumoses;
@@ -209,7 +210,7 @@ private:
 	UPROPERTY()
 	int ViewDistance = 2000;
 	UPROPERTY()
-	float ViewSphereRadius = 150;
+	float ViewSphereRadius = 250;
 #pragma endregion
 
 };

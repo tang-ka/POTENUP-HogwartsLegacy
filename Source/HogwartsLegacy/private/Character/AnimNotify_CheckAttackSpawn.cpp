@@ -27,14 +27,20 @@ void UAnimNotify_CheckAttackSpawn::Notify(USkeletalMeshComponent* MeshComp, UAni
 		if (MontageName.Contains(TEXT("Atk")))
 		{
 			Player->SpawnBasicAttack();
+			Player->bCanMove = true;
+			Player->bCanAttack = true;
 		}
 		else if (MontageName.Contains(TEXT("Protego")))
 		{
 			Player->SpawnProtego();
+			Player->bCanMove = true;
+			Player->bCanAttack = true;
 		}
 		else if (MontageName.Contains(TEXT("Stupefy")))
 		{
 			Player->SpawnStupefy();
+			Player->bCanMove = true;
+			Player->bCanAttack = true;
 		}
 	}
 }

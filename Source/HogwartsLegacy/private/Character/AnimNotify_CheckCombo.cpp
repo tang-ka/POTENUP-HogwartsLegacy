@@ -17,5 +17,7 @@ void UAnimNotify_CheckCombo::Notify(USkeletalMeshComponent* MeshComp, UAnimSeque
 	if (APlayerCharacter* Player = Cast<APlayerCharacter>(MeshComp->GetOwner()))
 	{
 		Player->CheckCombo();
+		Player->bCanMove = true;
+		Player->bCanAttack = true;
 	}
 }

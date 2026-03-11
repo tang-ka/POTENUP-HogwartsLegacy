@@ -107,7 +107,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 	
 	if (bCanMove)
 	{
-		PlayerMove();
+	 	PlayerMove();
 	}
 	CheckCanAttack(bCanAttack);
 	CheckCanMove(bCanMove);
@@ -227,6 +227,8 @@ void APlayerCharacter::SkillSlot1(const FInputActionValue& InputValue)
 
 void APlayerCharacter::SkillSlot2(const FInputActionValue& InputValue)
 {
+	bGodMode = !bGodMode;
+	GEngine->AddOnScreenDebugMessage(1, 1.0f, FColor::Red, FString::Printf(TEXT("GodMode: %s"), bGodMode ? TEXT("ON") : TEXT("OFF")));
 }
 
 void APlayerCharacter::SkillSlot3(const FInputActionValue& InputValue)
@@ -274,23 +276,22 @@ void APlayerCharacter::SpellBasicAttack()
 		ComboCount = 0;
 	}
 	
-	bCanComboInput = false;
+	bCanComboInput = true;
+	bCanMove = false;
 	
 	if (!AnimInstance->Montage_IsPlaying(ComboAttackMontage))
 	{
-		bCanMove = false;
 		PlayAnimMontage(ComboAttackMontage, 1.0f, FName(FString::Printf(TEXT("ComboCount%d"), ComboCount)));
 	}
 	else
 	{
-		bCanMove = false;
 		AnimInstance->Montage_JumpToSection(FName(FString::Printf(TEXT("ComboCount%d"), ComboCount)), ComboAttackMontage);
 	}
 }
 
 void APlayerCharacter::CheckCombo()
 {
-	bCanComboInput = true;
+	bCanComboInput = false;
 	bCanMove = true;
 }
 
@@ -389,6 +390,10 @@ void APlayerCharacter::SpawnStupefy()
 bool APlayerCharacter::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
 {
 	if (IsValid(protego))
+	{
+		return false;
+	}
+	if (bGodMode)  // Debug: skip HP reduction
 	{
 		return false;
 	}
