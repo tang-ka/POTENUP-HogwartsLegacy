@@ -167,19 +167,41 @@ void AGuardian::SetCharacterMaxWalkSpeed(float InMaxWalkSpeed) const
 	GetCharacterMovement()->MaxWalkSpeed = InMaxWalkSpeed;
 }
 
+void AGuardian::MoveToLocation(const FVector& Dest, float AcceptanceRadius) const
+{
+	auto* AIC = Cast<AAIController>(GetController());
+	if (!AIC)
+	{
+		return;
+	}
+	
+	AIC->SetFocus(GetFSMComponent()->GetCurrentTarget());
+	AIC->ReceiveMoveCompleted.AddUniqueDynamic(this, &AGuardian::FinishStrafe);
+	AIC->MoveToLocation(Dest, AcceptanceRadius);
+}
+
+// 지금은 Strafe 상태에서만 사용, 그래서 델리게이트에 FinishStrafe를 바인딩 했지만,
+// 나중에 다른 상태에서도 사용할 수 있도록 일반화 하는 것을 고려해보자.
 void AGuardian::MoveToActor(AActor* Target, float AcceptanceRadius) const
 {
-	Cast<AAIController>(GetController())->MoveToActor(Target, AcceptanceRadius);
+	auto* AIC = Cast<AAIController>(GetController());
+	if (!AIC)
+	{
+		return;
+	}
+	
+	AIC->ReceiveMoveCompleted.AddUniqueDynamic(this, &AGuardian::FinishStrafe);
+	AIC->MoveToActor(Target, AcceptanceRadius);
+}
+
+void AGuardian::FinishStrafe(FAIRequestID RequestID, EPathFollowingResult::Type Result)
+{
+	UE_LOG(LogTemp, Warning, TEXT("FinishStrafe Result: %d"), (int32)Result);
+	GetFSMComponent()->ChangeState(EEnemyState::Idle);
 }
 
 void AGuardian::StopMovementImmediately() const
 {
-	// if (bResetWalkSpeed)
-	// {
-	// 	GetCharacterMovement()->MaxWalkSpeed = 50.f;
-	// }
-
-	// Cast<AAIController>(GetController())->StopMovement();
 	GetCharacterMovement()->StopMovementImmediately();
 }
 

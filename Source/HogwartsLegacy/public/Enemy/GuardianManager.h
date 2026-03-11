@@ -51,6 +51,7 @@ public:
 	FTimerHandle SpawnCheckTimerHandle;
 	FTimerHandle SpawnTimerHandle;
 	FTimerHandle AttackSelectTimerHandle;
+	FTimerHandle GameOverTimerHandle;
 
 private:
 	void RequestSpawnGuardian(int RequestCount);
@@ -60,6 +61,7 @@ private:
 	
 	// 후보 Guardian들에 대해 점수를 매겨 가장 적합한 공격자를 반환
 	AGuardian* EvaluateBestAttacker() const;
+	void GameClear();
 	
 private:
 	bool bIsEnabled{false};
@@ -98,4 +100,6 @@ private:
 	// --------------------------------
 	
 	SpawnPointGenerator SpawnPointsGenerator{};
+	
+	float GameOverDelay{3.f};
 };

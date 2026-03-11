@@ -170,6 +170,19 @@ AGuardian* UGuardianManager::EvaluateBestAttacker() const
 	return BestGuardian;
 }
 
+void UGuardianManager::GameClear()
+{
+	Disable();
+	
+	GetWorld()->GetTimerManager().SetTimer(GameOverTimerHandle, [this]()
+	{
+		// HUD를 불러오고 싶다.
+		auto* HUD = Cast<AControllerHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
+		HUD->Gameover();
+	}, 
+	GameOverDelay, false);
+}
+
 void UGuardianManager::StartCheckTick()
 {
 	// 타이머 등록 (CheckTick이 일정 간격으로 호출되도록 설정)
@@ -270,10 +283,7 @@ void UGuardianManager::SpawnGuardian(const FTransform& InSpawnTransform)
 
 			if (Phase1GuardianCount <= 0)
 			{
-				Disable();
-				// HUD를 불러오고 싶다.
-				auto* HUD = Cast<AControllerHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
-				HUD->Gameover();
+				GameClear();
 			}
 		});
 	}

@@ -65,6 +65,7 @@ void UGuardianIdleState::Reset()
 void UGuardianIdleState::LookAtTarget(float DeltaTime) const
 {
 	FRotator TargetRotation = (GetOwnerFSM()->GetCurrentTarget()->GetActorLocation() - GetOwnerGuardian()->GetActorLocation()).Rotation();
+	TargetRotation.Pitch = 0.f; // 수직 회전 무시
 	GetOwnerGuardian()->SetActorRotation(FMath::RInterpTo(GetOwnerGuardian()->GetActorRotation(), TargetRotation, DeltaTime, 2.f));
 }
 

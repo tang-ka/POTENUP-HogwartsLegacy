@@ -18,9 +18,10 @@ public:
 	virtual FName GetStateName() const override { return TEXT("Strafe"); }
 	
 	virtual void OnEnter() override;
-	virtual void OnExit() override;
+	// virtual void OnExit() override;
 	
 private:
+	float GetDistanceToTarget() const;
 	void ComputeDirectionToTarget();
 	void LookAtTarget(float DeltaTime) const;
 	void MoveToTarget(float DeltaTime) const;
@@ -30,4 +31,6 @@ private:
 	float StrafeSpeed{80.f};
 	FVector DirectionToTarget{};
 	float ReachDistance{300.f};
+	float CloseOffset{50.f};
+	float FarOffset{100.f};
 };

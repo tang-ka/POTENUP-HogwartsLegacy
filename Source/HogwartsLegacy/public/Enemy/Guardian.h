@@ -8,6 +8,11 @@
 #include "Interface/Damageable.h"
 #include "Guardian.generated.h"
 
+namespace EPathFollowingResult
+{
+	enum Type : int;
+}
+
 class UGuardianShatterComponent;
 class UBoxComponent;
 class USphereComponent;
@@ -59,7 +64,13 @@ public:
 	void SetCharacterMaxWalkSpeed(float InMaxWalkSpeed) const;
 	
 	UFUNCTION(BlueprintCallable)
+	void MoveToLocation(const FVector& Dest, float AcceptanceRadius = -1.0f) const;
+	
+	UFUNCTION(BlueprintCallable)
 	void MoveToActor(AActor* Target, float AcceptanceRadius = -1.0f) const;
+	
+	UFUNCTION(BLUEPRINTCallable)
+	void FinishStrafe(FAIRequestID RequestID, EPathFollowingResult::Type Result);
 	
 	UFUNCTION(BlueprintCallable)
 	void StopMovementImmediately() const;
