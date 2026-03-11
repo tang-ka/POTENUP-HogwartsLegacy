@@ -42,10 +42,9 @@ void AEnemySpawnPoint::BeginPlay()
 		true,
 		-1.f,
 		0,
-		0.5f);
+		0.5f
+	);
 	
-	// SpawnCheckSphere->OnComponentBeginOverlap.AddDynamic(this, &AEnemySpawnPoint::OnSphereBeginOverlap);
-	// SpawnCheckSphere->OnComponentEndOverlap.AddDynamic(this, &AEnemySpawnPoint::OnSphereEndOverlap);
 }
 
 // Called every frame
@@ -88,17 +87,3 @@ FTransform AEnemySpawnPoint::GetSafeSpawnPoint() const
 	SpawnTransform.SetLocation(SpawnTransform.GetLocation() + FVector::UpVector * 1000.f);
 	return SpawnTransform;
 }
-
-// void AEnemySpawnPoint::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-// 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-// {
-// 	// PRINT_LOG(TEXT("Enemy Spawn Point: Detected overlap with %s"), *OtherActor->GetName());
-// 	IsSafe = false;
-// }
-//
-// void AEnemySpawnPoint::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-// 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-// {
-// 	// PRINT_LOG(TEXT("Enemy Spawn Point: Detected end of overlap with %s"), *OtherActor->GetName());
-// 	IsSafe = true;
-// }

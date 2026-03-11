@@ -29,5 +29,5 @@ private:
 	
 	float StrafeSpeed{80.f};
 	FVector DirectionToTarget{};
-	float ReachDistance{100};
+	float ReachDistance{300.f};
 };
