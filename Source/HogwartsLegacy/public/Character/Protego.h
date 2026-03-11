@@ -1,4 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -25,6 +24,8 @@ public:
 	
 	UPROPERTY(VisibleAnywhere, Category=Mesh)
 	UStaticMeshComponent* SphereMesh;
+	UPROPERTY(EditAnywhere)
+	USoundBase* SpellSound;
 	
 	UPROPERTY()
 	float Duration = 0;

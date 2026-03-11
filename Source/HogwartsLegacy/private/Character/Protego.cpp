@@ -1,13 +1,12 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Character/Protego.h"
 
+#include "Kismet/GameplayStatics.h"
 
-// Sets default values
+
 AProtego::AProtego()
 {
- 	// Set this actor to call Tick() every frame. You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	SphereMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BodyMesh"));
@@ -29,20 +28,23 @@ AProtego::AProtego()
 	}
 	
 	Tags.Add(FName("Spell"));
-	InitialLifeSpan = 2.0f;
+	InitialLifeSpan = 1.5f;
 	
 }
 
-// Called when the game starts or when spawned
 void AProtego::BeginPlay()
 {
 	Super::BeginPlay();
 	
 	Player = GetWorld()->GetFirstPlayerController()->GetPawn();
 	
+	if (SpellSound)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), SpellSound);
+	}
+	
 }
 
-// Called every frame
 void AProtego::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);

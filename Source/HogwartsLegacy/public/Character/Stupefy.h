@@ -1,4 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -35,6 +34,8 @@ public:
 	UNiagaraComponent* NiagaraComp;
 	UPROPERTY(EditAnywhere, Category=Niagara)
 	UNiagaraSystem* ExplosionComp;
+	UPROPERTY(EditAnywhere)
+	USoundBase* SpellSound;
 	UFUNCTION()
 	void OnOverlap(
 		UPrimitiveComponent* OverlappedComponent,
