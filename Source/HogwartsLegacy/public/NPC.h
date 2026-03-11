@@ -37,7 +37,7 @@ public:
 
     // --- 스탯 ---
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
-    float MovementSpeed = 450.0f;
+    float MovementSpeed = 250.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
     float BaseDamage = 1000.0f;
