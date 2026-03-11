@@ -4,7 +4,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include <GameFramework/SpringArmComponent.h>
-#include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "Camera/CameraShakeBase.h"
 #include <Camera/CameraComponent.h>
 #include <EnhancedInputSubsystems.h>
 #include <EnhancedInputComponent.h>
@@ -16,9 +16,7 @@ class AControllerHUD;
 class USpringArmComponent;
 class UCameraComponent;
 class USceneComponent;
-class UNiagaraSystem;
-class UNiagaraComponent;
-class UPhysicsHandleComponent;
+class UCameraShakeBase;
 
 UCLASS()
 class HOGWARTSLEGACY_API APlayerCharacter : public ACharacter, public IDamageable
@@ -40,14 +38,12 @@ public:
 	USpringArmComponent* CameraArmComp;
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* PlayerCameraComp;
+	UPROPERTY(EditAnywhere)
+	UStaticMeshComponent* MagicRing;
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* WandTipComp;
 	UPROPERTY(VisibleAnywhere)
 	USkeletalMeshComponent* Wand;
-	UPROPERTY(VisibleAnywhere)
-	UPhysicsHandleComponent* PhysicsHandleComp;
-	UPROPERTY(VisibleAnywhere)
-	TSubclassOf<UCameraShakeBase> HitCameraShakeClass;
 	UPROPERTY()
 	AControllerHUD* HUD;
 #pragma endregion
@@ -92,10 +88,7 @@ public:
 	TObjectPtr <UAnimMontage> DeathMontage;
 	UPROPERTY(EditDefaultsOnly, Category=Animation)
 	TObjectPtr <UAnimInstance> AnimInstance;
-	UPROPERTY(EditAnywhere)
-	UNiagaraSystem* MagicCircle;
-	UPROPERTY(EditAnywhere)
-	UNiagaraComponent* MacgicRing;
+	
 #pragma endregion	
 	
 #pragma region Properties
@@ -110,7 +103,7 @@ public:
 	UPROPERTY()
 	bool bComboAttack;
 	UPROPERTY()
-	FTimerHandle ComboTimerHandle;
+	bool bCanComboInput = false;
 
 	UPROPERTY(EditDefaultsOnly, Category=Spell)
 	TSubclassOf <class ALumos> Lumoses;
@@ -132,19 +125,6 @@ public:
 	UPROPERTY()
 	AStupefy* stupefy;
 	
-	UPROPERTY(EditDefaultsOnly, Category=Spell)
-	float LeviosoGrabDistance = 500.f;
-	UPROPERTY(EditDefaultsOnly, Category=Spell)
-	float LeviosoHoldDistance = 300.f;
-	
-	float LeviosoFloatTimer = 0.f;
-	UPROPERTY(EditDefaultsOnly, Category=Spell)
-	float LeviosoFloatAmplitude = 10.f;
-	UPROPERTY(EditDefaultsOnly, Category=Spell)
-	float LeviosoFloatSpeed = 2.f;
-	bool bCanUseLevioso = false;
-	bool bIsDoingLevioso = false;
-	
 	FCollisionQueryParams AimCaptureParams;
 	UPROPERTY()
 	TArray<AActor*> ActorToIgnore;
@@ -152,6 +132,8 @@ public:
 	AActor* AimedTarget;
 	UPROPERTY()
 	TObjectPtr <AActor> LastCachedObj;
+	UPROPERTY(EditAnywhere, Category=CameraShake)
+	TSubclassOf<UCameraShakeBase> DefenseCameraShakeClass;
 #pragma endregion
 	
 #pragma region Functions
@@ -181,10 +163,6 @@ public:
 	void SpellStupefy();
 	UFUNCTION()
 	void SpellLumos(USceneComponent* WandTip);
-	UFUNCTION()
-	void SpellLevioso(UPrimitiveComponent* TargetComp, FVector Location, FRotator Rotation);
-	UFUNCTION()
-	void SpellDescendo();
 	
 	UFUNCTION()
 	void SpawnBasicAttack();
@@ -197,6 +175,9 @@ public:
 	void PlayerMove();
 	UFUNCTION()
 	void CheckCanAttack(bool& Check);
+	UFUNCTION()
+	void CheckCanMove(bool& Check);
+	
 	UFUNCTION()
 	void AimCapture();
 	UFUNCTION()
@@ -215,8 +196,6 @@ public:
 	virtual float GetHPPercent_Implementation() const override;
 	UFUNCTION()
 	virtual bool IsDead_Implementation() const override;
-	//FOnHPChanged HPChangedDelegate;
-	//virtual FOnHPChanged& GetOnHPChangedDelegate() override { return HPChangedDelegate; };
 #pragma endregion
 
 #pragma region Privates

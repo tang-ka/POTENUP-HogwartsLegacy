@@ -2,14 +2,11 @@
 
 #include "Character/PlayerCharacter.h"
 #include <GameFramework/CharacterMovementComponent.h>
-
-#include "NiagaraFunctionLibrary.h"
 #include "Character/BasicAttack.h"
 #include "Character/Lumos.h"
 #include "Character/Protego.h"
 #include "Character/Stupefy.h"
 #include "Components/CapsuleComponent.h"
-#include "Enemy/GuardianManager.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -17,16 +14,30 @@ APlayerCharacter::APlayerCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	
+	MagicRing = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MagicRing"));
+	
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> TempMesh(TEXT("SkeletalMesh'/Game/KHJ/Characters/SM_PlayerCharacter.SM_PlayerCharacter'"));
 	if (TempMesh.Succeeded())
 	{
 		GetMesh()->SetSkeletalMesh(TempMesh.Object);
 		GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -90), FRotator(0, -90, 0));
 	}
+	
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> TempMesh2(TEXT("/Script/Engine.StaticMesh'/Engine/BasicShapes/Plane.Plane'"));
+	if (TempMesh2.Succeeded())
+	{
+		MagicRing->SetStaticMesh(TempMesh2.Object);
+	}
+	
+	static ConstructorHelpers::FObjectFinder<UMaterial> TempMat(TEXT("/Game/KHJ/FX/Material/T_bottom13_1.T_bottom13_1"));
+	if (TempMat.Succeeded())
+	{
+		MagicRing->SetMaterial(0, TempMat.Object);
+	}
 
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("PlayerCharacter"));
 	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
-	GetCharacterMovement()->MaxWalkSpeed = 500.0f;
+	GetCharacterMovement()->MaxWalkSpeed = 600.0f;
 	CameraArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraArm"));
 	CameraArmComp->SetupAttachment(RootComponent);
 	CameraArmComp->SetRelativeLocation(FVector(0, 125, 60));
@@ -40,12 +51,8 @@ APlayerCharacter::APlayerCharacter()
 	WandTipComp = CreateDefaultSubobject<USceneComponent>(TEXT("WandTip"));
 	WandTipComp->SetupAttachment(RootComponent);
 	WandTipComp->SetRelativeLocation(GetMesh()->GetBoneLocation(FName(TEXT("WandSocketTip"))));
-
-	// Levioso
-	PhysicsHandleComp = CreateDefaultSubobject<UPhysicsHandleComponent>(TEXT("PhysicsHandle"));
-	PhysicsHandleComp->LinearDamping = 200.0f; // 높을수록 덜 출렁임
-	PhysicsHandleComp->LinearStiffness = 1500.0f; // 잡는 힘의 강도
-	PhysicsHandleComp->InterpolationSpeed = 10.0f; // 추적 속도 (천천히 따라오게 조절)
+	
+	MagicRing->SetupAttachment(RootComponent);
 	
 	bUseControllerRotationYaw = true;
 	
@@ -58,9 +65,6 @@ void APlayerCharacter::BeginPlay()
 	APlayerController* PC = Cast<APlayerController>(Controller);
 	if (PC)
 	{
-		PC->SetPause(false);
-		PC->SetInputMode(FInputModeGameOnly());
-		PC->SetShowMouseCursor(false);
 		UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer());
 		if (Subsystem)
 		{
@@ -89,12 +93,12 @@ void APlayerCharacter::BeginPlay()
 		}
 	}
 	
-	// Wand->AttachToComponent(WandTipComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName(TEXT("WandSocketTip")));
 	AnimInstance = GetMesh()->GetAnimInstance();
 	HUD = Cast<AControllerHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
 	UGameplayStatics::GetAllActorsWithTag(GetWorld(), TEXT("Level"), ActorToIgnore);
 	AimCaptureParams.AddIgnoredActors(ActorToIgnore);
 	AimCaptureParams.AddIgnoredActor(this);
+	MagicRing->SetVisibility(false);
 }
 
 void APlayerCharacter::Tick(float DeltaTime)
@@ -106,26 +110,9 @@ void APlayerCharacter::Tick(float DeltaTime)
 		PlayerMove();
 	}
 	CheckCanAttack(bCanAttack);
+	CheckCanMove(bCanMove);
 	AimCapture();
 	
-	if (AnimInstance)
-	{
-		if (!AnimInstance->IsAnyMontagePlaying())
-		{
-			bCanMove = true;
-		}
-	}
-	
-	if (bIsDoingLevioso && PhysicsHandleComp->GrabbedComponent)
-	{
-		FVector TargetLocation = GetPawnViewLocation() + (GetViewRotation().Vector() * LeviosoHoldDistance);
-		
-		LeviosoFloatTimer += DeltaTime * LeviosoFloatSpeed;
-		float ZOffset = FMath::Sin(LeviosoFloatTimer) * LeviosoFloatAmplitude;
-		TargetLocation.Z += ZOffset;
-		
-		PhysicsHandleComp->SetTargetLocationAndRotation(TargetLocation, GetViewRotation());
-	}
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -140,7 +127,6 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		PlayerInput->BindAction(IA_Move, ETriggerEvent::Triggered, this, &APlayerCharacter::Move);
 		PlayerInput->BindAction(IA_Run, ETriggerEvent::Started, this, &APlayerCharacter::Run);
 		PlayerInput->BindAction(IA_Jump, ETriggerEvent::Started, this, &APlayerCharacter::InputJump);
-
 		PlayerInput->BindAction(IA_Attack, ETriggerEvent::Started, this, &APlayerCharacter::SkillMouseL);
 		PlayerInput->BindAction(IA_SkillSlot1, ETriggerEvent::Started, this, &APlayerCharacter::SkillSlot1);
 		PlayerInput->BindAction(IA_SkillSlot2, ETriggerEvent::Started, this, &APlayerCharacter::SkillSlot2);
@@ -159,6 +145,7 @@ void APlayerCharacter::Turn(const FInputActionValue& InputValue)
 void APlayerCharacter::LookUp(const FInputActionValue& InputValue)
 {
 	AddControllerPitchInput(InputValue.Get<float>());
+	
 }
 
 void APlayerCharacter::Move(const FInputActionValue& InputValue)
@@ -199,12 +186,25 @@ void APlayerCharacter::CheckCanAttack(bool& Check)
 	Check = IsValid(attack) || IsValid(protego) || IsValid(stupefy) ? false : true;
 }
 
+void APlayerCharacter::CheckCanMove(bool& Check)
+{
+	if (AnimInstance)
+	{
+		if (!AnimInstance->IsAnyMontagePlaying())
+		{
+			Check = true;
+		}
+	}
+}
+
 void APlayerCharacter::AimCapture()
 {
 	FHitResult HitOut;
+	FVector Start;
+	FRotator Rot;
 	
-	FVector Start = GetActorLocation(); // PlayerCameraComp->GetComponentLocation();
-	FVector End = GetActorRotation().Vector() * ViewDistance; // PlayerCameraComp->GetComponentRotation().Vector() * ViewDistance;
+	GetController()->GetPlayerViewPoint(Start, Rot);
+	FVector End = Rot.Vector() * ViewDistance;
 	
 	GetWorld()->SweepSingleByProfile(HitOut,
 		Start, End, FQuat::Identity, "PlayerTrace",
@@ -227,13 +227,10 @@ void APlayerCharacter::SkillSlot1(const FInputActionValue& InputValue)
 
 void APlayerCharacter::SkillSlot2(const FInputActionValue& InputValue)
 {
-	AboutToBeAttacked(true);
-	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill 2"));
 }
 
 void APlayerCharacter::SkillSlot3(const FInputActionValue& InputValue)
 {
-	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill 3"));
 }
 
 void APlayerCharacter::SkillSlotQ(const FInputActionValue& InputValue)
@@ -248,20 +245,11 @@ void APlayerCharacter::SkillSlotQLongClick(const FInputActionValue& InputValue)
 
 void APlayerCharacter::SkillSlotR(const FInputActionValue& InputValue)
 {
-	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill R"));
 }
 
 void APlayerCharacter::AboutToBeAttacked(bool bActive)
 {
-	if (bActive)
-	{
-		MacgicRing = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), MagicCircle, GetActorLocation() + FVector(0, 0, 80.f), GetActorRotation(), FVector(0.4f));
-	}
-	else
-	{
-		
-	}
-	// GetWorld()->GetSubsystem<UGuardianManager>()->
+	MagicRing->SetVisibility(bActive);
 }
 
 void APlayerCharacter::SpellBasicAttack()
@@ -270,21 +258,24 @@ void APlayerCharacter::SpellBasicAttack()
 	{
 		return;
 	}
-	if (GetWorldTimerManager().IsTimerActive(ComboTimerHandle))
+	
+	if (bCanComboInput)
 	{
 		ComboCount++;
-		// GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Blue, FString::Printf(TEXT("ComboCount: %d"), ComboCount));
 	}
 	else
 	{
 		ComboCount = 0;
 	}
-
+	
 	if (ComboCount >= 4)
 	{
 		bComboAttack = true;
+		ComboCount = 0;
 	}
-
+	
+	bCanComboInput = false;
+	
 	if (!AnimInstance->Montage_IsPlaying(ComboAttackMontage))
 	{
 		bCanMove = false;
@@ -295,12 +286,11 @@ void APlayerCharacter::SpellBasicAttack()
 		bCanMove = false;
 		AnimInstance->Montage_JumpToSection(FName(FString::Printf(TEXT("ComboCount%d"), ComboCount)), ComboAttackMontage);
 	}
-	
-	GetWorldTimerManager().SetTimer(ComboTimerHandle,[this](){this->ComboCount=0;}, 2.0f, false);
 }
 
 void APlayerCharacter::CheckCombo()
 {
+	bCanComboInput = true;
 	bCanMove = true;
 }
 
@@ -310,9 +300,10 @@ void APlayerCharacter::SpellProtego()
 	{
 		if (!AnimInstance->Montage_IsPlaying(ProtegoMontage))
 		{
-			if (MacgicRing)
+			if (MagicRing->IsVisible()) 
 			{
-				MacgicRing->Deactivate();
+				GetWorld()->GetFirstPlayerController()->ClientStartCameraShake(DefenseCameraShakeClass);
+				MagicRing->SetVisibility(false);
 			}
 			bCanMove = false;
 			PlayAnimMontage(ProtegoMontage);
@@ -345,29 +336,6 @@ void APlayerCharacter::SpellStupefy()
 	}
 }
 
-void APlayerCharacter::SpellLevioso(UPrimitiveComponent* TargetComp, FVector Location, FRotator Rotation)
-{
-	if (!bCanAttack)
-	{
-		return;
-	}
-	if (TargetComp && TargetComp->IsSimulatingPhysics())
-	{
-		if (bIsDoingLevioso && PhysicsHandleComp->GrabbedComponent)
-		{
-			PhysicsHandleComp->ReleaseComponent();
-			bIsDoingLevioso = false;
-			LeviosoFloatTimer = 0.f;
-		}
-		PhysicsHandleComp->GrabComponentAtLocationWithRotation(TargetComp, NAME_None, Location, Rotation);
-		bIsDoingLevioso = true;
-	}
-}
-
-void APlayerCharacter::SpellDescendo()
-{
-}
-
 void APlayerCharacter::SpawnBasicAttack()
 {
 	if (AimedTarget && AimedTarget->ActorHasTag(FName("Enemy")))
@@ -375,11 +343,19 @@ void APlayerCharacter::SpawnBasicAttack()
 		FVector dir = AimedTarget->GetActorLocation() - this->GetActorLocation();
 		dir.Normalize();
 		attack = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetMesh()->GetBoneLocation(FName(TEXT("WandSocketTip"))), dir.Rotation());
+		if (!IsValid(attack))
+		{
+			return;
+		}
 		attack->SetTarget(this, AimedTarget, bComboAttack);
 	}
 	else
 	{
 		attack = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetMesh()->GetBoneLocation(FName(TEXT("WandSocketTip"))), GetViewRotation());
+		if (!IsValid(attack))
+		{
+			return;
+		}
 		attack->NoTarget();
 	}
 	if (bComboAttack)
@@ -410,15 +386,14 @@ void APlayerCharacter::SpawnStupefy()
 	}
 }
 
-
-
 bool APlayerCharacter::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
 {
 	if (IsValid(protego))
 	{
 		return false;
 	}
-	int NewHP = GetCurrentHP() - DamageInfo.DamageAmount * 8;
+	int NewHP = GetCurrentHP() - DamageInfo.DamageAmount;
+	bCanMove = false;
 	if (NewHP <= 0)
 	{
 		NewHP = 0;
@@ -427,7 +402,6 @@ bool APlayerCharacter::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
 	else
 	{
 		PlayAnimMontage(HitMontage);
-		
 	}
 	SetCurrentHP(NewHP);
 	HUD->UpdatePlayerHPWidget(GetHPPercent_Implementation());

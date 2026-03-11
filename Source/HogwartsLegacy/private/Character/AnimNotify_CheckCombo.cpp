@@ -8,13 +8,14 @@
 void UAnimNotify_CheckCombo::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
 	Super::Notify(MeshComp, Animation, EventReference);
-	
+
+	if (!MeshComp)
+	{
+		return;
+	}
+
 	if (APlayerCharacter* Player = Cast<APlayerCharacter>(MeshComp->GetOwner()))
 	{
-		UAnimMontage* PlayingMontage = Cast<UAnimMontage>(Animation);
-		if (MeshComp->GetOwner())
-		{
-			Player->CheckCombo();
-		}
+		Player->CheckCombo();
 	}
 }
