@@ -234,7 +234,7 @@ bool AGuardian::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
 	}
 	
 	int32 DamageAmount = DamageInfo.DamageAmount;
-	DamageAmount = 50;
+	// DamageAmount = 50;
 	
 	HP -= DamageAmount;
 	if (HP <= 0)

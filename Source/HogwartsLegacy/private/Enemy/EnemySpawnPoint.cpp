@@ -15,11 +15,12 @@ AEnemySpawnPoint::AEnemySpawnPoint()
 	
 	RootComp = CreateDefaultSubobject<USceneComponent>(TEXT("RootComp"));
 	SetRootComponent(RootComp);
-	ArrowComp = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComp"));
-	ArrowComp->SetupAttachment(RootComp);
-	ArrowComp->ArrowColor = FColor::Red;
-	ArrowComp->ArrowSize = 0.5f;
-	ArrowComp->SetHiddenInGame(false);
+	
+	// ArrowComp = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComp"));
+	// ArrowComp->SetupAttachment(RootComp);
+	// ArrowComp->ArrowColor = FColor::Red;
+	// ArrowComp->ArrowSize = 0.5f;
+	// ArrowComp->SetHiddenInGame(false);
 	
 	SpawnCheckSphere = CreateDefaultSubobject<USphereComponent>(TEXT("SpawnCheckSphere"));
 	SpawnCheckSphere->SetupAttachment(RootComp);
@@ -32,19 +33,18 @@ void AEnemySpawnPoint::BeginPlay()
 {
 	Super::BeginPlay();
 
-	DrawDebugSphere
-	(	
-		GetWorld(),
-		GetActorLocation(),
-		10.f,
-		12,
-		FColor::Yellow,
-		true,
-		-1.f,
-		0,
-		0.5f
-	);
-	
+	// DrawDebugSphere
+	// (	
+	// 	GetWorld(),
+	// 	GetActorLocation(),
+	// 	10.f,
+	// 	12,
+	// 	FColor::Yellow,
+	// 	true,
+	// 	-1.f,
+	// 	0,
+	// 	0.5f
+	// );
 }
 
 // Called every frame

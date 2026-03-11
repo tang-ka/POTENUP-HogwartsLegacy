@@ -32,8 +32,8 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USceneComponent> RootComp;
 	
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UArrowComponent> ArrowComp;
+	// UPROPERTY(VisibleAnywhere)
+	// TObjectPtr<UArrowComponent> ArrowComp;
 	
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USphereComponent> SpawnCheckSphere;
