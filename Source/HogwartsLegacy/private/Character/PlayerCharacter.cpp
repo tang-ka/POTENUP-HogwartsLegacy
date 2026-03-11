@@ -2,7 +2,6 @@
 
 #include "Character/PlayerCharacter.h"
 #include <GameFramework/CharacterMovementComponent.h>
-#include "NiagaraFunctionLibrary.h"
 #include "Character/BasicAttack.h"
 #include "Character/Lumos.h"
 #include "Character/Protego.h"
@@ -54,7 +53,7 @@ APlayerCharacter::APlayerCharacter()
 	WandTipComp->SetupAttachment(RootComponent);
 	WandTipComp->SetRelativeLocation(GetMesh()->GetBoneLocation(FName(TEXT("WandSocketTip"))));
 	
-	MagicRing->SetVisibility(false);
+	MagicRing->SetupAttachment(RootComponent);
 	
 	bUseControllerRotationYaw = true;
 	
@@ -67,9 +66,6 @@ void APlayerCharacter::BeginPlay()
 	APlayerController* PC = Cast<APlayerController>(Controller);
 	if (PC)
 	{
-		PC->SetPause(false);
-		PC->SetInputMode(FInputModeGameOnly());
-		PC->SetShowMouseCursor(false);
 		UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer());
 		if (Subsystem)
 		{
@@ -98,13 +94,12 @@ void APlayerCharacter::BeginPlay()
 		}
 	}
 	
-	// Wand->AttachToComponent(WandTipComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName(TEXT("WandSocketTip")));
-	MagicRing->Deactivate();
 	AnimInstance = GetMesh()->GetAnimInstance();
 	HUD = Cast<AControllerHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
 	UGameplayStatics::GetAllActorsWithTag(GetWorld(), TEXT("Level"), ActorToIgnore);
 	AimCaptureParams.AddIgnoredActors(ActorToIgnore);
 	AimCaptureParams.AddIgnoredActor(this);
+	MagicRing->SetVisibility(false);
 }
 
 void APlayerCharacter::Tick(float DeltaTime)
@@ -133,7 +128,6 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		PlayerInput->BindAction(IA_Move, ETriggerEvent::Triggered, this, &APlayerCharacter::Move);
 		PlayerInput->BindAction(IA_Run, ETriggerEvent::Started, this, &APlayerCharacter::Run);
 		PlayerInput->BindAction(IA_Jump, ETriggerEvent::Started, this, &APlayerCharacter::InputJump);
-
 		PlayerInput->BindAction(IA_Attack, ETriggerEvent::Started, this, &APlayerCharacter::SkillMouseL);
 		PlayerInput->BindAction(IA_SkillSlot1, ETriggerEvent::Started, this, &APlayerCharacter::SkillSlot1);
 		PlayerInput->BindAction(IA_SkillSlot2, ETriggerEvent::Started, this, &APlayerCharacter::SkillSlot2);
@@ -208,8 +202,8 @@ void APlayerCharacter::AimCapture()
 {
 	FHitResult HitOut;
 	
-	FVector Start = GetActorLocation(); // PlayerCameraComp->GetComponentLocation();
-	FVector End = GetActorRotation().Vector() * ViewDistance; // PlayerCameraComp->GetComponentRotation().Vector() * ViewDistance;
+	FVector Start = PlayerCameraComp->GetComponentLocation();
+	FVector End = PlayerCameraComp->GetComponentRotation().Vector() * ViewDistance;
 	
 	GetWorld()->SweepSingleByProfile(HitOut,
 		Start, End, FQuat::Identity, "PlayerTrace",
@@ -233,12 +227,10 @@ void APlayerCharacter::SkillSlot1(const FInputActionValue& InputValue)
 void APlayerCharacter::SkillSlot2(const FInputActionValue& InputValue)
 {
 	AboutToBeAttacked(true);
-	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill 2"));
 }
 
 void APlayerCharacter::SkillSlot3(const FInputActionValue& InputValue)
 {
-	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill 3"));
 }
 
 void APlayerCharacter::SkillSlotQ(const FInputActionValue& InputValue)
@@ -253,12 +245,11 @@ void APlayerCharacter::SkillSlotQLongClick(const FInputActionValue& InputValue)
 
 void APlayerCharacter::SkillSlotR(const FInputActionValue& InputValue)
 {
-	GEngine->AddOnScreenDebugMessage(1, 3.0f, FColor::Red, TEXT("Skill R"));
 }
 
 void APlayerCharacter::AboutToBeAttacked(bool bActive)
 {
-	if (!IsValid(MagicRing))
+	if (MagicRing->IsVisible())
 	{
 		MagicRing->SetVisibility(bActive);
 	}
@@ -270,8 +261,7 @@ void APlayerCharacter::SpellBasicAttack()
 	{
 		return;
 	}
-
-	// 콤보 입력 창이 열려있을 때만 콤보 카운트 증가
+	
 	if (bCanComboInput)
 	{
 		ComboCount++;
@@ -280,15 +270,13 @@ void APlayerCharacter::SpellBasicAttack()
 	{
 		ComboCount = 0;
 	}
-
-	// 4번째 공격마다 콤보 공격으로 처리
+	
 	if (ComboCount >= 4)
 	{
 		bComboAttack = true;
 		ComboCount = 0;
 	}
-
-	// 콤보 입력 창 닫기 (AnimNotify_CheckCombo가 다시 열어줌)
+	
 	bCanComboInput = false;
 
 	if (!AnimInstance->Montage_IsPlaying(ComboAttackMontage))
@@ -305,7 +293,6 @@ void APlayerCharacter::SpellBasicAttack()
 
 void APlayerCharacter::CheckCombo()
 {
-	// AnimNotify_CheckCombo 호출 시: 콤보 입력 창 열기
 	bCanComboInput = true;
 	bCanMove = true;
 }
@@ -316,9 +303,10 @@ void APlayerCharacter::SpellProtego()
 	{
 		if (!AnimInstance->Montage_IsPlaying(ProtegoMontage))
 		{
-			if (MagicRing) 
+			if (MagicRing->IsVisible()) 
 			{
-				
+				GetWorld()->GetFirstPlayerController()->ClientStartCameraShake(DefenseCameraShakeClass);
+				MagicRing->SetVisibility(false);
 			}
 			bCanMove = false;
 			PlayAnimMontage(ProtegoMontage);
@@ -358,11 +346,19 @@ void APlayerCharacter::SpawnBasicAttack()
 		FVector dir = AimedTarget->GetActorLocation() - this->GetActorLocation();
 		dir.Normalize();
 		attack = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetMesh()->GetBoneLocation(FName(TEXT("WandSocketTip"))), dir.Rotation());
+		if (!IsValid(attack))
+		{
+			return;
+		}
 		attack->SetTarget(this, AimedTarget, bComboAttack);
 	}
 	else
 	{
 		attack = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetMesh()->GetBoneLocation(FName(TEXT("WandSocketTip"))), GetViewRotation());
+		if (!IsValid(attack))
+		{
+			return;
+		}
 		attack->NoTarget();
 	}
 	if (bComboAttack)
@@ -400,6 +396,7 @@ bool APlayerCharacter::ReceiveDamage_Implementation(FDamageInfo DamageInfo)
 		return false;
 	}
 	int NewHP = GetCurrentHP() - DamageInfo.DamageAmount;
+	bCanMove = false;
 	if (NewHP <= 0)
 	{
 		NewHP = 0;

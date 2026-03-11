@@ -12,10 +12,15 @@ void UAnimNotify_CheckAttackSpawn::Notify(USkeletalMeshComponent* MeshComp, UAni
 	if (APlayerCharacter* Player = Cast<APlayerCharacter>(MeshComp->GetOwner()))
 	{
 		UAnimInstance* AnimInst = MeshComp->GetAnimInstance();
-		if (!AnimInst) return;
-
+		if (!AnimInst)
+		{
+			return;
+		}
 		UAnimMontage* PlayingMontage = AnimInst->GetCurrentActiveMontage();
-		if (!PlayingMontage) return;
+		if (!PlayingMontage)
+		{
+			return;
+		}
 
 		const FString MontageName = PlayingMontage->GetName();
 

@@ -28,29 +28,32 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	
-	UPROPERTY()
-	AActor* Target;
-	UPROPERTY()
-	bool ComboAttack;
-	UPROPERTY()
-	TObjectPtr <AActor> Causer;
-	UFUNCTION()
-	void SetTarget(AActor* InCauser, AActor* InTarget, bool combo);
-	UFUNCTION()
-	void NoTarget();
-	UPROPERTY()
-	AControllerHUD* HUD;
-	
 	UPROPERTY(VisibleAnywhere, Category=Collision)
 	USphereComponent* CollisionComp;
 	UPROPERTY(VisibleAnywhere, Category=Niagara)
 	UNiagaraComponent* NiagaraComp;
 	UPROPERTY(VisibleAnywhere, Category=Niagara)
 	UNiagaraSystem* ExplosionComp;
+	
+	UPROPERTY()
+	AActor* Target;
+	UPROPERTY()
+	bool ComboAttack;
+	UPROPERTY()
+	TObjectPtr <AActor> Causer;
 	UPROPERTY(VisibleAnywhere, Category=Physics)
 	float PhysicsForce = 20;
+	UPROPERTY(EditAnywhere, Category=CameraShake)
+	TSubclassOf<UCameraShakeBase> HitCameraShakeClass;
 	UPROPERTY()
 	USoundBase* SpellSound;
+	UPROPERTY()
+	AControllerHUD* HUD;
+	
+	UFUNCTION()
+	void SetTarget(AActor* InCauser, AActor* InTarget, bool combo);
+	UFUNCTION()
+	void NoTarget();
 	UFUNCTION()
 	void OnHit(
 		UPrimitiveComponent* HitComponent,

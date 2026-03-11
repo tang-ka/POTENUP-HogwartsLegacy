@@ -9,7 +9,10 @@ void UAnimNotify_CheckCombo::Notify(USkeletalMeshComponent* MeshComp, UAnimSeque
 {
 	Super::Notify(MeshComp, Animation, EventReference);
 
-	if (!MeshComp) return;
+	if (!MeshComp)
+	{
+		return;
+	}
 
 	if (APlayerCharacter* Player = Cast<APlayerCharacter>(MeshComp->GetOwner()))
 	{

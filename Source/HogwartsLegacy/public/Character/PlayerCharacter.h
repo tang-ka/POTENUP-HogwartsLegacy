@@ -4,7 +4,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include <GameFramework/SpringArmComponent.h>
-#include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "Camera/CameraShakeBase.h"
 #include <Camera/CameraComponent.h>
 #include <EnhancedInputSubsystems.h>
 #include <EnhancedInputComponent.h>
@@ -16,9 +16,7 @@ class AControllerHUD;
 class USpringArmComponent;
 class UCameraComponent;
 class USceneComponent;
-class UNiagaraSystem;
-class UNiagaraComponent;
-class UPhysicsHandleComponent;
+class UCameraShakeBase;
 
 UCLASS()
 class HOGWARTSLEGACY_API APlayerCharacter : public ACharacter, public IDamageable
@@ -46,10 +44,6 @@ public:
 	USceneComponent* WandTipComp;
 	UPROPERTY(VisibleAnywhere)
 	USkeletalMeshComponent* Wand;
-	UPROPERTY(VisibleAnywhere)
-	UPhysicsHandleComponent* PhysicsHandleComp;
-	UPROPERTY(VisibleAnywhere)
-	TSubclassOf<UCameraShakeBase> HitCameraShakeClass;
 	UPROPERTY()
 	AControllerHUD* HUD;
 #pragma endregion
@@ -138,6 +132,8 @@ public:
 	AActor* AimedTarget;
 	UPROPERTY()
 	TObjectPtr <AActor> LastCachedObj;
+	UPROPERTY(EditAnywhere, Category=CameraShake)
+	TSubclassOf<UCameraShakeBase> DefenseCameraShakeClass;
 #pragma endregion
 	
 #pragma region Functions
@@ -167,10 +163,6 @@ public:
 	void SpellStupefy();
 	UFUNCTION()
 	void SpellLumos(USceneComponent* WandTip);
-	// UFUNCTION()
-	// void SpellLevioso(UPrimitiveComponent* TargetComp, FVector Location, FRotator Rotation);
-	// UFUNCTION()
-	// void SpellDescendo();
 	
 	UFUNCTION()
 	void SpawnBasicAttack();

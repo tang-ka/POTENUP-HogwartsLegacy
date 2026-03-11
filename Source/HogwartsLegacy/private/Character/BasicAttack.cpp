@@ -63,9 +63,11 @@ void ABasicAttack::Tick(float DeltaTime)
 
 void ABasicAttack::SetTarget(AActor* causer, AActor* target, bool combo)
 {
-    if (!IsValid(target)) return;  // null 가드 추가
-
-    Causer = causer;  // Causer도 함께 설정 (OnOverlap에서 사용)
+    if (!IsValid(target))
+    {
+    	return; 
+    }
+    Causer = causer;
     Target = target;
     TargetLocation = target->GetActorLocation() + FVector(0, 0, 40);
     if (combo)
@@ -85,6 +87,7 @@ void ABasicAttack::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* O
 {
 	if (Target && Target->IsValidLowLevel() && !DamageableHelpers::IsDead(Target))
 	{
+		GetWorld()->GetFirstPlayerController()->ClientStartCameraShake(HitCameraShakeClass);
 		DamageableHelpers::ApplyDamage(Target, Causer, Damage);
 		if (IsValid(HUD))
 		{
