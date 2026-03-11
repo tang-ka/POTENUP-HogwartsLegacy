@@ -7,7 +7,6 @@
 #include "Character/Protego.h"
 #include "Character/Stupefy.h"
 #include "Components/CapsuleComponent.h"
-#include "Enemy/GuardianManager.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -201,9 +200,11 @@ void APlayerCharacter::CheckCanMove(bool& Check)
 void APlayerCharacter::AimCapture()
 {
 	FHitResult HitOut;
+	FVector Start;
+	FRotator Rot;
 	
-	FVector Start = PlayerCameraComp->GetComponentLocation();
-	FVector End = PlayerCameraComp->GetComponentRotation().Vector() * ViewDistance;
+	GetController()->GetPlayerViewPoint(Start, Rot);
+	FVector End = Rot.Vector() * ViewDistance;
 	
 	GetWorld()->SweepSingleByProfile(HitOut,
 		Start, End, FQuat::Identity, "PlayerTrace",
@@ -226,7 +227,6 @@ void APlayerCharacter::SkillSlot1(const FInputActionValue& InputValue)
 
 void APlayerCharacter::SkillSlot2(const FInputActionValue& InputValue)
 {
-	AboutToBeAttacked(true);
 }
 
 void APlayerCharacter::SkillSlot3(const FInputActionValue& InputValue)
@@ -249,10 +249,7 @@ void APlayerCharacter::SkillSlotR(const FInputActionValue& InputValue)
 
 void APlayerCharacter::AboutToBeAttacked(bool bActive)
 {
-	if (MagicRing->IsVisible())
-	{
-		MagicRing->SetVisibility(bActive);
-	}
+	MagicRing->SetVisibility(bActive);
 }
 
 void APlayerCharacter::SpellBasicAttack()
@@ -278,7 +275,7 @@ void APlayerCharacter::SpellBasicAttack()
 	}
 	
 	bCanComboInput = false;
-
+	
 	if (!AnimInstance->Montage_IsPlaying(ComboAttackMontage))
 	{
 		bCanMove = false;
