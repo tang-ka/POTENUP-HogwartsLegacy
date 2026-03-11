@@ -24,12 +24,6 @@ ABasicAttack::ABasicAttack()
 	
 	NiagaraComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraSystem"));
 	NiagaraComp->SetupAttachment(RootComponent);
-
-	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> TempComp(TEXT("NiagaraSystem'/Game/KHJ/FX/NS_BasicAttack.NS_BasicAttack'"));
-	if (TempComp.Succeeded())
-	{
-		NiagaraComp->SetAsset(TempComp.Object);
-	}
 	
 	ExplosionComp = CreateDefaultSubobject<UNiagaraSystem>(TEXT("ExplosionNiagaraSystem"));
 	static ConstructorHelpers::FObjectFinder<UNiagaraSystem> ExpTempComp(TEXT("ExplosionNiagaraSystem'/Game/KHJ/FX/NS_BasicAttack_Explosion.NS_BasicAttack_Explosion'"));
@@ -39,7 +33,7 @@ ABasicAttack::ABasicAttack()
 	}
 	
 	Tags.Add(FName("Spell"));
-	InitialLifeSpan = 2.5f;
+	InitialLifeSpan = 2.0f;
 }
 
 void ABasicAttack::BeginPlay()
@@ -51,6 +45,8 @@ void ABasicAttack::BeginPlay()
 		UGameplayStatics::PlaySound2D(GetWorld(), SpellSound);
 	}
 	
+	StartLocation = GetActorLocation();
+	
 	HUD = Cast<AControllerHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
 }
 
@@ -58,7 +54,13 @@ void ABasicAttack::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	SetActorLocation(UKismetMathLibrary::VInterpTo_Constant(GetActorLocation(), TargetLocation, DeltaTime, Speed), true);
+	ElapsedTime += DeltaTime;
+	float Alpha = FMath::Clamp(ElapsedTime / FlightTime, 0.0f, 1.0f);
+	
+	FVector NewLocation = FMath::Lerp(StartLocation, TargetLocation, Alpha);
+	SetActorLocation(NewLocation, true);
+	
+	// SetActorLocation(UKismetMathLibrary::VInterpTo_Constant(GetActorLocation(), TargetLocation, DeltaTime, Speed), true);
 }
 
 void ABasicAttack::SetTarget(AActor* causer, AActor* target, bool combo)

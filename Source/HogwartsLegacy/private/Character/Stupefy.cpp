@@ -5,6 +5,7 @@
 #include "NiagaraComponent.h"
 #include "Enemy/Guardian.h" // temp
 #include "Enemy/EnemyFSMComponent.h" // temp
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
 
@@ -45,6 +46,10 @@ void AStupefy::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	if (SpellSound)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), SpellSound);
+	}
 }
 
 void AStupefy::Tick(float DeltaTime)

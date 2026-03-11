@@ -28,11 +28,11 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	
-	UPROPERTY(VisibleAnywhere, Category=Collision)
+	UPROPERTY(EditAnywhere, Category=Collision)
 	USphereComponent* CollisionComp;
-	UPROPERTY(VisibleAnywhere, Category=Niagara)
+	UPROPERTY(EditAnywhere, Category=Niagara)
 	UNiagaraComponent* NiagaraComp;
-	UPROPERTY(VisibleAnywhere, Category=Niagara)
+	UPROPERTY(EditAnywhere, Category=Niagara)
 	UNiagaraSystem* ExplosionComp;
 	
 	UPROPERTY()
@@ -45,10 +45,25 @@ public:
 	float PhysicsForce = 20;
 	UPROPERTY(EditAnywhere, Category=CameraShake)
 	TSubclassOf<UCameraShakeBase> HitCameraShakeClass;
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	USoundBase* SpellSound;
 	UPROPERTY()
 	AControllerHUD* HUD;
+	
+	UPROPERTY()
+	FVector TargetLocation;
+	UPROPERTY()
+	float Speed = 2500;
+	UPROPERTY()
+	float Distance = 2000;
+	UPROPERTY()
+	FVector StartLocation;
+	UPROPERTY()
+	float ElapsedTime = 0.0f;
+	UPROPERTY()
+	float FlightTime = 0.25f;
+	UPROPERTY()
+	int Damage = 3;
 	
 	UFUNCTION()
 	void SetTarget(AActor* InCauser, AActor* InTarget, bool combo);
@@ -71,15 +86,4 @@ public:
 		bool bFromSweep,
 		const FHitResult& SweepResult
 		);
-
-	UPROPERTY()
-	FVector TargetLocation;
-	UPROPERTY()
-	float Speed = 2500;
-	UPROPERTY()
-	float Distance = 2000;
-	
-	UPROPERTY()
-	int Damage = 3;
-
 };

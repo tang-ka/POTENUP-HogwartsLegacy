@@ -72,14 +72,14 @@ void APlayerCharacter::BeginPlay()
 		}
 	}
 	
-	if (IA_SkillSlotQ) // Change the Hold Time Threshold to 2.0 sec
+	if (IA_SkillSlotQ) // Change the Hold Time Threshold to 1.5 sec
 	{
 		bool bFoundTrigger = false;
 		for (UInputTrigger* Trigger : IA_SkillSlotQ->Triggers)
 		{
 			if (UInputTriggerHold* HoldTrigger = Cast<UInputTriggerHold>(Trigger))
 			{
-				HoldTrigger->HoldTimeThreshold = 2.0f;
+				HoldTrigger->HoldTimeThreshold = 1.5f;
 				bFoundTrigger = true;
 				break;
 			}
@@ -88,7 +88,7 @@ void APlayerCharacter::BeginPlay()
 		if (!bFoundTrigger)
 		{
 			UInputTriggerHold* NewHoldTrigger = NewObject<UInputTriggerHold>(IA_SkillSlotQ);
-			NewHoldTrigger->HoldTimeThreshold = 2.0f;
+			NewHoldTrigger->HoldTimeThreshold = 1.5f;
 			IA_SkillSlotQ->Triggers.Add(NewHoldTrigger);
 		}
 	}
