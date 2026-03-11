@@ -8,6 +8,8 @@
 #include "Interface/Damageable.h"
 #include "Guardian.generated.h"
 
+struct FAIRequestID;
+
 namespace EPathFollowingResult
 {
 	enum Type : int;

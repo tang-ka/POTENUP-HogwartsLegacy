@@ -9,6 +9,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "Enemy/EnemyFSMComponent.h"
+#include "Enemy/GuardianManager.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Interface/DamageableHelpers.h"
 
@@ -68,6 +69,8 @@ void AGuardian::BeginPlay()
 	BashAttackHitBox->OnComponentBeginOverlap.AddDynamic(this, &AGuardian::OnBashAttackHitBoxOverlap);
 	
 	Tags.Add(FName("Enemy"));
+	
+	GetWorld()->GetSubsystem<UGuardianManager>()->RegisterGuardian(this);
 }
 
 void AGuardian::Destroyed()
@@ -196,7 +199,11 @@ void AGuardian::MoveToActor(AActor* Target, float AcceptanceRadius) const
 
 void AGuardian::FinishStrafe(FAIRequestID RequestID, EPathFollowingResult::Type Result)
 {
-	UE_LOG(LogTemp, Warning, TEXT("FinishStrafe Result: %d"), (int32)Result);
+	if (GetFSMComponent()->GetCurrentStateType() != EEnemyState::Strafe)
+	{
+		return;
+	}
+	
 	GetFSMComponent()->ChangeState(EEnemyState::Idle);
 }
 

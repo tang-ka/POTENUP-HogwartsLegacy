@@ -21,7 +21,6 @@ AGuardianChunk::AGuardianChunk()
 void AGuardianChunk::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void AGuardianChunk::Tick(float DeltaTime)
@@ -393,7 +392,8 @@ void AGuardianChunk::EnableChunkPhysics()
 	ProcMeshComp->AddCollisionConvexMesh(CachedVertices);
 
 	// 3. 물리 연산을 위한 충돌 속성 재설정
-	ProcMeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	// ProcMeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	// ProcMeshComp->SetCollisionProfileName(TEXT("GuardianChunk"));
 	ProcMeshComp->SetCollisionProfileName(TEXT("PhysicsActor"));
 
 	// 4. 물리 및 중력 시뮬레이션 켜기

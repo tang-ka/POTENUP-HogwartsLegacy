@@ -46,6 +46,8 @@ public:
 	
 	// 스폰해야 할 가디언이 있는지 일정 시간 마다 검사한다.
 	int32 GetCurrentAliveCount() const { return AliveGuardians.Num(); }
+
+	void RegisterGuardian(AGuardian* Guardian);
 	
 public:
 	FTimerHandle SpawnCheckTimerHandle;
@@ -84,7 +86,7 @@ private:
 
 	// 공격자 선택 주기 (초)
 	UPROPERTY()
-	float AttackSelectInterval{10.f};
+	float AttackSelectInterval{5.f};
 	
 	TSubclassOf<AGuardian> GuardianClass;;
 	

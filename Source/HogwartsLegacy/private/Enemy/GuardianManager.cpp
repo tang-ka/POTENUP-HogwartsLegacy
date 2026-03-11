@@ -3,6 +3,7 @@
 
 #include "Enemy/GuardianManager.h"
 
+#include "EngineUtils.h"
 #include "HogwartsLegacy.h"
 #include "Enemy/EnemyFSMComponent.h"
 #include "Enemy/Guardian.h"
@@ -72,7 +73,14 @@ void UGuardianManager::Enable()
 	{
 		SpawnPointsGenerator.Generate(World, SpawnPoints);
 	}
-
+	
+	// 맵에 있는 Guardian이 있다면 등록
+	// for (TActorIterator<AGuardian> It(GetWorld()); It; ++It)
+	// {
+	// 	AGuardian* Guardian = *It;
+	// 	AliveGuardians.Add(Guardian);
+	// }
+	
 	// 타이머 시작
 	StartCheckTick();
 
@@ -130,6 +138,23 @@ void UGuardianManager::OnGuardianFinishedAttack()
 		PRINT_LOG(TEXT("[Manager] [%s] finished attack. Releasing combat slot."), *CombatingGuardian->GetName());
 	}
 	CombatingGuardian.Reset();
+}
+
+void UGuardianManager::RegisterGuardian(AGuardian* Guardian)
+{
+	AliveGuardians.Add(Guardian);
+	
+	Guardian->GetFSMComponent()->OnAttackFinished.AddUObject(this, &UGuardianManager::OnGuardianFinishedAttack);
+	Guardian->GetFSMComponent()->OnEnemyDead.AddLambda([this, Guardian]()
+	{
+		AliveGuardians.Remove(Guardian);
+		Phase1GuardianCount--;
+
+		if (Phase1GuardianCount <= 0)
+		{
+			GameClear();
+		}
+	});
 }
 
 AGuardian* UGuardianManager::EvaluateBestAttacker() const
@@ -271,21 +296,20 @@ void UGuardianManager::SpawnGuardian(const FTransform& InSpawnTransform)
 	// AliveGuardians 추가
 	if (NewGuardian)
 	{
-		AliveGuardians.Add(NewGuardian);
+		// AliveGuardians.Add(NewGuardian);
 
 		// 공격 종료 콜백: Guardian의 공격이 끝나면 Manager에게 알림
-		NewGuardian->GetFSMComponent()->OnAttackFinished.AddUObject(this, &UGuardianManager::OnGuardianFinishedAttack);
-
-		NewGuardian->GetFSMComponent()->OnEnemyDead.AddLambda([this, NewGuardian]()
-		{
-			AliveGuardians.Remove(NewGuardian);
-			Phase1GuardianCount--;
-
-			if (Phase1GuardianCount <= 0)
-			{
-				GameClear();
-			}
-		});
+		// NewGuardian->GetFSMComponent()->OnAttackFinished.AddUObject(this, &UGuardianManager::OnGuardianFinishedAttack);
+		// NewGuardian->GetFSMComponent()->OnEnemyDead.AddLambda([this, NewGuardian]()
+		// {
+		// 	AliveGuardians.Remove(NewGuardian);
+		// 	Phase1GuardianCount--;
+		//
+		// 	if (Phase1GuardianCount <= 0)
+		// 	{
+		// 		GameClear();
+		// 	}
+		// });
 	}
 	else
 	{
