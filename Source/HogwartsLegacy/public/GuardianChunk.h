@@ -11,32 +11,35 @@ class UProceduralMeshComponent;
 class USkeletalMeshComponent;
 
 // ---------------------------------------------------------------------------
-// 게임 스레드에서 수집한 불변 스냅샷 (워커 스레드에 전달)
+// Shatter에서 1회만 수집하는 공용 스냅샷 (모든 Chunk가 읽기 전용으로 공유)
 // ---------------------------------------------------------------------------
-struct FChunkMeshSnapshot
+struct FSharedMeshSnapshot
 {
-	/** CPU 스키닝 결과 (FFinalSkinVertex 대신 필요한 데이터만 추출) */
+	/** CPU 스키닝 결과 (전체 버텍스) */
 	TArray<FVector3f> SkinnedPositions;
 	TArray<FVector3f> SkinnedTangentX;
 	TArray<FVector3f> SkinnedTangentZ;
 
-	/** UV 데이터 */
+	/** UV 데이터 (전체 버텍스) */
 	TArray<FVector2f> UVs;
+};
 
-	/** 인덱스 버퍼 */
-	TArray<uint32> IndexBuffer;
+// ---------------------------------------------------------------------------
+// Shatter에서 그룹별로 분류 완료된 Chunk 기술자
+// (공용 스냅샷의 인덱스를 참조하며, 삼각형까지 미리 분류되어 있음)
+// ---------------------------------------------------------------------------
+struct FChunkDescriptor
+{
+	/** 이 Chunk에 속하는 원본 버텍스 인덱스 (정렬 완료) */
+	TArray<int32> SortedVertexIndices;
 
-	/** 섹션 정보 */
-	struct FSectionInfo
+	/** 섹션별 삼각형 (원본 인덱스 기준, 3개씩 묶음) */
+	struct FSectionTriangles
 	{
-		uint32 BaseIndex;
-		uint32 NumTriangles;
+		TArray<int32> OriginalIndices;  // 원본 버텍스 인덱스 3개씩
 		int32 MaterialIndex;
 	};
-	TArray<FSectionInfo> Sections;
-
-	/** 이 Chunk가 담당하는 버텍스 인덱스 (정렬 완료) */
-	TArray<int32> SortedVertexIndices;
+	TArray<FSectionTriangles> SectionTriangles;
 };
 
 // ---------------------------------------------------------------------------
@@ -88,13 +91,16 @@ public:
 
 public:
 	/**
-	 * 소스 스켈레탈 메시에서, InVertexIndices에 해당하는 버텍스만으로 ProceduralMesh를 생성한다.
-	 * @param InSourceMeshComp   소스 스켈레탈 메시 컴포넌트
-	 * @param InVertexIndices    이 Chunk가 담당하는 버텍스 인덱스 집합
-	 * @param InCapMaterial
-	 * @param ApplyDelayFrames   비동기 빌드 완료 후 메시 적용까지 대기할 프레임 수 (프레임 분산용)
+	 * 공용 스냅샷과 Chunk 기술자를 받아 ProceduralMesh를 비동기로 생성한다.
+	 * @param InSharedSnapshot   Shatter에서 1회 수집한 공용 메시 스냅샷 (공유 소유권)
+	 * @param InDescriptor       이 Chunk에 할당된 버텍스/삼각형 기술자 (이동)
+	 * @param InSourceMeshComp   소스 스켈레탈 메시 컴포넌트 (설정 복사용)
+	 * @param InMaterials        소스 머티리얼 목록
+	 * @param InCapMaterial      캡 머티리얼
+	 * @param ApplyDelayFrames   비동기 빌드 완료 후 메시 적용까지 대기할 프레임 수
 	 */
-	void InitializeChunk(USkeletalMeshComponent* InSourceMeshComp, const TSet<int32>& InVertexIndices,
+	void InitializeChunk(TSharedPtr<FSharedMeshSnapshot> InSharedSnapshot, FChunkDescriptor&& InDescriptor,
+	                     USkeletalMeshComponent* InSourceMeshComp, const TArray<UMaterialInterface*>& InMaterials,
 	                     UMaterialInterface* InCapMaterial, int32 ApplyDelayFrames = 0);
 
 	/**
@@ -116,11 +122,8 @@ public:
 	UProceduralMeshComponent* GetProceduralMeshComponent() const { return ProcMeshComp; }
 
 private:
-	// ── 1단계: 게임 스레드에서 렌더 데이터를 불변 구조체로 스냅샷 ──
-	bool CollectMeshSnapshot(USkeletalMeshComponent* InSourceMeshComp, const TSet<int32>& InVertexIndices, FChunkMeshSnapshot& OutSnapshot);
-
-	// ── 2단계: 워커 스레드에서 순수 데이터 연산 (리매핑, 삼각형 추출, 캡 계산) ──
-	static void BuildMeshDataAsync(TSharedPtr<FChunkMeshSnapshot> Snapshot, TSharedPtr<FChunkMeshBuildResult> OutResult);
+	// ── 워커 스레드에서 순수 데이터 연산 (리매핑, 삼각형 리매핑, 캡 계산) ──
+	static void BuildMeshDataAsync(TSharedPtr<FSharedMeshSnapshot> SharedSnapshot, TSharedPtr<FChunkDescriptor> Descriptor, TSharedPtr<FChunkMeshBuildResult> OutResult);
 
 	// ── 3단계: 게임 스레드에서 ProceduralMeshComponent에 결과 적용 ──
 	void ApplyMeshBuildResult(const FChunkMeshBuildResult& Result);

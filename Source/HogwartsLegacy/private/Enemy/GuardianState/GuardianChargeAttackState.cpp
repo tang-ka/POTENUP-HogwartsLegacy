@@ -3,11 +3,9 @@
 
 #include "Enemy/GuardianState/GuardianChargeAttackState.h"
 
-#include "AIController.h"
-#include "HogwartsLegacy.h"
+#include "Character/PlayerCharacter.h"
 #include "Enemy/EnemyFSMComponent.h"
 #include "Enemy/Guardian.h"
-#include "GameFramework/CharacterMovementComponent.h"
 
 void UGuardianChargeAttackState::Reset()
 {
@@ -23,7 +21,8 @@ void UGuardianChargeAttackState::OnEnter()
 	Super::OnEnter();
 	
 	Target = GetOwnerFSM()->GetCurrentTarget();
-	// GetOwnerFSM()->bIsAttacking = true;
+	auto* P = Cast<APlayerCharacter>(Target);
+	P->AboutToBeAttacked(true);
 }
 
 void UGuardianChargeAttackState::OnExit()
@@ -54,6 +53,8 @@ void UGuardianChargeAttackState::TickState(float DeltaTime)
 			GetOwnerGuardian()->SnapToAttackLocation(Target, AttackRange);
 			
 			// 공격 실행
+			auto* P = Cast<APlayerCharacter>(Target);
+			P->AboutToBeAttacked(false);
 			GetOwnerGuardian()->ExecuteMeleeAttack();
 		}
 	}

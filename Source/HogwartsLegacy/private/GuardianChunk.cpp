@@ -7,9 +7,6 @@
 #include "HogwartsLegacy.h"
 #include "ProceduralMeshComponent.h"
 #include "Components/SkeletalMeshComponent.h"
-#include "Rendering/SkeletalMeshLODRenderData.h"
-#include "Rendering/SkeletalMeshRenderData.h"
-#include "SkeletalRenderPublic.h"
 
 AGuardianChunk::AGuardianChunk()
 {
@@ -17,11 +14,14 @@ AGuardianChunk::AGuardianChunk()
 	
 	ProcMeshComp = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("ProcMeshComp"));
 	SetRootComponent(ProcMeshComp);
+	
+	InitialLifeSpan = FMath::RandRange(1.8f, 2.3f);
 }
 
 void AGuardianChunk::BeginPlay()
 {
 	Super::BeginPlay();
+	
 }
 
 void AGuardianChunk::Tick(float DeltaTime)
@@ -74,7 +74,9 @@ void AGuardianChunk::Tick(float DeltaTime)
 	}
 }
 
-void AGuardianChunk::InitializeChunk(USkeletalMeshComponent* InSourceMeshComp, const TSet<int32>& InVertexIndices, UMaterialInterface* InCapMaterial, int32 ApplyDelayFrames)
+void AGuardianChunk::InitializeChunk(TSharedPtr<FSharedMeshSnapshot> InSharedSnapshot, FChunkDescriptor&& InDescriptor,
+                                     USkeletalMeshComponent* InSourceMeshComp, const TArray<UMaterialInterface*>& InMaterials,
+                                     UMaterialInterface* InCapMaterial, int32 ApplyDelayFrames)
 {
 	if (!InSourceMeshComp)
 	{
@@ -82,7 +84,7 @@ void AGuardianChunk::InitializeChunk(USkeletalMeshComponent* InSourceMeshComp, c
 		return;
 	}
 
-	if (InVertexIndices.Num() == 0)
+	if (InDescriptor.SortedVertexIndices.Num() == 0)
 	{
 		PRINT_LOG(TEXT("No vertex indices assigned to this chunk"));
 		return;
@@ -93,118 +95,41 @@ void AGuardianChunk::InitializeChunk(USkeletalMeshComponent* InSourceMeshComp, c
 	// 메시 적용 지연 프레임 설정
 	PendingApplyFrames = FMath::Max(ApplyDelayFrames, 0);
 
-	// 소스 머티리얼 캐시 (비동기 완료 후 게임 스레드에서 적용하기 위해 미리 복사)
+	// 소스 머티리얼 캐시
 	CachedMaterials.Reset();
-	for (int32 i = 0; i < InSourceMeshComp->GetNumMaterials(); ++i)
+	for (UMaterialInterface* Mat : InMaterials)
 	{
-		CachedMaterials.Add(InSourceMeshComp->GetMaterial(i));
-	}
-
-	// ── 1단계: 게임 스레드에서 스냅샷 수집 ──
-	TSharedPtr<FChunkMeshSnapshot> Snapshot = MakeShared<FChunkMeshSnapshot>();
-	if (!CollectMeshSnapshot(InSourceMeshComp, InVertexIndices, *Snapshot))
-	{
-		PRINT_LOG(TEXT("Failed to collect mesh snapshot"));
-		return;
+		CachedMaterials.Add(Mat);
 	}
 
 	SetupChunkSettings(InSourceMeshComp);
 
-	// ── 2단계: 워커 스레드에서 메시 빌드 ──
+	// Descriptor를 shared_ptr로 이동 (워커 스레드에서 사용)
+	TSharedPtr<FChunkDescriptor> DescriptorPtr = MakeShared<FChunkDescriptor>(MoveTemp(InDescriptor));
+
+	// ── 워커 스레드에서 메시 빌드 ──
 	PendingBuildResult = MakeShared<FChunkMeshBuildResult>();
 	TSharedPtr<FChunkMeshBuildResult> ResultPtr = PendingBuildResult;
 	FThreadSafeBool* CompleteFlagPtr = &bMeshBuildComplete;
 
-	AsyncTask(ENamedThreads::AnyBackgroundHiPriTask, [Snapshot, ResultPtr, CompleteFlagPtr]()
+	AsyncTask(ENamedThreads::AnyBackgroundHiPriTask, [InSharedSnapshot, DescriptorPtr, ResultPtr, CompleteFlagPtr]()
 	{
 		TRACE_CPUPROFILER_EVENT_SCOPE(AGuardianChunk::BuildMeshDataAsync);
-		BuildMeshDataAsync(Snapshot, ResultPtr);
+		BuildMeshDataAsync(InSharedSnapshot, DescriptorPtr, ResultPtr);
 		*CompleteFlagPtr = true;
 	});
 }
 
 // ===========================================================================
-// 1단계: 게임 스레드 — 렌더 데이터 스냅샷 수집
+// 워커 스레드 — 순수 데이터 연산 (UObject 접근 없음)
 // ===========================================================================
-bool AGuardianChunk::CollectMeshSnapshot(USkeletalMeshComponent* InSourceMeshComp, const TSet<int32>& InVertexIndices, FChunkMeshSnapshot& OutSnapshot)
+void AGuardianChunk::BuildMeshDataAsync(TSharedPtr<FSharedMeshSnapshot> SharedSnapshot, TSharedPtr<FChunkDescriptor> Descriptor, TSharedPtr<FChunkMeshBuildResult> OutResult)
 {
-	TRACE_CPUPROFILER_EVENT_SCOPE(AGuardianChunk::CollectMeshSnapshot);
-
-	constexpr int32 LODIndex = 0;
-	const FSkeletalMeshRenderData* RenderData = InSourceMeshComp->GetSkeletalMeshRenderData();
-	if (!RenderData || !RenderData->LODRenderData.IsValidIndex(LODIndex))
-	{
-		PRINT_LOG(TEXT("SkeletalMeshRenderData is invalid"));
-		return false;
-	}
-
-	const FSkeletalMeshLODRenderData& LODData = RenderData->LODRenderData[LODIndex];
-	const FStaticMeshVertexBuffer& StaticMeshVertexBuffer = LODData.StaticVertexBuffers.StaticMeshVertexBuffer;
-
-	// CPU 스키닝 결과 가져오기
-	TArray<FFinalSkinVertex> SkinnedVertices;
-	InSourceMeshComp->GetCPUSkinnedVertices(SkinnedVertices, LODIndex);
-
-	const int32 TotalVertices = SkinnedVertices.Num();
-	if (TotalVertices <= 0)
-	{
-		PRINT_LOG(TEXT("Failed to read CPU skinned vertices"));
-		return false;
-	}
-
-	if (TotalVertices != static_cast<int32>(LODData.GetNumVertices()))
-	{
-		PRINT_LOG(TEXT("Skinned vertex count mismatch"));
-		return false;
-	}
-
-	// 스키닝 결과를 불변 배열로 복사
-	OutSnapshot.SkinnedPositions.SetNumUninitialized(TotalVertices);
-	OutSnapshot.SkinnedTangentX.SetNumUninitialized(TotalVertices);
-	OutSnapshot.SkinnedTangentZ.SetNumUninitialized(TotalVertices);
-	OutSnapshot.UVs.SetNumUninitialized(TotalVertices);
-
-	for (int32 i = 0; i < TotalVertices; ++i)
-	{
-		const FFinalSkinVertex& SV = SkinnedVertices[i];
-		OutSnapshot.SkinnedPositions[i] = SV.Position;
-		OutSnapshot.SkinnedTangentX[i] = SV.TangentX.ToFVector3f();
-		OutSnapshot.SkinnedTangentZ[i] = SV.TangentZ.ToFVector3f();
-		OutSnapshot.UVs[i] = StaticMeshVertexBuffer.GetVertexUV(i, 0);
-	}
-
-	// 인덱스 버퍼 복사
-	FMultiSizeIndexContainerData IndicesData;
-	LODData.MultiSizeIndexContainer.GetIndexBuffer(IndicesData.Indices);
-	OutSnapshot.IndexBuffer = MoveTemp(IndicesData.Indices);
-
-	// 섹션 정보 복사
-	OutSnapshot.Sections.Reserve(LODData.RenderSections.Num());
-	for (const FSkelMeshRenderSection& Section : LODData.RenderSections)
-	{
-		FChunkMeshSnapshot::FSectionInfo Info;
-		Info.BaseIndex = Section.BaseIndex;
-		Info.NumTriangles = Section.NumTriangles;
-		Info.MaterialIndex = Section.MaterialIndex;
-		OutSnapshot.Sections.Add(Info);
-	}
-
-	// 버텍스 인덱스 정렬 복사
-	OutSnapshot.SortedVertexIndices = InVertexIndices.Array();
-	OutSnapshot.SortedVertexIndices.Sort();
-
-	return true;
-}
-
-// ===========================================================================
-// 2단계: 워커 스레드 — 순수 데이터 연산 (UObject 접근 없음)
-// ===========================================================================
-void AGuardianChunk::BuildMeshDataAsync(TSharedPtr<FChunkMeshSnapshot> Snapshot, TSharedPtr<FChunkMeshBuildResult> OutResult)
-{
-	const FChunkMeshSnapshot& Data = *Snapshot;
+	const FSharedMeshSnapshot& Shared = *SharedSnapshot;
+	const FChunkDescriptor& Desc = *Descriptor;
 	FChunkMeshBuildResult& Result = *OutResult;
 
-	const int32 NumVerts = Data.SortedVertexIndices.Num();
+	const int32 NumVerts = Desc.SortedVertexIndices.Num();
 
 	// 버텍스 리매핑 + 어트리뷰트 배열 구축
 	TMap<int32, int32> OldToNewIndex;
@@ -216,35 +141,31 @@ void AGuardianChunk::BuildMeshDataAsync(TSharedPtr<FChunkMeshSnapshot> Snapshot,
 	Result.VertexColors.Reserve(NumVerts);
 	Result.Tangents.Reserve(NumVerts);
 
-	for (const int32 OrigIdx : Data.SortedVertexIndices)
+	for (const int32 OrigIdx : Desc.SortedVertexIndices)
 	{
 		const int32 NewIdx = Result.Vertices.Num();
 		OldToNewIndex.Add(OrigIdx, NewIdx);
 
-		Result.Vertices.Add(FVector(Data.SkinnedPositions[OrigIdx]));
-		Result.Normals.Add(FVector(Data.SkinnedTangentZ[OrigIdx]));
-		Result.UV0.Add(FVector2D(Data.UVs[OrigIdx]));
+		Result.Vertices.Add(FVector(Shared.SkinnedPositions[OrigIdx]));
+		Result.Normals.Add(FVector(Shared.SkinnedTangentZ[OrigIdx]));
+		Result.UV0.Add(FVector2D(Shared.UVs[OrigIdx]));
 		Result.VertexColors.Add(FColor::White);
-		Result.Tangents.Add(FProcMeshTangent(FVector(Data.SkinnedTangentX[OrigIdx]), false));
+		Result.Tangents.Add(FProcMeshTangent(FVector(Shared.SkinnedTangentX[OrigIdx]), false));
 	}
 
-	// 섹션별 삼각형 필터링
+	// 섹션별 삼각형 리매핑 (이미 분류 완료된 데이터를 로컬 인덱스로 변환만 수행)
 	TArray<int32> AllChunkTriangles;
 
-	for (const FChunkMeshSnapshot::FSectionInfo& SectionInfo : Data.Sections)
+	for (const FChunkDescriptor::FSectionTriangles& SrcSection : Desc.SectionTriangles)
 	{
 		TArray<int32> Triangles;
+		Triangles.Reserve(SrcSection.OriginalIndices.Num());
 
-		for (uint32 TriIdx = 0; TriIdx < SectionInfo.NumTriangles; ++TriIdx)
+		for (int32 i = 0; i < SrcSection.OriginalIndices.Num(); i += 3)
 		{
-			const uint32 BaseIdx = SectionInfo.BaseIndex + TriIdx * 3;
-			const int32 I0 = Data.IndexBuffer[BaseIdx + 0];
-			const int32 I1 = Data.IndexBuffer[BaseIdx + 1];
-			const int32 I2 = Data.IndexBuffer[BaseIdx + 2];
-
-			const int32* New0 = OldToNewIndex.Find(I0);
-			const int32* New1 = OldToNewIndex.Find(I1);
-			const int32* New2 = OldToNewIndex.Find(I2);
+			const int32* New0 = OldToNewIndex.Find(SrcSection.OriginalIndices[i + 0]);
+			const int32* New1 = OldToNewIndex.Find(SrcSection.OriginalIndices[i + 1]);
+			const int32* New2 = OldToNewIndex.Find(SrcSection.OriginalIndices[i + 2]);
 
 			if (New0 && New1 && New2)
 			{
@@ -263,12 +184,12 @@ void AGuardianChunk::BuildMeshDataAsync(TSharedPtr<FChunkMeshSnapshot> Snapshot,
 
 		FChunkMeshBuildResult::FSectionData SectionData;
 		SectionData.Triangles = MoveTemp(Triangles);
-		SectionData.MaterialIndex = SectionInfo.MaterialIndex;
+		SectionData.MaterialIndex = SrcSection.MaterialIndex;
 		Result.Sections.Add(MoveTemp(SectionData));
 	}
 
 	// 캡 메시 계산
-	BuildCapSections(Result.Vertices, AllChunkTriangles, Result.CapSections);
+	// BuildCapSections(Result.Vertices, AllChunkTriangles, Result.CapSections);
 }
 
 // ===========================================================================
@@ -359,11 +280,12 @@ void AGuardianChunk::BuildCapSections(const TArray<FVector>& InVertices, const T
 				}
 
 				// 유의미한 크기 미만의 구멍은 무시 (단위: cm²)
-				constexpr float MinCapArea = 10.f;
+				constexpr float MinCapArea = 500.f;
 				if (LoopArea < MinCapArea)
 				{
 					continue;
 				}
+				PRINT_LOG(TEXT("Loop with %d vertices, Area: %.2f cm²"), CurrentLoop.Num(), LoopArea);
 
 				// 5. 캡 섹션 데이터 생성
 				FChunkMeshBuildResult::FCapSectionData CapData;
@@ -432,17 +354,17 @@ void AGuardianChunk::ApplyMeshBuildResult(const FChunkMeshBuildResult& Result)
 	}
 
 	// 캡 섹션 적용
-	// for (const FChunkMeshBuildResult::FCapSectionData& CapData : Result.CapSections)
-	// {
-	// 	ProcMeshComp->CreateMeshSection(SectionIndex, CapData.Vertices, CapData.Triangles,
-	// 	                                CapData.Normals, CapData.UVs, CapData.Colors, CapData.Tangents, true);
-	//
-	// 	if (CapMaterial)
-	// 	{
-	// 		ProcMeshComp->SetMaterial(SectionIndex, CapMaterial);
-	// 	}
-	// 	++SectionIndex;
-	// }
+	for (const FChunkMeshBuildResult::FCapSectionData& CapData : Result.CapSections)
+	{
+		ProcMeshComp->CreateMeshSection(SectionIndex, CapData.Vertices, CapData.Triangles,
+		                                CapData.Normals, CapData.UVs, CapData.Colors, CapData.Tangents, true);
+	
+		if (CapMaterial)
+		{
+			ProcMeshComp->SetMaterial(SectionIndex, CapMaterial);
+		}
+		++SectionIndex;
+	}
 
 	// 물리 충돌체 생성용 버텍스 캐시
 	CachedVertices = Result.Vertices;
@@ -479,7 +401,7 @@ void AGuardianChunk::EnableChunkPhysics()
 	ProcMeshComp->SetEnableGravity(true);
 
 	// 5. 질량 설정 (기본값이 너무 크거나 작을 수 있으므로 적절한 값 지정)
-	ProcMeshComp->SetMassOverrideInKg(NAME_None, 5.0f);
+	ProcMeshComp->SetMassOverrideInKg(NAME_None, 50.f);
 	
 	// 6. 감속 설정 (너무 빨리 미끄러지지 않도록)
 	ProcMeshComp->SetLinearDamping(0.5f);
@@ -561,7 +483,7 @@ void AGuardianChunk::SetupChunkSettings(USkeletalMeshComponent* InSourceMeshComp
 	TRACE_CPUPROFILER_EVENT_SCOPE(AGuardianChunk::SetupChunkSettings);
 	ProcMeshComp->SetRelativeTransform(InSourceMeshComp->GetComponentTransform());
 	ProcMeshComp->SetCollisionEnabled(InSourceMeshComp->GetCollisionEnabled());
-	ProcMeshComp->SetCollisionProfileName(InSourceMeshComp->GetCollisionProfileName());
+	// ProcMeshComp->SetCollisionProfileName(InSourceMeshComp->GetCollisionProfileName());
 	ProcMeshComp->SetCollisionObjectType(InSourceMeshComp->GetCollisionObjectType());
 	ProcMeshComp->SetCanEverAffectNavigation(false);
 	ProcMeshComp->SetCastShadow(InSourceMeshComp->CastShadow);

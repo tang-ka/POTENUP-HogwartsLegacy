@@ -20,7 +20,6 @@ public:
 	virtual void Reset() override;
 	virtual void OnEnter() override;
 	virtual void OnExit() override;
-	virtual void TickState(float DeltaTime) override;
 	
 private:
 	FTimerHandle StumbleTimerHandle;

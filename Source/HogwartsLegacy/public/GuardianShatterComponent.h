@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "GuardianChunk.h"
 #include "GuardianShatterComponent.generated.h"
 
 class USkeletalMesh;
@@ -42,6 +43,23 @@ private:
 	 * @param OutVertexToGroup    전체 버텍스 인덱스 → 그룹 인덱스 (INDEX_NONE이면 미분류)
 	 */
 	void ClassifyVerticesByBoneGroup(const TArray<int32>& InBoneIndexToGroup, TArray<int32>& OutVertexToGroup) const;
+
+	/**
+	 * 현재 포즈 기준 공용 메시 스냅샷을 1회 수집한다.
+	 * @param OutSnapshot  수집 결과를 저장할 공유 스냅샷
+	 * @return 수집 성공 여부
+	 */
+	bool CollectSharedSnapshot(FSharedMeshSnapshot& OutSnapshot) const;
+
+	/**
+	 * 전체 삼각형을 1회 순회하여 그룹별 ChunkDescriptor를 생성한다.
+	 * @param InVertexToGroup     전체 버텍스 → 그룹 인덱스 맵
+	 * @param InGroupVertexSets   그룹별 버텍스 인덱스 집합
+	 * @param OutDescriptors      그룹별 ChunkDescriptor 출력
+	 */
+	void BuildChunkDescriptors(const TArray<int32>& InVertexToGroup,
+	                           const TArray<TSet<int32>>& InGroupVertexSets,
+	                           TArray<FChunkDescriptor>& OutDescriptors) const;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Shatter)

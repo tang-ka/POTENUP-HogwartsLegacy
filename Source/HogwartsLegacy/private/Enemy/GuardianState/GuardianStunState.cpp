@@ -13,19 +13,19 @@ void UGuardianStunState::Reset()
 	CurTime = 0.f;
 }
 
-void UGuardianStunState::OnEnter()
-{
-	Super::OnEnter();
-	
-	GetOwnerGuardian()->SetMaterialColor(FLinearColor::Green);
-}
-
-void UGuardianStunState::OnExit()
-{
-	Super::OnExit();
-	
-	GetOwnerGuardian()->ResetMaterialColor();
-}
+// void UGuardianStunState::OnEnter()
+// {
+// 	Super::OnEnter();
+// 	
+// 	GetOwnerGuardian()->SetMaterialColor(FLinearColor::Green);
+// }
+//
+// void UGuardianStunState::OnExit()
+// {
+// 	Super::OnExit();
+// 	
+// 	GetOwnerGuardian()->ResetMaterialColor();
+// }
 
 void UGuardianStunState::TickState(float DeltaTime)
 {

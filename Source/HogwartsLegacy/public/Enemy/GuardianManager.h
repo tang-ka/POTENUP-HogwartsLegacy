@@ -18,7 +18,7 @@ public:
 
 private:
 	int32 SpawnPointCount{6};
-	float SpawnRadius{1000.f};
+	float SpawnRadius{1500.f};
 	FVector CenterLocation{0.f, 0.f, 0.f};
 };
 
@@ -82,7 +82,7 @@ private:
 
 	// 공격자 선택 주기 (초)
 	UPROPERTY()
-	float AttackSelectInterval{5.f};
+	float AttackSelectInterval{10.f};
 	
 	TSubclassOf<AGuardian> GuardianClass;;
 	

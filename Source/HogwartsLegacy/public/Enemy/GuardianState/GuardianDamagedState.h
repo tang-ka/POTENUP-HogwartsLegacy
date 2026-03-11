@@ -18,8 +18,6 @@ public:
 	virtual FName GetStateName() const override { return TEXT("Damaged"); }
 	
 	virtual void Reset() override;
-	virtual void OnEnter() override;
-	virtual void OnExit() override;
 	virtual void TickState(float DeltaTime) override;
 	
 private:

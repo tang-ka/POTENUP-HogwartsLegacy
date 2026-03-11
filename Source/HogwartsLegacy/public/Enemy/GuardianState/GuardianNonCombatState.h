@@ -16,9 +16,7 @@ class HOGWARTSLEGACY_API UGuardianSleepState : public UGuardianStateBase
 	
 public:
 	virtual FName GetStateName() const override { return TEXT("Sleep"); }
-	
-	virtual void OnEnter() override;
-	virtual void OnExit() override;
+
 	virtual void TickState(float DeltaTime) override;
 };
 
@@ -31,7 +29,6 @@ public:
 	virtual FName GetStateName() const override { return TEXT("Idle"); }
 	
 	virtual void OnEnter() override;
-	virtual void OnExit() override;
 	virtual void TickState(float DeltaTime) override;
 	
 protected:

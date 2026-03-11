@@ -84,8 +84,8 @@ public:
 #pragma endregion
 
 #pragma region Test
-	void SetMaterialColor(FLinearColor Color);
-	void ResetMaterialColor();
+	// void SetMaterialColor(FLinearColor Color);
+	// void ResetMaterialColor();
 #pragma endregion
 
 #pragma region Getters

@@ -19,7 +19,7 @@ void SpawnPointGenerator::Generate(UWorld* World, TArray<TObjectPtr<AEnemySpawnP
 		float Angle = i * AngleStep;
 		const float x = FMath::Cos(FMath::DegreesToRadians(Angle)) * SpawnRadius;
 		const float y = FMath::Sin(FMath::DegreesToRadians(Angle)) * SpawnRadius;
-		constexpr float z = 1000.f;
+		constexpr float z = 50.f;
 		FVector SpawnLocation = FVector(x, y, z);
 
 		// SpawnLocation과 CenterLocation의 Z축을 무시
@@ -297,11 +297,11 @@ TArray<FTransform> UGuardianManager::FindSafeSpawnPoints(int RequestCount) const
 	{
 		if (SpawnPoint->IsSafeToSpawn())
 		{
-			SafeSpawnTransforms.Add(SpawnPoint->GetActorTransform());
+			SafeSpawnTransforms.Add(SpawnPoint->GetSafeSpawnPoint());
 		}
 	}
-	// SafeSpawnTransforms에서 RequestCount 개수만큼 랜덤으로 선택하여 반환
 
+	// SafeSpawnTransforms에서 RequestCount 개수만큼 랜덤으로 선택하여 반환
 	if (RequestCount > 0)
 	{
 		TArray<FTransform> SelectedSpawnTransforms{};

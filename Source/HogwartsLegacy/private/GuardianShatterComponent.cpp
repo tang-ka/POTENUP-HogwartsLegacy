@@ -10,6 +10,7 @@
 #include "GameFramework/Character.h"
 #include "Rendering/SkeletalMeshLODRenderData.h"
 #include "Rendering/SkeletalMeshRenderData.h"
+#include "SkeletalRenderPublic.h"
 #include "ProfilingDebugging/CPUProfilerTrace.h"
 
 UGuardianShatterComponent::UGuardianShatterComponent()
@@ -260,30 +261,27 @@ void UGuardianShatterComponent::TriggerShatter()
 		return;
 	}
 
-	// 1) 본 → 그룹 맵 구축
-	// TArray<int32> BoneIndexToGroup;
-	// BuildBoneToGroupMap(BoneIndexToGroup);
-	
-	// 2) 버텍스 → 그룹 분류
-	// TArray<int32> VertexToGroup;
-	// ClassifyVerticesByBoneGroup(BoneIndexToGroup, VertexToGroup);
+	// ── 1) 공용 스냅샷 1회 수집 (CPU 스키닝, UV) ──
+	TSharedPtr<FSharedMeshSnapshot> SharedSnapshot = MakeShared<FSharedMeshSnapshot>();
+	if (!CollectSharedSnapshot(*SharedSnapshot))
+	{
+		PRINT_LOG(TEXT("Failed to collect shared mesh snapshot"));
+		return;
+	}
 
-	// 3) 그룹별 버텍스 인덱스 수집
-	// const int32 NumGroups = ShatterBoneGroup.Num();
-	// TArray<TSet<int32>> GroupVertexSets;
-	// GroupVertexSets.SetNum(NumGroups);
-	//
-	// for (int32 Index = 0; Index < VertexToGroup.Num(); ++Index)
-	// {
-	// 	const int32 Group = VertexToGroup[Index];
-	// 	if (Group != INDEX_NONE && Group < NumGroups)
-	// 	{
-	// 		GroupVertexSets[Group].Add(Index);
-	// 	}
-	// }
-
-	// 4) 그룹별 GuardianChunk 스폰
+	// ── 2) 그룹별 ChunkDescriptor 생성 (삼각형 분류까지 1회 순회로 완료) ──
 	const int32 NumGroups = ShatterBoneGroup.Num();
+	TArray<FChunkDescriptor> ChunkDescriptors;
+	BuildChunkDescriptors(VertexToGroup, GroupVertexSets, ChunkDescriptors);
+
+	// ── 3) 소스 머티리얼 목록 캐시 ──
+	TArray<UMaterialInterface*> SourceMaterials;
+	for (int32 i = 0; i < MeshComp->GetNumMaterials(); ++i)
+	{
+		SourceMaterials.Add(MeshComp->GetMaterial(i));
+	}
+
+	// ── 4) 그룹별 GuardianChunk 스폰 ──
 	const FTransform OwnerTransform = GetOwner()->GetActorTransform();
 	const FVector ExplosionCenter = GetOwner()->GetActorLocation();
 
@@ -291,7 +289,7 @@ void UGuardianShatterComponent::TriggerShatter()
 
 	for (int32 GroupIdx = 0; GroupIdx < NumGroups; ++GroupIdx)
 	{
-		if (GroupVertexSets[GroupIdx].Num() == 0)
+		if (ChunkDescriptors[GroupIdx].SortedVertexIndices.Num() == 0)
 		{
 			PRINT_LOG(TEXT("Group '%s' has no vertices"), *ShatterBoneGroup[GroupIdx].ToString());
 			continue;
@@ -305,8 +303,9 @@ void UGuardianShatterComponent::TriggerShatter()
 		}
 
 		// 메시 적용(CreateMeshSection)도 Chunk별로 프레임 분산
-		const int32 ApplyDelay = SpawnedChunks.Num();
-		Chunk->InitializeChunk(MeshComp, GroupVertexSets[GroupIdx], CapMaterial, ApplyDelay);
+		const int32 ApplyDelay = SpawnedChunks.Num() + 1;
+		Chunk->InitializeChunk(SharedSnapshot, MoveTemp(ChunkDescriptors[GroupIdx]),
+		                       MeshComp, SourceMaterials, CapMaterial, 0);
 		SpawnedChunks.Add(Chunk);
 	}
 
@@ -320,6 +319,173 @@ void UGuardianShatterComponent::TriggerShatter()
 	//    Guardian이 Destroy되어도 Chunk는 독립 Actor이므로 자체 Tick에서 안전하게 처리됨
 	for (int32 i = 0; i < SpawnedChunks.Num(); ++i)
 	{
-		SpawnedChunks[i]->SchedulePhysicsActivation(ExplosionCenter, ExplosionStrength, ExplosionRadius, i);
+		SpawnedChunks[i]->SchedulePhysicsActivation(ExplosionCenter, ExplosionStrength, ExplosionRadius, 1);
+	}
+}
+
+// ===========================================================================
+// 공용 스냅샷 수집: CPU 스키닝 + UV (1회만 호출)
+// ===========================================================================
+bool UGuardianShatterComponent::CollectSharedSnapshot(FSharedMeshSnapshot& OutSnapshot) const
+{
+	TRACE_CPUPROFILER_EVENT_SCOPE(GuardianShatterComponent::CollectSharedSnapshot);
+
+	constexpr int32 LODIndex = 0;
+	const FSkeletalMeshRenderData* RenderData = MeshComp->GetSkeletalMeshRenderData();
+	if (!RenderData || !RenderData->LODRenderData.IsValidIndex(LODIndex))
+	{
+		PRINT_LOG(TEXT("SkeletalMeshRenderData is invalid"));
+		return false;
+	}
+
+	const FSkeletalMeshLODRenderData& LODData = RenderData->LODRenderData[LODIndex];
+	const FStaticMeshVertexBuffer& StaticMeshVertexBuffer = LODData.StaticVertexBuffers.StaticMeshVertexBuffer;
+
+	// CPU 스키닝 결과 가져오기 (현재 애니메이션 포즈 기준)
+	TArray<FFinalSkinVertex> SkinnedVertices;
+	MeshComp->GetCPUSkinnedVertices(SkinnedVertices, LODIndex);
+
+	const int32 TotalVertices = SkinnedVertices.Num();
+	if (TotalVertices <= 0)
+	{
+		PRINT_LOG(TEXT("Failed to read CPU skinned vertices"));
+		return false;
+	}
+
+	if (TotalVertices != static_cast<int32>(LODData.GetNumVertices()))
+	{
+		PRINT_LOG(TEXT("Skinned vertex count mismatch"));
+		return false;
+	}
+
+	// 전체 버텍스 데이터를 불변 배열로 복사
+	OutSnapshot.SkinnedPositions.SetNumUninitialized(TotalVertices);
+	OutSnapshot.SkinnedTangentX.SetNumUninitialized(TotalVertices);
+	OutSnapshot.SkinnedTangentZ.SetNumUninitialized(TotalVertices);
+	OutSnapshot.UVs.SetNumUninitialized(TotalVertices);
+
+	for (int32 i = 0; i < TotalVertices; ++i)
+	{
+		const FFinalSkinVertex& SV = SkinnedVertices[i];
+		OutSnapshot.SkinnedPositions[i] = SV.Position;
+		OutSnapshot.SkinnedTangentX[i] = SV.TangentX.ToFVector3f();
+		OutSnapshot.SkinnedTangentZ[i] = SV.TangentZ.ToFVector3f();
+		OutSnapshot.UVs[i] = StaticMeshVertexBuffer.GetVertexUV(i, 0);
+	}
+
+	return true;
+}
+
+// ===========================================================================
+// Chunk 기술자 생성: 전체 삼각형을 1회 순회하여 그룹별 Vertex + Triangle 분류
+// ===========================================================================
+void UGuardianShatterComponent::BuildChunkDescriptors(const TArray<int32>& InVertexToGroup,
+                                                      const TArray<TSet<int32>>& InGroupVertexSets,
+                                                      TArray<FChunkDescriptor>& OutDescriptors) const
+{
+	TRACE_CPUPROFILER_EVENT_SCOPE(GuardianShatterComponent::BuildChunkDescriptors);
+
+	const int32 NumGroups = ShatterBoneGroup.Num();
+	OutDescriptors.SetNum(NumGroups);
+
+	// 각 그룹의 SortedVertexIndices 세팅
+	for (int32 GroupIdx = 0; GroupIdx < NumGroups; ++GroupIdx)
+	{
+		OutDescriptors[GroupIdx].SortedVertexIndices = InGroupVertexSets[GroupIdx].Array();
+		OutDescriptors[GroupIdx].SortedVertexIndices.Sort();
+	}
+
+	// 렌더 데이터에서 인덱스 버퍼 + 섹션 정보 읽기 (1회만)
+	constexpr int32 LODIndex = 0;
+	const FSkeletalMeshRenderData* RenderData = MeshComp->GetSkeletalMeshRenderData();
+	if (!RenderData || !RenderData->LODRenderData.IsValidIndex(LODIndex))
+	{
+		return;
+	}
+
+	const FSkeletalMeshLODRenderData& LODData = RenderData->LODRenderData[LODIndex];
+
+	// 인덱스 버퍼 복사
+	TArray<uint32> IndexBuffer;
+	{
+		FMultiSizeIndexContainerData IndicesData;
+		LODData.MultiSizeIndexContainer.GetIndexBuffer(IndicesData.Indices);
+		IndexBuffer = MoveTemp(IndicesData.Indices);
+	}
+
+	const TArray<FSkelMeshRenderSection>& RenderSections = LODData.RenderSections;
+
+	// 그룹별·섹션별 삼각형 임시 저장소
+	// [GroupIdx][SectionIdx] → 원본 인덱스 배열
+	TArray<TArray<TArray<int32>>> GroupSectionTriangles;
+	GroupSectionTriangles.SetNum(NumGroups);
+	for (int32 GroupIdx = 0; GroupIdx < NumGroups; ++GroupIdx)
+	{
+		GroupSectionTriangles[GroupIdx].SetNum(RenderSections.Num());
+	}
+
+	// 전체 삼각형 1회 순회 → 그룹별 분류
+	for (int32 SectionIdx = 0; SectionIdx < RenderSections.Num(); ++SectionIdx)
+	{
+		const FSkelMeshRenderSection& Section = RenderSections[SectionIdx];
+
+		for (uint32 TriIdx = 0; TriIdx < Section.NumTriangles; ++TriIdx)
+		{
+			const uint32 BaseIdx = Section.BaseIndex + TriIdx * 3;
+			const int32 I0 = static_cast<int32>(IndexBuffer[BaseIdx + 0]);
+			const int32 I1 = static_cast<int32>(IndexBuffer[BaseIdx + 1]);
+			const int32 I2 = static_cast<int32>(IndexBuffer[BaseIdx + 2]);
+
+			// 삼각형의 3개 버텍스 중 과반수가 속하는 그룹을 결정
+			const int32 G0 = (I0 < InVertexToGroup.Num()) ? InVertexToGroup[I0] : INDEX_NONE;
+			const int32 G1 = (I1 < InVertexToGroup.Num()) ? InVertexToGroup[I1] : INDEX_NONE;
+			const int32 G2 = (I2 < InVertexToGroup.Num()) ? InVertexToGroup[I2] : INDEX_NONE;
+
+			// 과반수 그룹 결정: 3개 중 2개 이상 같으면 그 그룹, 아니면 첫 번째 유효 그룹
+			int32 TriGroup = INDEX_NONE;
+			if (G0 != INDEX_NONE && (G0 == G1 || G0 == G2))
+			{
+				TriGroup = G0;
+			}
+			else if (G1 != INDEX_NONE && G1 == G2)
+			{
+				TriGroup = G1;
+			}
+			else
+			{
+				// 과반수 없음 → 첫 번째 유효 그룹
+				if (G0 != INDEX_NONE) TriGroup = G0;
+				else if (G1 != INDEX_NONE) TriGroup = G1;
+				else if (G2 != INDEX_NONE) TriGroup = G2;
+			}
+
+			if (TriGroup != INDEX_NONE && TriGroup < NumGroups)
+			{
+				TArray<int32>& TriBuffer = GroupSectionTriangles[TriGroup][SectionIdx];
+				TriBuffer.Add(I0);
+				TriBuffer.Add(I1);
+				TriBuffer.Add(I2);
+			}
+		}
+	}
+
+	// 임시 저장소를 ChunkDescriptor::SectionTriangles로 이동
+	for (int32 GroupIdx = 0; GroupIdx < NumGroups; ++GroupIdx)
+	{
+		FChunkDescriptor& Desc = OutDescriptors[GroupIdx];
+
+		for (int32 SectionIdx = 0; SectionIdx < RenderSections.Num(); ++SectionIdx)
+		{
+			TArray<int32>& TriBuffer = GroupSectionTriangles[GroupIdx][SectionIdx];
+			if (TriBuffer.Num() == 0)
+			{
+				continue;
+			}
+
+			FChunkDescriptor::FSectionTriangles SectionTris;
+			SectionTris.OriginalIndices = MoveTemp(TriBuffer);
+			SectionTris.MaterialIndex = RenderSections[SectionIdx].MaterialIndex;
+			Desc.SectionTriangles.Add(MoveTemp(SectionTris));
+		}
 	}
 }

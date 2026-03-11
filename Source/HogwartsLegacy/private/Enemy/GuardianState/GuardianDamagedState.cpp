@@ -12,19 +12,19 @@ void UGuardianDamagedState::Reset()
 	CurTime = 0.f;
 }
 
-void UGuardianDamagedState::OnEnter()
-{
-	Super::OnEnter();
-	
-	GetOwnerGuardian()->SetMaterialColor(FLinearColor::Red);
-}
-
-void UGuardianDamagedState::OnExit()
-{
-	Super::OnExit();
-	
-	GetOwnerGuardian()->ResetMaterialColor();
-}
+// void UGuardianDamagedState::OnEnter()
+// {
+// 	Super::OnEnter();
+// 	
+// 	GetOwnerGuardian()->SetMaterialColor(FLinearColor::Red);
+// }
+//
+// void UGuardianDamagedState::OnExit()
+// {
+// 	Super::OnExit();
+// 	
+// 	GetOwnerGuardian()->ResetMaterialColor();
+// }
 
 void UGuardianDamagedState::TickState(float DeltaTime)
 {
