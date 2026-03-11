@@ -319,7 +319,7 @@ void APlayerCharacter::SpellLumos(USceneComponent* WandTip)
 	if (!IsValid(lumos))
 	{
 		HUD->UpdateSkillSlotWidget(1, TEXT("Lumos"));
-		lumos = GetWorld()->SpawnActor<ALumos>(Lumoses, GetMesh()->GetBoneLocation(FName(TEXT("WandSocketTip"))), WandTipComp->GetComponentRotation());
+		lumos = GetWorld()->SpawnActor<ALumos>(Lumoses, GetMesh()->GetBoneLocation(FName(TEXT("SKT_FX_RightHand"))), WandTipComp->GetComponentRotation());
 		lumos->SetLocation(GetMesh(), GetMesh()->GetSocketByName(FName(TEXT("WandTipSocket"))));
 	}
 	else
@@ -343,7 +343,7 @@ void APlayerCharacter::SpawnBasicAttack()
 	{
 		FVector dir = AimedTarget->GetActorLocation() - this->GetActorLocation();
 		dir.Normalize();
-		attack = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetMesh()->GetBoneLocation(FName(TEXT("WandSocketTip"))), dir.Rotation());
+		attack = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetMesh()->GetBoneLocation(FName(TEXT("SKT_FX_RightHand"))), dir.Rotation());
 		if (!IsValid(attack))
 		{
 			return;
@@ -352,7 +352,7 @@ void APlayerCharacter::SpawnBasicAttack()
 	}
 	else
 	{
-		attack = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetMesh()->GetBoneLocation(FName(TEXT("WandSocketTip"))), GetViewRotation());
+		attack = GetWorld()->SpawnActor<ABasicAttack>(BasicAttacks, GetMesh()->GetBoneLocation(FName(TEXT("SKT_FX_RightHand"))), GetViewRotation());
 		if (!IsValid(attack))
 		{
 			return;
@@ -377,12 +377,12 @@ void APlayerCharacter::SpawnStupefy()
 	{
 		FVector dir = AimedTarget->GetActorLocation() - this->GetActorLocation();
 		dir.Normalize();
-		stupefy = GetWorld()->SpawnActor<AStupefy>(Stupefies, GetMesh()->GetBoneLocation(FName(TEXT("WandSocketTip"))), dir.Rotation());
+		stupefy = GetWorld()->SpawnActor<AStupefy>(Stupefies, GetMesh()->GetBoneLocation(FName(TEXT("SKT_FX_RightHand"))), dir.Rotation());
 		stupefy->SetTarget(AimedTarget);
 	}
 	else
 	{
-		stupefy = GetWorld()->SpawnActor<AStupefy>(Stupefies, GetMesh()->GetBoneLocation(FName(TEXT("WandSocketTip"))), GetActorRotation());
+		stupefy = GetWorld()->SpawnActor<AStupefy>(Stupefies, GetMesh()->GetBoneLocation(FName(TEXT("SKT_FX_RightHand"))), GetActorRotation());
 		stupefy->NoTarget();
 	}
 }
