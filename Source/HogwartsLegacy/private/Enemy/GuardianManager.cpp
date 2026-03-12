@@ -39,7 +39,7 @@ void SpawnPointGenerator::Generate(UWorld* World, TArray<TObjectPtr<AEnemySpawnP
 		if (NewSpawnPoint)
 		{
 			OutSpawnPoints.Add(NewSpawnPoint);
-			NewSpawnPoint->SetFolderPath(FName("SpawnPoints"));
+			// NewSpawnPoint->SetFolderPath(FName("SpawnPoints"));
 		}
 	}
 }

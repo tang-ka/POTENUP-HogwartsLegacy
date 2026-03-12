@@ -22,7 +22,7 @@ AGuardian::AGuardian()
 	// 1. 스켈레탈메시 데이터 로드
 	ConstructorHelpers::FObjectFinder<USkeletalMesh>
 		tempMesh(TEXT(
-			"/Script/Engine.SkeletalMesh'/Game/SSH/ThirdPerson_Characters/Mannequins/Meshes/SKM_Quinn_Simple.SKM_Quinn_Simple'"));
+			"/Script/Engine.SkeletalMesh'/Game/SSH/Model/Guardian/SKM_Guardian.SKM_Guardian'"));
 	if (tempMesh.Succeeded())
 	{
 		GetMesh()->SetSkeletalMesh(tempMesh.Object);
