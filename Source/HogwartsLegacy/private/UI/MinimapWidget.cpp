@@ -50,13 +50,13 @@ void UMinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	MinimapTrim->SetRenderTransformAngle(ControlYaw);
 	PlayerMarker->SetRenderTransformAngle(PlayerPawn->GetActorRotation().Yaw);
 	
-	CurrentZoomAlpha = FMath::FInterpTo(CurrentZoomAlpha, TargetZoomAlpha, InDeltaTime, ZoomInterpSpeed);
-	MinimapWorldRadius = FMath::FInterpTo(MinimapWorldRadius, TargetWorldRadius, InDeltaTime, ZoomInterpSpeed);
+	// CurrentZoomAlpha = FMath::FInterpTo(CurrentZoomAlpha, TargetZoomAlpha, InDeltaTime, ZoomInterpSpeed);
+	// MinimapWorldRadius = FMath::FInterpTo(MinimapWorldRadius, TargetWorldRadius, InDeltaTime, ZoomInterpSpeed);
+	//
+	// MinimapCanvas->SetRenderScale(FVector2D(FMath::Lerp(1.0f, MaxCanvasScale, CurrentZoomAlpha)));
+	// MinimapCanvas->SetRenderTranslation(FMath::Lerp(FVector2D::ZeroVector, MaxCanvasTranslation, CurrentZoomAlpha));
 	
-	MinimapCanvas->SetRenderScale(FVector2D(FMath::Lerp(1.0f, MaxCanvasScale, CurrentZoomAlpha)));
-	MinimapCanvas->SetRenderTranslation(FMath::Lerp(FVector2D::ZeroVector, MaxCanvasTranslation, CurrentZoomAlpha));
-	
-	MinimapWorldRadius = FMath::FInterpTo(MinimapWorldRadius, TargetWorldRadius, InDeltaTime, ZoomInterpSpeed);
+	// MinimapWorldRadius = FMath::FInterpTo(MinimapWorldRadius, TargetWorldRadius, InDeltaTime, ZoomInterpSpeed);
 	
 	UpdateEnemyMarkers(ControlYaw, PlayerPawn->GetActorLocation());
 }
@@ -65,16 +65,16 @@ void UMinimapWidget::NativeOnMouseEnter(const FGeometry& InGeometry, const FPoin
 {
 	Super::NativeOnMouseEnter(InGeometry, InMouseEvent);
 	
-	TargetWorldRadius = ZoomedWorldRadius;
-	TargetZoomAlpha = 1.0f;
+	// TargetWorldRadius = ZoomedWorldRadius;
+	// TargetZoomAlpha = 1.0f;
 }
 
 void UMinimapWidget::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
 {
 	Super::NativeOnMouseLeave(InMouseEvent);
 	
-	TargetWorldRadius = DefaultWorldRadius;
-	TargetZoomAlpha = 0.0f;
+	// TargetWorldRadius = DefaultWorldRadius;
+	// TargetZoomAlpha = 0.0f;
 }
 
 UUserWidget* UMinimapWidget::GetMarkerFromPool()
@@ -98,13 +98,8 @@ UUserWidget* UMinimapWidget::GetMarkerFromPool()
             
 			if (NewSlot && PlayerSlot)
 			{
-				// 1. 플레이어의 앵커를 그대로 복사
 				NewSlot->SetAnchors(PlayerSlot->GetAnchors());
-                
-				// 2. 플레이어의 에디터 상 위치를 그대로 복사
 				NewSlot->SetPosition(PlayerSlot->GetPosition());
-                
-				// 3. Marker의 중심이 좌표가 되도록 설정
 				NewSlot->SetAlignment(FVector2D(0.5f, 0.5f));
 				NewSlot->SetAutoSize(true);
 			}
