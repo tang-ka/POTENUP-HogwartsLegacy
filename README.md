@@ -1,12 +1,15 @@
 # Hogwarts Legacy - Guardian Combat
 
-> 호그와트 레거시의 가디언 전투 구간을 재현한 3인 팀 프로젝트 · Unreal Engine 5.7 / C++
+> 호그와트 레거시의 가디언 전투 구간을 재현한 3인 팀 프로젝트
 
 <!-- TODO: 가디언 전투 + 파괴 연출 대표 GIF 1개 -->
 
-| 기간 | 인원 | 담당 |
-|---|---|---|
-| 2026.02 ~ 2026.03 (1개월) | 3인 | Guardian(보스) AI · 스폰/전투 중재 · 런타임 메시 파괴 |
+<table>
+  <tr><td><b>기간</b></td><td>2026.02 ~ 2026.03 (1개월)</td></tr>
+  <tr><td><b>인원</b></td><td>3인</td></tr>
+  <tr><td><b>엔진</b></td><td>Unreal Engine 5.7 / C++</td></tr>
+  <tr><td><b>담당</b></td><td>Guardian(보스) AI · 스폰/전투 중재 · 런타임 메시 파괴</td></tr>
+</table>
 
 ---
 
