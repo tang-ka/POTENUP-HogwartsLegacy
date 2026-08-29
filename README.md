@@ -95,9 +95,9 @@ State 패턴 기반 상태 기계. 9개 상태(`Sleep` / `Idle` / `Strafe` / `Ch
 
 | 파트 | 담당 |
 |---|---|
-| Guardian AI · FSM · 전투 중재 · 메시 파괴 | 본인 |
-| 플레이어 캐릭터 · 주문(Lumos / Protego / Stupefy) · 콤보 | 팀원 |
-| UI · HUD · 미니맵 | 팀원 |
+| Guardian AI · FSM · 전투 중재 · 메시 파괴 | 🟢 본인 |
+| 플레이어 캐릭터 · 주문(Lumos / Protego / Stupefy) · 콤보 | ⚪ 팀원 |
+| UI · HUD · 미니맵 | ⚪ 팀원 |
 
 ## 실행
 
