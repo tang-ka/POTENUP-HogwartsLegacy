@@ -68,7 +68,7 @@ State 패턴 기반 상태 기계. 9개 상태(`Sleep` / `Idle` / `Strafe` / `Ch
 
 ---
 
-### 3. GuardianManager — 다수 적 전투 중재
+### 3. 다수 적 전투 중재 (GuardianManager)
 
 `UWorldSubsystem`으로 구현한 전역 중재자. 개체가 각자 판단하면 여러 마리가 동시에 달려드는 문제가 생기므로,
 **공격 권한을 매니저가 독점하고 한 번에 한 개체에게만 지시**하는 구조로 설계했다.
