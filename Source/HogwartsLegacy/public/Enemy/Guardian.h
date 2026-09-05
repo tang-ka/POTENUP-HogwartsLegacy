@@ -137,7 +137,7 @@ private:
 	UPROPERTY(VisibleAnywhere, Category="Stats")
 	int32 HP{};
 
-	UPROPERTY(VisibleAnywhere, Category="Stats")
+	UPROPERTY(EditAnywhere, Category="Stats")
 	int32 MaxHP{100};
 	
 	UPROPERTY(EditAnywhere, Category="Stats")

@@ -14,6 +14,7 @@ AGuardianChunk::AGuardianChunk()
 	
 	ProcMeshComp = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("ProcMeshComp"));
 	SetRootComponent(ProcMeshComp);
+	ProcMeshComp->bUseAsyncCooking = true;
 	
 	InitialLifeSpan = FMath::RandRange(1.8f, 2.3f);
 }
@@ -93,6 +94,7 @@ void AGuardianChunk::InitializeChunk(TSharedPtr<FSharedMeshSnapshot> InSharedSna
 
 	// 메시 적용 지연 프레임 설정
 	PendingApplyFrames = FMath::Max(ApplyDelayFrames, 0);
+	// PendingApplyFrames = -1;
 
 	// 소스 머티리얼 캐시
 	CachedMaterials.Reset();
@@ -343,7 +345,7 @@ void AGuardianChunk::ApplyMeshBuildResult(const FChunkMeshBuildResult& Result)
 	for (const FChunkMeshBuildResult::FSectionData& Section : Result.Sections)
 	{
 		ProcMeshComp->CreateMeshSection(SectionIndex, Result.Vertices, Section.Triangles,
-		                                Result.Normals, Result.UV0, Result.VertexColors, Result.Tangents, true);
+		                                Result.Normals, Result.UV0, Result.VertexColors, Result.Tangents, false);
 
 		if (CachedMaterials.IsValidIndex(Section.MaterialIndex))
 		{
@@ -373,6 +375,7 @@ void AGuardianChunk::ApplyMeshBuildResult(const FChunkMeshBuildResult& Result)
 
 void AGuardianChunk::EnableChunkPhysics()
 {
+	TRACE_CPUPROFILER_EVENT_SCOPE(AGuardianChunk::EnableChunkPhysics);
 	if (!ProcMeshComp)
 	{
 		return;
@@ -487,6 +490,5 @@ void AGuardianChunk::SetupChunkSettings(USkeletalMeshComponent* InSourceMeshComp
 	ProcMeshComp->SetCollisionObjectType(InSourceMeshComp->GetCollisionObjectType());
 	ProcMeshComp->SetCanEverAffectNavigation(false);
 	ProcMeshComp->SetCastShadow(InSourceMeshComp->CastShadow);
-	ProcMeshComp->bUseComplexAsSimpleCollision = true;
 	ProcMeshComp->SetVisibility(true, true);
 }
