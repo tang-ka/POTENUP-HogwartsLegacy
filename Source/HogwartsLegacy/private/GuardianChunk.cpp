@@ -94,7 +94,7 @@ void AGuardianChunk::InitializeChunk(TSharedPtr<FSharedMeshSnapshot> InSharedSna
 
 	// 메시 적용 지연 프레임 설정
 	PendingApplyFrames = FMath::Max(ApplyDelayFrames, 0);
-	// PendingApplyFrames = -1;
+	PendingApplyFrames = -1;
 
 	// 소스 머티리얼 캐시
 	CachedMaterials.Reset();
