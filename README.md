@@ -63,7 +63,7 @@ State 패턴 기반 상태 기계. 9개 상태(`Sleep` / `Idle` / `Strafe` / `Ch
 |---|---|
 | 상태 전이 · 전이 요청 처리 | [`EnemyFSMComponent.cpp`](https://github.com/tang-ka/POTENUP-HogwartsLegacy/blob/335567677025c39e1508140fbbb464576cc13f15/Source/HogwartsLegacy/private/Enemy/EnemyFSMComponent.cpp) |
 | 상태 추상 클래스 | [`GuardianStateBase.h`](https://github.com/tang-ka/POTENUP-HogwartsLegacy/blob/335567677025c39e1508140fbbb464576cc13f15/Source/HogwartsLegacy/public/Enemy/GuardianState/GuardianStateBase.h) |
-| 개별 상태 구현 (8종) | [`GuardianState/`](https://github.com/tang-ka/POTENUP-HogwartsLegacy/tree/335567677025c39e1508140fbbb464576cc13f15/Source/HogwartsLegacy/private/Enemy/GuardianState) |
+| 개별 상태 구현 (9종) | [`GuardianState/`](https://github.com/tang-ka/POTENUP-HogwartsLegacy/tree/335567677025c39e1508140fbbb464576cc13f15/Source/HogwartsLegacy/private/Enemy/GuardianState) |
 | 돌진 · 강타 · 넉백 실행부 | [`Guardian.cpp`](https://github.com/tang-ka/POTENUP-HogwartsLegacy/blob/335567677025c39e1508140fbbb464576cc13f15/Source/HogwartsLegacy/private/Enemy/Guardian.cpp) |
 
 ---
